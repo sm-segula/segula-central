@@ -1,0 +1,104 @@
+---
+import type { ImageMetadata } from 'astro';
+import ImagePlaceholder from './ImagePlaceholder.astro';
+
+/**
+ * Alternating image + text block ("news" pattern).
+ * Grid 12: image spans 7, text spans 4. ≤1024 one column with the image first (320px),
+ * ≤640 the image is 240px tall. Reveal delays: image 0, text 90.
+ */
+interface Props {
+  title: string;
+  text?: string;
+  tag?: string;
+  imageSide?: 'left' | 'right';
+  imageHeight?: number;
+  src?: string | ImageMetadata;
+  alt?: string;
+  placeholder?: string;
+  revealDelay?: number;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const {
+  title,
+  text,
+  tag,
+  imageSide = 'left',
+  imageHeight = 400,
+  src,
+  alt,
+  placeholder,
+  revealDelay = 90,
+  headingLevel = 'h3',
+} = Astro.props;
+
+const Heading = headingLevel;
+---
+
+<article class:list={['news', `news--${imageSide}`]} style={`--news-h:${imageHeight}px`}>
+  <div class="media" data-reveal>
+    <ImagePlaceholder
+      src={src}
+      alt={alt ?? title}
+      placeholder={placeholder ?? `Imagen · ${title}`}
+      radius={20}
+      width={1380}
+      height={Math.round(imageHeight * 2)}
+    />
+  </div>
+  <div class="body" data-reveal data-reveal-delay={revealDelay}>
+    {tag && <span class="sc-tag">{tag}</span>}
+    <Heading class="title">{title}</Heading>
+    {text && <p class="text">{text}</p>}
+    <slot />
+  </div>
+</article>
+
+<style>
+  .news {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+    align-items: center;
+  }
+  .media {
+    grid-row: 1;
+    height: var(--news-h);
+    min-width: 0;
+  }
+  .body {
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    min-width: 0;
+  }
+  .news--left .media { grid-column: 1 / span 7; }
+  .news--left .body { grid-column: 9 / span 4; }
+  .news--right .media { grid-column: 6 / span 7; }
+  .news--right .body { grid-column: 1 / span 4; }
+
+  .title {
+    margin: 0;
+    font: var(--font-h2);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .text {
+    margin: 0;
+    font: var(--font-body-lg);
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 1024px) {
+    .news { grid-template-columns: minmax(0, 1fr); }
+    .news > * { grid-column: auto; grid-row: auto; }
+    .media { order: -1; height: 320px; }
+  }
+  @media (max-width: 640px) {
+    .media { height: 240px; }
+  }
+</style>

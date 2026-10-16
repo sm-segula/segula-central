@@ -1,0 +1,341 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Splash from '../components/Splash.astro';
+import HeroCanvas from '../islands/HeroCanvas';
+import GradientRule from '../components/GradientRule.astro';
+import Button from '../components/Button.astro';
+import NewsBlock from '../components/NewsBlock.astro';
+import { ROUTES } from '../data/nav';
+import viajes from '../assets/viajes.png';
+import politicas from '../assets/politicas.png';
+import ayuda from '../assets/ayuda.jpg';
+import kindle from '../assets/kindle.png';
+import it from '../assets/it.jpg';
+---
+
+<Base title="SEGULA Central">
+  <Splash />
+
+  <section class="hero" aria-labelledby="hero-title">
+    <HeroCanvas client:load />
+    <div class="mask mask--h" aria-hidden="true"></div>
+    <div class="mask mask--v" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <h1 id="hero-title" class="hero-title" data-reveal>
+          Tu camino en <span class="sc-kw--blue">SEGULA</span>, siempre claro y en un solo lugar.
+        </h1>
+        <div data-reveal data-reveal-delay="140">
+          <GradientRule width={160} height={6} />
+        </div>
+        <p class="hero-sub" data-reveal data-reveal-delay="210">
+          Encuentra respuestas rápidas, descarga documentos clave y gestiona tu día a día.
+        </p>
+        <p class="hero-note" data-reveal data-reveal-delay="280">
+          Este espacio es tu primera escala para resolver dudas en los procesos internos y avanzar con certeza.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="quick" aria-labelledby="quick-title">
+    <span id="quick-title" class="sc-tag quick-tag" data-reveal>Accesos rápidos</span>
+    <div class="bento">
+      <article class="tile tile-lg" data-reveal>
+        <Image class="tile-lg-img" src={viajes} alt="Vacaciones e incidencias" width={1260} height={680} />
+        <div class="tile-lg-row">
+          <div class="tile-lg-copy">
+            <span class="sc-tag">Recursos Humanos</span>
+            <h3 class="tile-lg-title">Vacaciones e incidencias</h3>
+          </div>
+          <Button variant="ghost" href={ROUTES['Vacaciones e incidencias']}>Ver</Button>
+        </div>
+      </article>
+
+      <div class="bento-right">
+        <article class="tile tile-sm" data-reveal data-reveal-delay="70">
+          <div class="tile-sm-media">
+            <Image src={politicas} alt="Políticas y documentos" width={600} height={480} />
+          </div>
+          <div class="tile-sm-body">
+            <div class="tile-sm-copy">
+              <span class="sc-tag">Recursos Humanos</span>
+              <h3 class="tile-sm-title">Políticas y documentos</h3>
+            </div>
+            <div class="tile-sm-cta">
+              <Button variant="ghost" size="sm" href={ROUTES['Políticas y documentos']}>Ver</Button>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile tile-sm" data-reveal data-reveal-delay="140">
+          <div class="tile-sm-media">
+            <Image src={ayuda} alt="Centro de ayuda" width={600} height={480} />
+          </div>
+          <div class="tile-sm-body">
+            <div class="tile-sm-copy">
+              <span class="sc-tag">Soporte</span>
+              <h3 class="tile-sm-title">Centro de ayuda</h3>
+            </div>
+            <div class="tile-sm-cta">
+              <Button variant="primary" size="sm" href={ROUTES['Centro de ayuda']}>Ir a Centro de ayuda</Button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="news-section" aria-labelledby="news-title">
+    <div class="news-head" data-reveal>
+      <span class="sc-tag">Novedades</span>
+      <h2 id="news-title" class="news-title">
+        Entérate de las novedades de <span class="sc-kw">este mes</span>
+      </h2>
+      <GradientRule width={120} height={4} />
+    </div>
+
+    <div class="news-list">
+      <NewsBlock
+        title="Gazzette Septiembre 2026"
+        text="La edición de septiembre ya está disponible para consulta y descarga."
+        imageSide="left"
+        imageHeight={440}
+        src={kindle}
+        alt="Gazzette Septiembre 2026"
+      >
+        <Button variant="ghost" href="#">Leer la Gazzette</Button>
+      </NewsBlock>
+
+      <NewsBlock
+        title="Comunicados"
+        text="Accede al histórico de nuestros comunicados para mantenerte informado."
+        imageSide="right"
+        imageHeight={400}
+        src={it}
+        alt="Comunicado del mes"
+      >
+        <Button variant="ghost" href={ROUTES['Comunicados']}>Leer</Button>
+      </NewsBlock>
+
+      <NewsBlock
+        title="Campañas de salud"
+        text="Tu salud, nuestra mejor inversión."
+        imageSide="left"
+        imageHeight={400}
+        placeholder="Imagen · Campaña de salud"
+      >
+        <Button variant="ghost" href={ROUTES['Campañas de salud']}>Ver</Button>
+      </NewsBlock>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-base);
+  }
+  .mask {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .mask--h {
+    background: linear-gradient(90deg, #0A1220 0%, rgba(10, 18, 32, 0.88) 38%, rgba(10, 18, 32, 0.35) 72%, rgba(10, 18, 32, 0.15) 100%);
+  }
+  .mask--v {
+    background: linear-gradient(180deg, rgba(10, 18, 32, 0.6) 0%, rgba(10, 18, 32, 0) 30%, rgba(10, 18, 32, 0) 70%, #0A1220 100%);
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: clamp(112px, 16vw, 224px) clamp(24px, 4.4vw, 64px) clamp(112px, 14vw, 200px);
+    box-sizing: border-box;
+  }
+  .hero-copy {
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+  .hero-title {
+    margin: 0;
+    font: 400 clamp(44px, 5.2vw, 76px) / 1.1 var(--font-sans);
+    letter-spacing: -0.01em;
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .hero-sub {
+    margin: 8px 0 0;
+    font: 300 clamp(20px, 1.9vw, 28px) / 1.4 var(--font-sans);
+    color: #FFFFFF;
+    max-width: 800px;
+    text-wrap: pretty;
+  }
+  .hero-note {
+    margin: 0;
+    font: var(--font-body-lg);
+    color: var(--text-muted);
+    max-width: 640px;
+    text-wrap: pretty;
+  }
+
+  /* ---------- Accesos rápidos (bento 7/5) ---------- */
+  .quick {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .quick-tag {
+    display: block;
+    margin-bottom: 40px;
+  }
+  .bento {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+  .tile {
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    min-width: 0;
+    transition:
+      opacity var(--duration-slow) var(--ease-out-expo),
+      transform var(--duration-slow) var(--ease-out-expo),
+      box-shadow var(--duration-base) var(--ease-card),
+      background-color var(--duration-base) var(--ease-card);
+  }
+  .tile:hover {
+    box-shadow: var(--shadow-dark);
+    background: var(--surface-panel);
+  }
+  .tile-lg {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .tile-lg-img {
+    display: block;
+    width: 100%;
+    height: 340px;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+  .tile-lg-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 0 8px 8px;
+  }
+  .tile-lg-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+  .tile-lg-title {
+    margin: 0;
+    font: var(--font-h2);
+    color: var(--text-card-title);
+  }
+  .bento-right {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+    min-width: 0;
+  }
+  .tile-sm {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 20px;
+  }
+  .tile-sm-media {
+    position: relative;
+    min-height: 168px;
+  }
+  .tile-sm-media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+  .tile-sm-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 8px 4px 4px 0;
+    min-width: 0;
+  }
+  .tile-sm-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .tile-sm-title {
+    margin: 0;
+    font: var(--font-h3);
+    font-size: 22px;
+    color: var(--text-card-title);
+  }
+  .tile-sm-cta { display: flex; }
+
+  /* ---------- Novedades ---------- */
+  .news-section {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .news-head {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 760px;
+  }
+  .news-title {
+    margin: 0;
+    font: var(--font-h1);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .news-list {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(72px, 8vw, 120px);
+    margin-top: clamp(56px, 6vw, 88px);
+  }
+
+  /* ---------- Responsive (prototype data-r rules) ---------- */
+  @media (max-width: 1024px) {
+    .bento { grid-template-columns: minmax(0, 1fr); }
+    .bento-right {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: auto;
+    }
+  }
+  @media (max-width: 640px) {
+    .hero-title { font-size: 38px; }
+    .hero-sub { font-size: 19px; }
+    .bento-right { grid-template-columns: minmax(0, 1fr); }
+    .tile-sm { grid-template-columns: minmax(0, 1fr); }
+    .tile-sm-media { min-height: 200px; }
+    .tile-lg-img { height: 240px; }
+    .tile-lg-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
