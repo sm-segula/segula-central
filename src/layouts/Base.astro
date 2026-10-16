@@ -1,0 +1,67 @@
+---
+import '../styles/global.css';
+import 'lenis/dist/lenis.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  menuTrigger?: 'hover' | 'click';
+}
+
+const SITE = 'SEGULA Central';
+const {
+  title,
+  description = 'SEGULA Central, la intranet de SEGULA Technologies México: respuestas rápidas, documentos clave y gestión de tu día a día.',
+  menuTrigger = 'hover',
+} = Astro.props;
+const pageTitle = title === SITE ? SITE : `${title} · ${SITE}`;
+---
+
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0A1220" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+    />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body>
+    <Header menuTrigger={menuTrigger} />
+    <slot />
+    <Footer />
+
+    <script>
+      import { initReveals } from '../scripts/reveal';
+      import { initLenis, destroyLenis } from '../scripts/lenis';
+      import { initHeader } from '../scripts/header';
+
+      const boot = (): void => {
+        initHeader();
+        initReveals();
+        initLenis();
+      };
+
+      // With <ClientRouter /> (View Transitions) astro:page-load fires on every
+      // navigation including the first one; without it we boot right away.
+      const viewTransitions = document.querySelector('meta[name="astro-view-transitions-enabled"]');
+      if (viewTransitions) {
+        document.addEventListener('astro:page-load', boot);
+        document.addEventListener('astro:before-swap', destroyLenis);
+      } else {
+        boot();
+      }
+    </script>
+  </body>
+</html>

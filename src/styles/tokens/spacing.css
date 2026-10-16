@@ -1,0 +1,10 @@
+:root{
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;--space-8:32px;--space-12:48px;--space-16:64px;--space-24:96px;
+--grid-columns:12; /* @kind other */
+--grid-gutter:24px;--grid-margin:64px;--content-max:1312px;--viewport-min:1280px;--viewport-ref:1440px;
+--radius-sm:8px;--radius-md:12px;--radius-lg:20px;--radius-full:9999px;
+--border-width:1px;--border-width-strong:1.5px;
+--control-h:48px;--field-h:56px;--row-h:48px;--hit-min:40px;--topbar-h:72px;--sidebar-w:264px;
+--rule-w:120px;--rule-w-lg:430px;--rule-h:4px;--rule-h-lg:6px;--accent-w:4px;
+--icon-sm:20px;--icon-md:24px;--icon-stroke:1.5;
+}

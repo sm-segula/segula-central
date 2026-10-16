@@ -1,0 +1,54 @@
+---
+---
+
+<footer class="footer">
+  <div class="inner">
+    <div class="brand">
+      <img
+        src="/assets/segula-logo-powered-by-matra-white.png"
+        alt="SEGULA Technologies, Powered by MATRA"
+        width="727"
+        height="245"
+      />
+    </div>
+    <span class="tagline">L'audace en héritage</span>
+  </div>
+</footer>
+
+<style>
+  .footer { background: var(--surface-bar); }
+  .inner {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 64px clamp(24px, 4.4vw, 64px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .brand img {
+    display: block;
+    height: 48px;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
+  }
+  .tagline {
+    font: 600 20px/1 var(--font-sans);
+    text-transform: uppercase;
+    color: #FFFFFF;
+    letter-spacing: 0.02em;
+  }
+  @media (max-width: 640px) {
+    .inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

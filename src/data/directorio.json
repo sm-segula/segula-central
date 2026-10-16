@@ -1,0 +1,161 @@
+[
+ {
+  "team": "Recursos Humanos",
+  "people": [
+   {
+    "name": "Karina Hernández",
+    "role": "Directora de RH",
+    "phone": "55 6804 5775",
+    "tel": "+525568045775",
+    "email": "karina.hernandez@segulagrp.com",
+    "slot": "dir-karina-hernandez",
+    "initials": "KH"
+   },
+   {
+    "name": "Jessica Trejo",
+    "role": "HR Administration Coordinator",
+    "phone": "55 4350 0422",
+    "tel": "+525543500422",
+    "email": "jessica.trejo@segulagrp.com",
+    "slot": "dir-jessica-trejo",
+    "initials": "JT"
+   },
+   {
+    "name": "Carolina Gómez",
+    "role": "HR Admin DO",
+    "phone": "56 4174 1830",
+    "tel": "+525641741830",
+    "email": "carolina.gomez@segulagrp.com",
+    "slot": "dir-carolina-gomez",
+    "initials": "CG"
+   },
+   {
+    "name": "Jesús González",
+    "role": "HR Admin DO",
+    "phone": "56 1165 6371",
+    "tel": "+525611656371",
+    "email": "jesus.gonzalez@segulagrp.com",
+    "slot": "dir-jesus-gonzalez",
+    "initials": "JG"
+   },
+   {
+    "name": "Evelyn Abarca",
+    "role": "HR Administrative",
+    "phone": "56 4169 1651",
+    "tel": "+525641691651",
+    "email": "evelyn.abarca@segulagrp.com",
+    "slot": "dir-evelyn-abarca",
+    "initials": "EA"
+   },
+   {
+    "name": "Mariana Fonseca",
+    "role": "HR Administrative",
+    "phone": "56 3413 3291",
+    "tel": "+525634133291",
+    "email": "mariana.fonseca@segulagrp.com",
+    "slot": "dir-mariana-fonseca",
+    "initials": "MF"
+   }
+  ]
+ },
+ {
+  "team": "Operaciones",
+  "people": [
+   {
+    "name": "Omar López",
+    "role": "Gestión de Proyectos (PMO)",
+    "phone": "55 7868 9814",
+    "tel": "+525578689814",
+    "email": "omar.lopez@segulagrp.com",
+    "slot": "dir-omar-lopez",
+    "initials": "OL"
+   },
+   {
+    "name": "Ana Pérez",
+    "role": "Gestión de Proyectos (PMO)",
+    "phone": "44 2528 5507",
+    "tel": "+524425285507",
+    "email": "ana.perez@segulagrp.com",
+    "slot": "dir-ana-perez",
+    "initials": "AP"
+   },
+   {
+    "name": "Yair Espinoza",
+    "role": "Gestión de Proyectos (PMO)",
+    "phone": "55 1156 8062",
+    "tel": "+525511568062",
+    "email": "yair.espinoza@segulagrp.com",
+    "slot": "dir-yair-espinoza",
+    "initials": "YE"
+   },
+   {
+    "name": "Erika Manzo",
+    "role": "Gestión de Proyectos (PMO)",
+    "phone": "56 1165 6311",
+    "tel": "+525611656311",
+    "email": "erika.manzo@segulagrp.com",
+    "slot": "dir-erika-manzo",
+    "initials": "EM"
+   },
+   {
+    "name": "Ingrid Callejas",
+    "role": "Gestión de Proyectos (PMO)",
+    "phone": "56 4165 0976",
+    "tel": "+525641650976",
+    "email": "yair.espinoza@segulagrp.com",
+    "slot": "dir-ingrid-callejas",
+    "initials": "IC"
+   },
+   {
+    "name": "Giovanna González",
+    "role": "JR PM and Data Management",
+    "phone": "55 8550 8623",
+    "tel": "+525585508623",
+    "email": "giovanna.gonzalez@segulagrp.com",
+    "slot": "dir-giovanna-gonzalez",
+    "initials": "GG"
+   }
+  ]
+ },
+ {
+  "team": "IT",
+  "people": [
+   {
+    "name": "Raúl Barrera",
+    "role": "IT Manager",
+    "phone": "56 4174 0603",
+    "tel": "+525641740603",
+    "email": "raul.barrera@segulagrp.com",
+    "slot": "dir-raul-barrera",
+    "initials": "RB"
+   },
+   {
+    "name": "Daisuke Ornelas",
+    "role": "IT Auxiliar",
+    "phone": "55 7952 8085",
+    "tel": "+525579528085",
+    "email": "daisuke.ornelas@segulagrp.com",
+    "slot": "dir-daisuke-ornelas",
+    "initials": "DO"
+   },
+   {
+    "name": "Alberto Nieto",
+    "role": "IT Auxiliar",
+    "phone": "44 2714 5448",
+    "tel": "+524427145448",
+    "email": "jose.nieto@segulagrp.com",
+    "slot": "dir-alberto-nieto",
+    "initials": "AN"
+   },
+   {
+    "name": "Jesús Montiel",
+    "role": "IT Auxiliar",
+    "phone": "55 5459 0532",
+    "tel": "+525554590532",
+    "email": "jesus.montiel@segulagrp.com",
+    "slot": "dir-jesus-montiel",
+    "initials": "JM"
+   }
+  ]
+ }
+]

@@ -1,0 +1,29 @@
+:root{
+--shadow-dark:0 8px 24px rgba(0,0,0,0.35);
+--shadow-light:0 8px 24px rgba(23,69,100,0.10);
+--focus-glow:0 0 0 3px rgba(0,143,213,0.35);
+--focus-glow-error:0 0 0 3px rgba(185,52,139,0.35);
+--glow-blue:radial-gradient(closest-side,rgba(61,154,254,0.22),rgba(61,154,254,0)); /* @kind color */
+--glow-pink:radial-gradient(closest-side,rgba(231,57,125,0.18),rgba(231,57,125,0)); /* @kind color */
+--duration-fast:150ms; /* @kind other */
+--duration-base:250ms; /* @kind other */
+--duration-slow:600ms; /* @kind other */
+--duration-ambient:24s; /* @kind other */
+--ease-out-expo:cubic-bezier(0.16,1,0.3,1); /* @kind other */
+--ease-card:cubic-bezier(0.2,0.8,0.2,1); /* @kind other */
+--ease-standard:cubic-bezier(0.4,0,0.2,1); /* @kind other */
+--enter-distance:20px;
+--stagger:70ms; /* @kind other */
+}
+@keyframes seg-shimmer{from{transform:translateX(-100%);}to{transform:translateX(100%);}}
+@keyframes seg-spin{to{transform:rotate(360deg);}}
+@keyframes seg-enter{from{opacity:0;transform:translateY(var(--enter-distance));}to{opacity:1;transform:none;}}
+@keyframes seg-fade{from{opacity:0;}to{opacity:1;}}
+@keyframes seg-indeterminate{0%{transform:translateX(-100%);}100%{transform:translateX(250%);}}
+@keyframes seg-drift{0%{transform:translate(0,0);}50%{transform:translate(40px,-30px);}100%{transform:translate(0,0);}}
+@keyframes seg-drawer{from{transform:translateX(32px);opacity:0;}to{transform:none;opacity:1;}}
+.seg-enter{animation:seg-enter var(--duration-slow) var(--ease-out-expo) both;}
+@media (prefers-reduced-motion:reduce){
+.seg-enter{animation:seg-fade var(--duration-base) linear both;}
+*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-property:opacity!important;}
+}

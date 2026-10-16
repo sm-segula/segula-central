@@ -1,0 +1,38 @@
+/* SEGULA Technologies · Brand Guidelines 2026 (Graphical Chart). Tailwind: theme.extend.colors -> var(--*) */
+:root{
+/* Primarios (manual) */
+--brand-darkblue:#174564;--brand-lightblue:#008FD5;--brand-pink:#B9348B;
+/* Secundarios — usar con moderación */
+--brand-yellow:#FFBF00;--brand-green:#5BBA6F;
+/* Degradado de marca — único permitido */
+--gradient-start:#3D9AFE;--gradient-mid:#9269BD;--gradient-end:#E7397D;
+--gradient-brand:linear-gradient(90deg,#3D9AFE 0%,#9269BD 50%,#E7397D 100%); /* @kind color */
+--gradient-brand-vertical:linear-gradient(180deg,#3D9AFE 0%,#9269BD 50%,#E7397D 100%); /* @kind color */
+/* Superficies (plantilla 2026, oscuro) */
+--bg-base:#0A1220;--bg-stars:#040E20;
+--surface-panel:#0E1A2C;--surface-card:#0F1A2E;--surface-bar:#0D1626;
+--border-strong:#33507A;--border-subtle:#1B2942;
+/* Contornos de tarjeta, orden fijo */
+--outline-1:#7F75CC;--outline-2:#3D9BFF;--outline-3:#B9348B;
+/* Texto */
+--text-primary:#FFFFFF;--text-card-title:#FFFEF3;--text-muted:#93A4BC;--text-label:#4C6C9C;
+/* Modo claro (panel RH) */
+--light-bg:#FFFFFF;--light-text:#0A1220;--light-text-secondary:#33405A;--light-tag:#5A6B85;
+--light-panel:#F2F5FA;--light-border:#DCE4F0;--light-frame:#EDF1F8;--light-frame-border:#C6D2E4;
+
+/* Semánticos */
+--color-bg:var(--bg-base);--color-panel:var(--surface-panel);--color-card:var(--surface-card);--color-bar:var(--surface-bar);
+--color-border:var(--border-strong);--color-border-subtle:var(--border-subtle);
+--color-text:var(--text-primary);--color-text-title:var(--text-card-title);--color-text-muted:var(--text-muted);--color-text-label:var(--text-label);
+--color-action:var(--brand-lightblue);--color-link:var(--brand-lightblue);--color-emphasis:var(--brand-pink);
+--color-info:var(--brand-lightblue);--color-success:var(--brand-green);--color-warning:var(--brand-yellow);--color-error:var(--brand-pink);
+--color-field:var(--surface-panel);--color-overlay:rgba(4,14,32,0.72);
+--color-hover:rgba(255,255,255,0.04);--color-selected:rgba(0,143,213,0.12);
+}
+[data-theme="light"]{
+--color-bg:var(--light-bg);--color-panel:var(--light-panel);--color-card:var(--light-bg);--color-bar:var(--light-frame);
+--color-border:var(--light-frame-border);--color-border-subtle:var(--light-border);
+--color-text:var(--light-text);--color-text-title:var(--light-text);--color-text-muted:var(--light-text-secondary);--color-text-label:var(--light-tag);
+--color-field:var(--light-bg);--color-emphasis:var(--brand-pink);
+--color-hover:rgba(23,69,100,0.04);--color-selected:rgba(0,143,213,0.08);
+}

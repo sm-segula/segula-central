@@ -1,0 +1,19 @@
+---
+interface Props {
+  width?: number;
+  height?: number;
+  class?: string;
+}
+const { width = 160, height = 6, class: cls } = Astro.props;
+---
+
+<span class:list={['rule', cls]} aria-hidden="true" style={`width:${width}px;height:${height}px`}></span>
+
+<style>
+  .rule {
+    display: block;
+    flex: none;
+    border-radius: var(--radius-full);
+    background: var(--gradient-brand);
+  }
+</style>

@@ -1,0 +1,44 @@
+:root{
+--font-sans:"SEG Proxima Nova","Proxima Nova",Arial,Helvetica,sans-serif;
+--font-black:"SEG Proxima Nova","Proxima Nova","Arial Black",Arial,sans-serif;
+--font-tech:"SEG Rakesly","Rakesly",Arial,Helvetica,sans-serif;
+--font-tech-ui:"SEG Rakesly UI","Rakesly UI","Rakesly",Arial,Helvetica,sans-serif;
+--weight-light:300;--weight-medium:500;--weight-black:900;
+/* escala: size / line-height / weight / family */
+--type-display-size:56px;--type-display-lh:1.05;
+--type-h1-size:40px;--type-h1-lh:1.15;
+--type-h2-size:28px;--type-h2-lh:1.2;
+--type-h3-size:20px;--type-h3-lh:1.3;
+--type-body-lg-size:18px;--type-body-lg-lh:1.5;
+--type-body-size:16px;--type-body-lh:1.5;
+--type-body-sm-size:14px;--type-body-sm-lh:1.45;
+--type-caption-size:12px;--type-caption-lh:1.4;
+--type-tag-size:12px;--type-tag-lh:1;--type-tag-tracking:0.08em;
+--type-stat-size:64px;--type-stat-lh:1;
+/* shorthands */
+--font-display:900 56px/1.05 var(--font-black);
+--font-h1:900 40px/1.15 var(--font-black);
+--font-h2:500 28px/1.2 var(--font-sans);
+--font-h3:500 20px/1.3 var(--font-sans);
+--font-body-lg:300 18px/1.5 var(--font-sans);
+--font-body:300 16px/1.5 var(--font-sans);
+--font-body-sm:300 14px/1.45 var(--font-sans);
+--font-caption:300 12px/1.4 var(--font-sans);
+--font-tag:400 12px/1 var(--font-tech-ui);
+--font-stat:400 64px/1 var(--font-tech);
+}
+.seg-display{font:var(--font-display);}
+.seg-h1{font:var(--font-h1);}
+.seg-h2{font:var(--font-h2);}
+.seg-h3{font:var(--font-h3);}
+.seg-body-lg{font:var(--font-body-lg);}
+.seg-body{font:var(--font-body);}
+.seg-body-sm{font:var(--font-body-sm);}
+.seg-caption{font:var(--font-caption);color:var(--color-text-muted);}
+.seg-tag{font:var(--font-tag);text-transform:uppercase;letter-spacing:var(--type-tag-tracking);}
+.seg-stat{font:var(--font-stat);}
+.seg-key-pink{color:var(--brand-pink);}
+.seg-title em{font-style:normal;color:var(--brand-pink);}
+.seg-insight em{font-style:normal;color:var(--brand-lightblue);font-weight:500;}
+.seg-insight em.seg-key-pink{color:var(--brand-pink);}
+.seg-key-blue{color:var(--brand-lightblue);}

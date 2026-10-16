@@ -1,0 +1,104 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends Omit<HTMLAttributes<'a'>, 'type'> {
+  variant?: 'primary' | 'ghost';
+  size?: 'md' | 'sm';
+  href?: string;
+  /** Force a new tab. Defaults to true for http(s) URLs. */
+  external?: boolean;
+  type?: 'button' | 'submit';
+  class?: string;
+}
+
+const {
+  variant = 'primary',
+  size = 'md',
+  href,
+  external,
+  type = 'button',
+  class: cls,
+  ...rest
+} = Astro.props;
+
+const isExternal = external ?? (!!href && /^https?:\/\//i.test(href));
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  class:list={['btn', `btn--${variant}`, `btn--${size}`, cls]}
+  href={href}
+  type={href ? undefined : type}
+  target={isExternal ? '_blank' : undefined}
+  rel={isExternal ? 'noopener' : undefined}
+  {...rest}
+>
+  <span class="label"><slot /></span>
+</Tag>
+
+<style>
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 24px;
+    border-radius: var(--radius-md);
+    font: 500 15px/1 var(--font-sans);
+    letter-spacing: 0.01em;
+    color: #FFFFFF;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    box-sizing: border-box;
+    overflow: hidden;
+    isolation: isolate;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color var(--duration-base) var(--ease-card),
+      border-color var(--duration-base) var(--ease-card),
+      box-shadow var(--duration-base) var(--ease-card),
+      transform var(--duration-fast) var(--ease-standard);
+  }
+  .btn:hover { color: #FFFFFF; text-decoration: none; }
+  .btn:active { transform: scale(0.98); }
+  .label { position: relative; z-index: 1; }
+
+  .btn--sm {
+    height: 40px;
+    padding: 0 18px;
+    font-size: 14px;
+  }
+
+  /* Primary: brand gradient fill, hover shimmer + violet glow */
+  .btn--primary {
+    border: 0;
+    background: var(--gradient-brand);
+  }
+  .btn--primary::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+  .btn--primary:hover { box-shadow: 0 8px 24px rgba(146, 105, 189, 0.45); }
+  .btn--primary:hover::after { animation: seg-shimmer 900ms var(--ease-standard) both; }
+
+  /* Ghost: subtle border, hover lightblue tint 8 % */
+  .btn--ghost {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+  }
+  .btn--ghost:hover {
+    background: rgba(0, 143, 213, 0.08);
+    border-color: var(--border-strong);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn--primary:hover::after { animation: none; }
+  }
+</style>

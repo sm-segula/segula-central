@@ -1,0 +1,8 @@
+/* Proxima Nova + Rakesly: fuentes de "uso profesional" (manual). Sin binarios ni licencia web confirmada:
+   se resuelven desde la instalación local; si no existen, la pila cae a Arial / Arial Black sin cambiar tamaños. */
+@font-face{font-family:"SEG Proxima Nova";font-weight:300;font-style:normal;font-display:swap;src:local("Proxima Nova Light"),local("ProximaNova-Light");}
+@font-face{font-family:"SEG Proxima Nova";font-weight:500;font-style:normal;font-display:swap;src:local("Proxima Nova Medium"),local("ProximaNova-Medium");}
+@font-face{font-family:"SEG Proxima Nova";font-weight:900;font-style:normal;font-display:swap;src:local("Proxima Nova Black"),local("ProximaNova-Black");}
+@font-face{font-family:"SEG Rakesly";font-weight:300;font-style:normal;font-display:swap;src:local("Rakesly Lt"),local("Rakesly-Light");}
+@font-face{font-family:"SEG Rakesly";font-weight:400;font-style:normal;font-display:swap;src:local("Rakesly Rg"),local("Rakesly-Regular");}
+@font-face{font-family:"SEG Rakesly UI";font-weight:400;font-style:normal;font-display:swap;src:local("Rakesly UI"),local("Rakesly-UI");}
