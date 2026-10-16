@@ -1,0 +1,62 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import Card from '../../components/Card.astro';
+
+const wide = [
+  { title: 'Onboarding', href: 'https://drive.google.com/file/d/1wD1j5hKxp0gZFvpi8n3NlMOZ4zEYDEkm/view?usp=drive_link', placeholder: 'Imagen · Onboarding', delay: 0 },
+  { title: 'Reglamento interior de trabajo', href: 'https://drive.google.com/file/d/1oNyMuJhjUSR_3MpHt_owx6zoaRTsEOOM/view?usp=drive_link', placeholder: 'Imagen · Reglamento interior de trabajo', delay: 70 },
+];
+const docs = [
+  { title: 'Código de conducta', href: 'https://drive.google.com/file/d/1BfRsOzAnIRt_7A_MeH16uQXq6Cw4CDNk/view?usp=drive_link', placeholder: 'Imagen · Código de conducta', delay: 0 },
+  { title: 'Política de horas', href: 'https://drive.google.com/file/d/1iFPeTxrJO-bDLvCnUVQ6UNzD2atBaW45/view?usp=drive_link', placeholder: 'Imagen · Política de horas', delay: 70 },
+  { title: 'Política de viajes', href: 'https://drive.google.com/file/d/1Mi61Ceg0hDsrIcTukfUZ0MOWs_8kcDpz/view', placeholder: 'Imagen · Política de viajes', delay: 0 },
+  { title: 'Política de Calidad', href: '#', placeholder: 'Imagen · Política de Calidad', delay: 70 },
+];
+---
+
+<Base title="Políticas y documentos">
+  <PageHero
+    tag="Recursos Humanos"
+    before="Políticas y "
+    kw="documentos"
+    kwColor="blue"
+    subtitle="En esta sección encontrarás el acceso a las políticas que rigen a nuestra organización, las cuales nos permiten mantener una cultura de orden y respeto, así como darle seguimiento a los procesos internos."
+    subtitleSize="md"
+  />
+
+  <section class="documents" aria-label="Documentos">
+    <div class="docs">
+      {wide.map((d) => (
+        <Card class="doc-wide" title={d.title} href={d.href} placeholder={d.placeholder} imageHeight={300} titleSize="lg" revealDelay={d.delay} />
+      ))}
+      {docs.map((d) => (
+        <Card class="doc" title={d.title} href={d.href} placeholder={d.placeholder} imageHeight={220} titleSize="sm" revealDelay={d.delay} />
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .documents {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .docs {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .doc-wide { grid-column: span 6; }
+  .doc { grid-column: span 3; }
+
+  @media (max-width: 1024px) {
+    .doc { grid-column: span 6; }
+  }
+  @media (max-width: 640px) {
+    .doc,
+    .doc-wide { grid-column: span 12; }
+    .doc-wide :global(.media) { height: 220px !important; }
+  }
+</style>
