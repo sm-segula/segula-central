@@ -1,0 +1,59 @@
+---
+/**
+ * Circular play button overlaid on a video thumbnail (the thumbnail is NOT wrapped in
+ * the link; this sits absolutely centered on top). 64px in cards, 88px in large video
+ * sections. Hover: scale 1.06 + lightblue 85 %.
+ */
+interface Props {
+  href: string;
+  label: string;
+  size?: 64 | 88;
+}
+const { href, label, size = 64 } = Astro.props;
+const icon = size === 88 ? 32 : 24;
+---
+
+<a
+  href={href}
+  target="_blank"
+  rel="noopener"
+  aria-label={label}
+  class:list={['play', `play--${size}`]}
+>
+  <svg width={icon} height={icon} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M8 5v14l11-7z"></path>
+  </svg>
+</a>
+
+<style>
+  .play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+    background: rgba(10, 18, 32, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: grid;
+    place-items: center;
+    color: #FFFFFF;
+    text-decoration: none;
+    transition:
+      transform var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard);
+  }
+  .play--88 {
+    width: 88px;
+    height: 88px;
+  }
+  .play:hover,
+  .play:focus-visible {
+    transform: translate(-50%, -50%) scale(1.06);
+    background: rgba(0, 143, 213, 0.85);
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+</style>

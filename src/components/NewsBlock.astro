@@ -18,6 +18,7 @@ interface Props {
   placeholder?: string;
   revealDelay?: number;
   headingLevel?: 'h2' | 'h3';
+  class?: string;
 }
 
 const {
@@ -31,12 +32,14 @@ const {
   placeholder,
   revealDelay = 90,
   headingLevel = 'h3',
+  class: cls,
+  ...rest
 } = Astro.props;
 
 const Heading = headingLevel;
 ---
 
-<article class:list={['news', `news--${imageSide}`]} style={`--news-h:${imageHeight}px`}>
+<article class:list={['news', `news--${imageSide}`, cls]} style={`--news-h:${imageHeight}px`} {...rest}>
   <div class="media" data-reveal>
     <ImagePlaceholder
       src={src}

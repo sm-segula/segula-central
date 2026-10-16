@@ -34,6 +34,7 @@ const {
   loading = 'lazy',
   class: cls,
   style = '',
+  ...rest
 } = Astro.props;
 
 const inline = `border-radius:${radius}px;${style}`;
@@ -50,11 +51,12 @@ const isAsset = typeof src === 'object' && src !== null;
       height={height}
       loading={loading}
       style={inline}
+      {...rest}
     />
   ) : src ? (
-    <img class:list={['img', cls]} src={src as string} alt={alt} width={width} height={height} loading={loading} style={inline} />
+    <img class:list={['img', cls]} src={src as string} alt={alt} width={width} height={height} loading={loading} style={inline} {...rest} />
   ) : (
-    <div class:list={['ph', cls]} aria-hidden="true" style={inline}>
+    <div class:list={['ph', cls]} aria-hidden="true" style={inline} {...rest}>
       <span>{placeholder}</span>
     </div>
   )

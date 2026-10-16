@@ -1,0 +1,116 @@
+---
+import type { ImageMetadata } from 'astro';
+import ImagePlaceholder from './ImagePlaceholder.astro';
+import Button from './Button.astro';
+
+/**
+ * Standard document card ("doc"): --surface-card, radius 20, padding 20, image radius 12,
+ * title row + ghost sm button. Hover → --surface-panel + dark shadow.
+ * Grid placement (grid-column: span n and its breakpoints) is set by the page via `class`.
+ * Put an overlay (PlayButton) in the "media" slot.
+ */
+interface Props {
+  title: string;
+  href?: string;
+  cta?: string;
+  src?: string | ImageMetadata;
+  alt?: string;
+  placeholder?: string;
+  /** Fixed image height (ignored when `aspect` is given). */
+  imageHeight?: number;
+  /** e.g. "16/9" */
+  aspect?: string;
+  /** lg: clamp(24px,2.2vw,30px) · md: clamp(22px,1.9vw,26px) · sm: 22px */
+  titleSize?: 'lg' | 'md' | 'sm';
+  /** `flex` for the title (e.g. "1 1 200px" in the videos grid). */
+  titleFlex?: string;
+  hover?: boolean;
+  revealDelay?: number;
+  class?: string;
+}
+
+const {
+  title,
+  href,
+  cta = 'Ver',
+  src,
+  alt,
+  placeholder,
+  imageHeight = 260,
+  aspect,
+  titleSize = 'md',
+  titleFlex,
+  hover = true,
+  revealDelay = 0,
+  class: cls,
+  ...rest
+} = Astro.props;
+
+const mediaStyle = aspect ? `aspect-ratio:${aspect}` : `height:${imageHeight}px`;
+const outWidth = 1000;
+const outHeight = aspect ? undefined : Math.round(imageHeight * 2);
+---
+
+<article class:list={['card', { 'card--hover': hover }, cls]} data-reveal data-reveal-delay={revealDelay} {...rest}>
+  <div class="media" style={mediaStyle}>
+    <ImagePlaceholder
+      src={src}
+      alt={alt ?? title}
+      placeholder={placeholder ?? `Imagen · ${title}`}
+      radius={12}
+      width={outWidth}
+      height={outHeight}
+    />
+    <slot name="media" />
+  </div>
+  <div class="row">
+    <h3 class:list={['title', `title--${titleSize}`]} style={titleFlex ? `flex:${titleFlex}` : undefined}>{title}</h3>
+    {href && <Button variant="ghost" size="sm" href={href}>{cta}</Button>}
+    <slot name="action" />
+  </div>
+  <slot />
+</article>
+
+<style>
+  .card {
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+    transition:
+      opacity var(--duration-slow) var(--ease-out-expo),
+      transform var(--duration-slow) var(--ease-out-expo),
+      box-shadow var(--duration-base) var(--ease-card),
+      background-color var(--duration-base) var(--ease-card);
+  }
+  .card--hover:hover {
+    box-shadow: var(--shadow-dark);
+    background: var(--surface-panel);
+  }
+  .media {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 0 8px 8px;
+    flex-wrap: wrap;
+  }
+  .title {
+    margin: 0;
+    color: var(--text-card-title);
+    text-wrap: balance;
+    min-width: 0;
+  }
+  .title--lg { font: 400 clamp(24px, 2.2vw, 30px) / 1.2 var(--font-sans); }
+  .title--md { font: 400 clamp(22px, 1.9vw, 26px) / 1.2 var(--font-sans); }
+  .title--sm { font: 400 22px / 1.2 var(--font-sans); }
+</style>

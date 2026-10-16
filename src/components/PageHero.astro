@@ -1,0 +1,92 @@
+---
+import GradientRule from './GradientRule.astro';
+
+/**
+ * Interior page hero: section tag, H1 with one keyword in brand pink (or lightblue),
+ * 160×6 GradientRule and optional subtitle. Extra content (buttons, notes) goes in
+ * the default slot, after the subtitle.
+ *
+ * Title: pass `before` / `kw` / `after` with their exact spacing
+ * (e.g. before="Vacaciones e " kw="incidencias"), or use <Fragment slot="title">.
+ */
+interface Props {
+  tag: string;
+  before?: string;
+  kw?: string;
+  after?: string;
+  kwColor?: 'pink' | 'blue';
+  subtitle?: string;
+  /** lg: 300 clamp(20px,1.9vw,28px)/1.4, max 800 · md: 300 clamp(19px,1.6vw,24px)/1.45, max 820 */
+  subtitleSize?: 'lg' | 'md';
+  /** Bottom padding: lg clamp(72px,8vw,112px) · md clamp(56px,6vw,80px) */
+  bottom?: 'lg' | 'md';
+  titleId?: string;
+}
+
+const {
+  tag,
+  before = '',
+  kw = '',
+  after = '',
+  kwColor = 'pink',
+  subtitle,
+  subtitleSize = 'lg',
+  bottom = 'lg',
+  titleId = 'page-title',
+} = Astro.props;
+---
+
+<section class:list={['hero', `hero--${bottom}`]} aria-labelledby={titleId}>
+  <div class="inner">
+    <span class="sc-tag" data-reveal>{tag}</span>
+    <h1 id={titleId} class="title" data-reveal data-reveal-delay="70">
+      <slot name="title">{before}<span class={kwColor === 'blue' ? 'sc-kw--blue' : 'sc-kw'}>{kw}</span>{after}</slot>
+    </h1>
+    <div data-reveal data-reveal-delay="140">
+      <GradientRule width={160} height={6} />
+    </div>
+    {subtitle && (
+      <p class:list={['sub', `sub--${subtitleSize}`]} data-reveal data-reveal-delay="210">{subtitle}</p>
+    )}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .hero {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: clamp(80px, 10vw, 144px) clamp(24px, 4.4vw, 64px) clamp(72px, 8vw, 112px);
+  }
+  .hero--md { padding-bottom: clamp(56px, 6vw, 80px); }
+  .inner {
+    max-width: 960px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .title {
+    margin: 0;
+    font: 400 clamp(40px, 4.6vw, 68px) / 1.1 var(--font-sans);
+    letter-spacing: -0.01em;
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .sub {
+    margin: 8px 0 0;
+    color: #FFFFFF;
+    text-wrap: pretty;
+  }
+  .sub--lg {
+    font: 300 clamp(20px, 1.9vw, 28px) / 1.4 var(--font-sans);
+    max-width: 800px;
+  }
+  .sub--md {
+    font: 300 clamp(19px, 1.6vw, 24px) / 1.45 var(--font-sans);
+    max-width: 820px;
+  }
+  @media (max-width: 640px) {
+    .title { font-size: 38px; }
+    .sub { font-size: 19px; }
+  }
+</style>

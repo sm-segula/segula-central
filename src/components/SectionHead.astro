@@ -1,0 +1,55 @@
+---
+import GradientRule from './GradientRule.astro';
+
+/**
+ * Section intro: tag + H2 (400 clamp(28px,3vw,40px)/1.15), optional 120×4 GradientRule.
+ * Whole block reveals as one. Title goes in the default slot (use .sc-kw for the keyword).
+ */
+interface Props {
+  tag?: string;
+  rule?: boolean;
+  maxWidth?: number;
+  gap?: number;
+  marginBottom?: number | string;
+  /** h2 (default) or a visually identical h3 when nested under another h2. */
+  level?: 'h2' | 'h3';
+  size?: 'md' | 'lg';
+  id?: string;
+  class?: string;
+}
+
+const {
+  tag,
+  rule = false,
+  maxWidth = 760,
+  gap = 12,
+  marginBottom = 40,
+  level = 'h2',
+  size = 'md',
+  id,
+  class: cls,
+  ...rest
+} = Astro.props;
+const Heading = level;
+const mb = typeof marginBottom === 'number' ? `${marginBottom}px` : marginBottom;
+---
+
+<div class:list={['head', cls]} data-reveal style={`max-width:${maxWidth}px;gap:${gap}px;margin-bottom:${mb}`} {...rest}>
+  {tag && <span class="sc-tag">{tag}</span>}
+  <Heading id={id} class:list={['title', `title--${size}`]}><slot /></Heading>
+  {rule && <GradientRule width={120} height={4} />}
+</div>
+
+<style>
+  .head {
+    display: flex;
+    flex-direction: column;
+  }
+  .title {
+    margin: 0;
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .title--md { font: 400 clamp(28px, 3vw, 40px) / 1.15 var(--font-sans); }
+  .title--lg { font: var(--font-h1); }
+</style>

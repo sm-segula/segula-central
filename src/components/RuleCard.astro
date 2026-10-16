@@ -1,0 +1,88 @@
+---
+import type { ImageMetadata } from 'astro';
+import ImagePlaceholder from './ImagePlaceholder.astro';
+
+/**
+ * "Reglas de oro" card: image (240px), big lightblue number (300 40px), title and text.
+ * No hover. Grid placement via `class` from the page (span 4 → 6 → 12).
+ */
+interface Props {
+  number: string;
+  title: string;
+  text: string;
+  src?: string | ImageMetadata;
+  alt?: string;
+  placeholder?: string;
+  imageHeight?: number;
+  revealDelay?: number;
+  class?: string;
+}
+
+const {
+  number,
+  title,
+  text,
+  src,
+  alt,
+  placeholder,
+  imageHeight = 240,
+  revealDelay = 0,
+  class: cls,
+  ...rest
+} = Astro.props;
+---
+
+<article class:list={['rule', cls]} data-reveal data-reveal-delay={revealDelay} {...rest}>
+  <div class="media" style={`height:${imageHeight}px`}>
+    <ImagePlaceholder
+      src={src}
+      alt={alt ?? title}
+      placeholder={placeholder ?? `Imagen · ${title}`}
+      radius={12}
+      width={1000}
+      height={imageHeight * 2}
+    />
+  </div>
+  <div class="body">
+    <span class="number" aria-hidden="true">{number}</span>
+    <h3 class="title">{title}</h3>
+    <p class="text">{text}</p>
+    <slot />
+  </div>
+</article>
+
+<style>
+  .rule {
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+  }
+  .media { width: 100%; }
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 8px 8px;
+  }
+  .number {
+    font: 300 40px / 1 var(--font-sans);
+    color: var(--brand-lightblue);
+    letter-spacing: -0.03em;
+  }
+  .title {
+    margin: 0;
+    font: 400 clamp(22px, 1.9vw, 26px) / 1.2 var(--font-sans);
+    color: var(--text-card-title);
+    text-wrap: balance;
+  }
+  .text {
+    margin: 0;
+    font: 300 16px / 1.5 var(--font-sans);
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+</style>

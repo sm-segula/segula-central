@@ -1,0 +1,120 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import StepBlock from '../../components/StepBlock.astro';
+import Panel from '../../components/Panel.astro';
+import Button from '../../components/Button.astro';
+---
+
+<Base title="Vacaciones e incidencias">
+  <PageHero
+    tag="Recursos Humanos"
+    before="Vacaciones e "
+    kw="incidencias"
+    kwColor="blue"
+    subtitle="Antes y durante la solicitud de tus vacaciones contempla:"
+  />
+
+  <section class="steps" aria-label="Pasos">
+    <div class="steps-list">
+      <StepBlock number="01" title="Accede a GN3." text="Usuario: No. empleado. Contraseña: fecha nacimiento (AAAAMMDD)." imageSide="left" placeholder="Captura · Acceso a GN3" />
+
+      <StepBlock number="02" title='Ve a "Solicitar" > "Vacaciones".' text="Selecciona los días y fechas en el calendario, agrega tus comentarios y envía la solicitud." imageSide="right" placeholder="Captura · Solicitar vacaciones">
+        <Button variant="primary" href="https://segula.portalgn3.com/GN3Portal/#/login">Solicita vacaciones</Button>
+      </StepBlock>
+
+      <StepBlock number="03" title="Planifica tus días con anticipación." text="Considera la fecha de cierre de incidencias de tu nómina para enviar la solicitud de forma oportuna." imageSide="left" placeholder="Imagen · Planificación">
+        <Button variant="ghost" href="#">Incidencias</Button>
+      </StepBlock>
+
+      <StepBlock number="04" title='Monitorea tu trámite en "Consulta de saldo y solicitudes".' text="Aquí podrás validar en tiempo real si fue autorizada o rechazada." imageSide="right" placeholder="Captura · Consulta de saldo y solicitudes" />
+    </div>
+  </section>
+
+  <section class="support" aria-label="Soporte y video">
+    <div class="bento">
+      <Panel surface="card" hover padding="clamp(28px, 3vw, 44px)" class="box">
+        <div class="box-copy">
+          <span class="sc-tag">Video</span>
+          <h2 class="box-title">Video de solicitud de vacaciones</h2>
+        </div>
+        <div class="box-cta">
+          <Button variant="primary" href="https://share.synthesia.io/40942270-c537-4a6c-b0c4-566b915ef5dc">Ver video</Button>
+        </div>
+      </Panel>
+      <Panel surface="panel" padding="clamp(28px, 3vw, 44px)" revealDelay={90} class="box">
+        <div class="box-copy">
+          <span class="sc-tag">Soporte</span>
+          <p class="box-text">Si presentas alguna falla o identificas algún error dentro del portal GN3, por favor levanta ticket en RhContigo.</p>
+        </div>
+        <div class="box-cta">
+          <Button variant="ghost" href="https://wkf.ms/4mpJckv">RhContigo</Button>
+        </div>
+      </Panel>
+    </div>
+  </section>
+
+  <section class="closing" aria-label="Cierre de contenido">
+    <h2 class="closing-title" data-reveal>
+      Una vez que tu solicitud haya sido aprobada, <span class="sc-kw">¡Disfruta tus vacaciones!</span>
+    </h2>
+  </section>
+</Base>
+
+<style>
+  .steps,
+  .support,
+  .closing {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(72px, 8vw, 120px);
+  }
+
+  .bento {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+  .box {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 40px;
+  }
+  .box-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .box-title {
+    margin: 0;
+    font: 400 clamp(28px, 2.8vw, 40px) / 1.15 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .box-text {
+    margin: 0;
+    font: 300 clamp(18px, 1.5vw, 22px) / 1.5 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: pretty;
+  }
+  .box-cta { display: flex; }
+
+  .closing-title {
+    margin: 0;
+    max-width: 900px;
+    font: 400 clamp(32px, 3.6vw, 52px) / 1.15 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+
+  @media (max-width: 1024px) {
+    .bento { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

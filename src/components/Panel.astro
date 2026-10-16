@@ -1,0 +1,57 @@
+---
+/**
+ * Featured panel ("bento"): --surface-panel (or --surface-card), radius 20, fluid padding.
+ * Layout inside is up to the page; this only draws the box, the reveal and the hover.
+ */
+interface Props {
+  surface?: 'panel' | 'card';
+  padding?: string;
+  hover?: boolean;
+  revealDelay?: number;
+  reveal?: boolean;
+  as?: 'article' | 'div' | 'section' | 'aside';
+  class?: string;
+  style?: string;
+}
+
+const {
+  surface = 'panel',
+  padding = 'clamp(32px, 4vw, 64px)',
+  hover = false,
+  revealDelay = 0,
+  reveal = true,
+  as: Tag = 'article',
+  class: cls,
+  style = '',
+  ...rest
+} = Astro.props;
+---
+
+<Tag
+  class:list={['panel', `panel--${surface}`, { 'panel--hover': hover }, cls]}
+  data-reveal={reveal ? true : undefined}
+  data-reveal-delay={reveal ? revealDelay : undefined}
+  style={`padding:${padding};${style}`}
+  {...rest}
+>
+  <slot />
+</Tag>
+
+<style>
+  .panel {
+    border-radius: var(--radius-lg);
+    min-width: 0;
+    box-sizing: border-box;
+    transition:
+      opacity var(--duration-slow) var(--ease-out-expo),
+      transform var(--duration-slow) var(--ease-out-expo),
+      box-shadow var(--duration-base) var(--ease-card),
+      background-color var(--duration-base) var(--ease-card);
+  }
+  .panel--panel { background: var(--surface-panel); }
+  .panel--card { background: var(--surface-card); }
+  .panel--hover:hover {
+    box-shadow: var(--shadow-dark);
+    background: var(--surface-panel);
+  }
+</style>
