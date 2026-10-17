@@ -1,0 +1,279 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
+import Panel from '../../components/Panel.astro';
+import Button from '../../components/Button.astro';
+
+interface Step {
+  number: string;
+  title: string;
+  text: string;
+  side: 'left' | 'right';
+  button?: { label: string; href: string };
+}
+
+const steps: Step[] = [
+  {
+    number: '01',
+    title: 'Valida el calendario con tu PMO',
+    text: 'Confirma el primer y último día de paro operativo en el proyecto/cliente donde estás asignado.',
+    side: 'left',
+  },
+  {
+    number: '02',
+    title: 'Revisa tu saldo en GN3',
+    text: 'Comprueba tus días de vacaciones disponibles para tomar la mejor decisión.',
+    side: 'right',
+    button: { label: 'Ir a GN3', href: 'https://segula.portalgn3.com/GN3Portal/#/home' },
+  },
+  {
+    number: '03',
+    title: 'Formaliza tu elección a tiempo',
+    text: 'Envía tu solicitud en GN3 antes de la fecha límite informada por Operaciones para evitar contratiempos en tus pagos o registros.',
+    side: 'left',
+  },
+];
+---
+
+<Base title="Shutdown">
+  <PageHero
+    tag="Operaciones"
+    kw="Shutdown"
+    bottom="md"
+    subtitle="Conoce qué es el Shutdown, cómo impacta tus actividades con el cliente y las opciones que SEGULA tiene para que organices tus días de descanso con tranquilidad."
+    subtitleSize="tagline"
+  />
+
+  <section class="block" aria-label="Portada">
+    <div class="cover" data-reveal>
+      <ImagePlaceholder placeholder="Imagen · Shutdown" radius={20} />
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="sd-que-es">
+    <article class="news news--left">
+      <div class="news-media" data-reveal>
+        <ImagePlaceholder placeholder="Imagen · Definición" radius={20} />
+      </div>
+      <div class="news-body" data-reveal data-reveal-delay="90">
+        <span class="sc-tag">Definición</span>
+        <h2 id="sd-que-es" class="h2">¿Qué es el Shutdown Automotriz?</h2>
+        <p class="text">El Shutdown Automotriz es una pausa operativa programada que realizan las armadoras (OEMs) y proveedores clave de la industria automotriz. Durante este periodo, las plantas suspenden la producción en línea para realizar mantenimiento mayor a las instalaciones, reconfigurar herramentales para el lanzamiento de nuevos modelos, ejecutar inventarios anuales o realizar cierres administrativos.</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="block" aria-labelledby="sd-cada-cuanto">
+    <Panel as="div" surface="panel" padding="clamp(32px, 4vw, 64px)" class="bento bento--when">
+      <div class="when-copy">
+        <span class="sc-tag">¿Cada cuánto ocurre?</span>
+        <span class="when-big">Dic – Ene</span>
+      </div>
+      <div class="when-text">
+        <h2 id="sd-cada-cuanto" class="when-title">Cierre de Año (Diciembre - Enero)</h2>
+        <p class="text">Es el Shutdown más importante y generalizado en toda la cadena de suministro automotriz (suele abarcar las últimas dos semanas del año).</p>
+      </div>
+    </Panel>
+  </section>
+
+  <section class="block" aria-labelledby="sd-opera">
+    <article class="news news--right">
+      <div class="news-body" data-reveal data-reveal-delay="90">
+        <span class="sc-tag">SEGULA</span>
+        <h2 id="sd-opera" class="h2">¿Cómo opera SEGULA durante el Shutdown?</h2>
+        <p class="text">Aunque es un paro mandatorio para el cliente, en SEGULA Technologies México buscamos siempre respaldarte ofreciéndote opciones claras y flexibles para que este periodo sea considerado como tiempo laboral efectivo o de descanso planificado.</p>
+      </div>
+      <div class="news-media" data-reveal>
+        <ImagePlaceholder placeholder="Imagen · SEGULA" radius={20} />
+      </div>
+    </article>
+  </section>
+
+  <section class="block" aria-labelledby="sd-opciones">
+    <div class="options">
+      <div class="head" data-reveal>
+        <span class="sc-tag">Opciones de gestión de tiempo</span>
+        <h2 id="sd-opciones" class="h2">¿Cómo se consideran los días durante este periodo?</h2>
+      </div>
+      <div class="infographic" data-reveal data-reveal-delay="90">
+        <ImagePlaceholder placeholder="Infografía · Opciones de gestión de tiempo" radius={20} />
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="sd-pasos">
+    <div class="head head--steps" data-reveal>
+      <span class="sc-tag">Pasos</span>
+      <h2 id="sd-pasos" class="h2">¿Qué debo hacer ahora?</h2>
+    </div>
+    <div class="steps">
+      {steps.map((s) => (
+        <article class:list={['news', 'step', `step--${s.side}`]}>
+          <div class="news-media step-media" data-reveal>
+            <ImagePlaceholder placeholder={`Imagen · ${s.title}`} radius={20} />
+          </div>
+          <div class="news-body step-body" data-reveal data-reveal-delay="90">
+            <span class="step-num">{s.number}</span>
+            <h3 class="h2">{s.title}</h3>
+            <p class="text">{s.text}</p>
+            {s.button && <Button variant="ghost" href={s.button.href}>{s.button.label}</Button>}
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="block block--last" aria-labelledby="sd-dudas">
+    <Panel as="div" surface="panel" padding="clamp(32px, 4vw, 64px)" class="bento bento--contact">
+      <div class="contact-copy">
+        <span class="sc-tag">¿Dudas?</span>
+        <h2 id="sd-dudas" class="contact-title">Si tienes alguna duda durante este periodo no dudes en contactar con nosotros por medio del sistema <span class="sc-kw--blue">RH Contigo</span></h2>
+      </div>
+      <div class="contact-cta">
+        <Button variant="primary" href="https://wkf.ms/4mpJckv">RH Contigo</Button>
+      </div>
+    </Panel>
+  </section>
+</Base>
+
+<style>
+  .block {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(96px, 10vw, 144px);
+  }
+  .block--last { padding-bottom: clamp(112px, 12vw, 176px); }
+
+  .cover { aspect-ratio: 21 / 9; }
+
+  /* Shared type */
+  .h2 {
+    margin: 0;
+    font: 400 clamp(28px, 3vw, 40px) / 1.15 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .text {
+    margin: 0;
+    font: 300 clamp(17px, 1.4vw, 21px) / 1.55 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: pretty;
+  }
+
+  /* News (image span 7 + text span 4) */
+  .news {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+    align-items: center;
+  }
+  .news-media {
+    grid-row: 1;
+    height: 400px;
+    min-width: 0;
+  }
+  .news-body {
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+  }
+  .news--left .news-media { grid-column: 1 / span 7; }
+  .news--left .news-body { grid-column: 9 / span 4; }
+  .news--right .news-body { grid-column: 1 / span 4; }
+  .news--right .news-media { grid-column: 6 / span 7; }
+
+  /* Bento panels */
+  .bento {
+    display: grid;
+    gap: clamp(32px, 4vw, 64px);
+    align-items: center;
+  }
+  .bento--when { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  .bento--contact { grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); }
+  .when-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  .when-big {
+    font: 300 clamp(48px, 6vw, 96px) / 1 var(--font-sans);
+    color: var(--brand-lightblue);
+    letter-spacing: -0.03em;
+  }
+  .when-text,
+  .contact-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+  .when-title {
+    margin: 0;
+    font: 400 clamp(24px, 2.4vw, 34px) / 1.2 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .contact-title {
+    margin: 0;
+    font: 400 clamp(24px, 2.6vw, 36px) / 1.25 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .contact-cta {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* Section heads */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  .head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 760px;
+  }
+  .head--steps { margin-bottom: clamp(40px, 5vw, 64px); }
+  .infographic { aspect-ratio: 16 / 9; }
+
+  /* Steps (image span 6 + text span 5) */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(64px, 8vw, 112px);
+  }
+  .step-media { height: 360px; }
+  .step-body { align-items: flex-start; }
+  .step--left .step-media { grid-column: 1 / span 6; }
+  .step--left .step-body { grid-column: 8 / span 5; }
+  .step--right .step-media { grid-column: 7 / span 6; }
+  .step--right .step-body { grid-column: 1 / span 5; }
+  .step-num {
+    font: 300 clamp(56px, 6vw, 88px) / 1 var(--font-sans);
+    color: var(--brand-lightblue);
+    letter-spacing: -0.03em;
+  }
+
+  @media (max-width: 1024px) {
+    .bento { grid-template-columns: minmax(0, 1fr); }
+    .news { grid-template-columns: minmax(0, 1fr); }
+    /* Same specificity as the desktop placement rules (prototype uses !important). */
+    .news > .news-media,
+    .news > .news-body { grid-column: auto; grid-row: auto; }
+    .news-media { order: -1; height: 320px; }
+  }
+  @media (max-width: 640px) {
+    .news-media { height: 240px; }
+    .contact-cta {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
