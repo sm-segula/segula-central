@@ -1,0 +1,165 @@
+---
+import { ArrowRight } from 'lucide-astro';
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
+import Button from '../../components/Button.astro';
+import { ROUTES } from '../../data/nav';
+
+const faqs = [
+  {
+    number: '01',
+    question: '¿Dónde puedo reportar el bloqueo o problemas de acceso al correo?',
+    answer: 'Cualquier problema referente al acceso al correo corporativo @segulagrp.com deberá realizarse por medio del sistema de tickets de IT para su correcta solución y seguimiento.',
+    cta: 'Mesa de tickets IT',
+    href: 'https://forms.monday.com/forms/d4839e029c2646d2d19e7cfdb5a070ed?r=use1',
+    placeholder: 'Imagen · Pregunta 1',
+    side: 'left',
+  },
+  {
+    number: '02',
+    question: '¿Cómo puedo solicitar vacaciones?',
+    answer: 'Consulta el proceso paso a paso, los plazos y el formato de solicitud en la sección de Vacaciones e incidencias.',
+    cta: 'Ver el proceso',
+    href: ROUTES['Vacaciones e incidencias'],
+    placeholder: 'Imagen · Pregunta 2',
+    side: 'right',
+  },
+];
+---
+
+<Base title="FAQ's">
+  <PageHero tag="Centro de ayuda" before="Preguntas " kw="frecuentes" />
+
+  <section class="questions" aria-label="Preguntas">
+    <div class="list">
+      {faqs.map((f) => (
+        <article class:list={['faq', `faq--${f.side}`]}>
+          <div class="media" data-reveal>
+            <ImagePlaceholder placeholder={f.placeholder} alt={f.question} radius={20} width={1200} height={760} />
+          </div>
+          <div class="body" data-reveal data-reveal-delay="90">
+            <span class="number" aria-hidden="true">{f.number}</span>
+            <h2 class="question">{f.question}</h2>
+            <p class="answer">{f.answer}</p>
+            <Button variant="ghost" href={f.href}>{f.cta}</Button>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="contact" aria-label="Contacto">
+    <a class="contact-card" href={ROUTES['Centro de ayuda']} data-reveal>
+      <div class="contact-copy">
+        <span class="sc-tag">¿No encontraste tu respuesta?</span>
+        <span class="contact-title">Escríbenos desde el Centro de ayuda</span>
+      </div>
+      <ArrowRight class="contact-arrow" size={32} stroke-width={1.5} aria-hidden="true" />
+    </a>
+  </section>
+</Base>
+
+<style>
+  .questions,
+  .contact {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .questions { padding-bottom: clamp(96px, 10vw, 144px); }
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(72px, 8vw, 120px);
+  }
+  .faq {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+    align-items: center;
+  }
+  .media {
+    grid-row: 1;
+    height: 380px;
+    min-width: 0;
+  }
+  .body {
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    min-width: 0;
+  }
+  .faq--left .media { grid-column: 1 / span 6; }
+  .faq--left .body { grid-column: 8 / span 5; }
+  .faq--right .media { grid-column: 7 / span 6; }
+  .faq--right .body { grid-column: 1 / span 5; }
+
+  .number {
+    font: 300 clamp(48px, 5vw, 72px) / 1 var(--font-sans);
+    color: var(--brand-lightblue);
+    letter-spacing: -0.03em;
+  }
+  .question {
+    margin: 0;
+    font: 400 clamp(26px, 2.6vw, 36px) / 1.2 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .answer {
+    margin: 0;
+    font: 300 clamp(17px, 1.4vw, 20px) / 1.55 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: pretty;
+  }
+
+  .contact-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    padding: clamp(28px, 3vw, 40px) clamp(28px, 4vw, 48px);
+    text-decoration: none;
+    color: #FFFFFF;
+    transition:
+      opacity var(--duration-slow) var(--ease-out-expo),
+      transform var(--duration-slow) var(--ease-out-expo),
+      box-shadow var(--duration-base) var(--ease-card),
+      background-color var(--duration-base) var(--ease-card);
+  }
+  .contact-card:hover {
+    background: var(--surface-panel);
+    box-shadow: var(--shadow-dark);
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+  .contact-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .contact-title {
+    font: 400 clamp(24px, 2.6vw, 36px) / 1.2 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .contact-card :global(.contact-arrow) {
+    flex: none;
+    color: var(--brand-lightblue);
+  }
+
+  @media (max-width: 1024px) {
+    .faq { grid-template-columns: minmax(0, 1fr); }
+    .faq > * { grid-column: auto !important; grid-row: auto; }
+    .media { order: -1; height: 320px; }
+  }
+  @media (max-width: 640px) {
+    .media { height: 240px; }
+  }
+</style>
