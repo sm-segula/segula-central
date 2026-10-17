@@ -1,0 +1,98 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
+import PlayButton from '../../components/PlayButton.astro';
+
+const TOTAL = 6;
+const shots = Array.from({ length: TOTAL }, (_, i) => ({
+  number: String(i + 1).padStart(2, '0'),
+  placeholder: `Captura ${i + 1} de ${TOTAL}`,
+  delay: i % 2 === 0 ? 0 : 70,
+}));
+---
+
+<Base title="Manual Ace Project">
+  <PageHero tag="Operaciones" before="Manual " kw="Ace Project" bottom="md" />
+
+  <section class="shots" aria-label="Capturas del manual">
+    <div class="grid">
+      {shots.map((s) => (
+        <article class="shot" data-reveal data-reveal-delay={s.delay}>
+          <div class="shot-media">
+            <ImagePlaceholder placeholder={s.placeholder} radius={20} />
+          </div>
+          <span class="sc-tag shot-num">{s.number}</span>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="video" aria-labelledby="ace-video-title">
+    <div class="video-inner" data-reveal>
+      <div class="video-head">
+        <span class="sc-tag">Video</span>
+        <h2 id="ace-video-title" class="video-title">Recorrido en <span class="sc-kw--blue">video</span></h2>
+      </div>
+      <div class="video-media">
+        <div class="video-thumb">
+          <ImagePlaceholder placeholder="Miniatura del video" radius={20} />
+        </div>
+        <PlayButton href="#" label="Ver video del manual Ace Project" size={88} />
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .shots,
+  .video {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: clamp(24px, 3vw, 40px);
+  }
+  .shot {
+    grid-column: span 6;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+  .shot-media { aspect-ratio: 16 / 10; }
+  .shot-num { padding: 0 4px; }
+
+  .video-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .video-head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 720px;
+  }
+  .video-title {
+    margin: 0;
+    font: 400 clamp(28px, 3vw, 40px) / 1.15 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .video-media {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--surface-card);
+  }
+  .video-thumb { aspect-ratio: 16 / 9; }
+
+  @media (max-width: 640px) {
+    .shot { grid-column: span 12; }
+  }
+</style>
