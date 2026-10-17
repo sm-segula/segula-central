@@ -1,0 +1,159 @@
+---
+import { ArrowUpRight } from 'lucide-astro';
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+
+interface Area {
+  title: string;
+  href?: string;
+}
+
+const areas: Area[] = [
+  { title: 'Strategic & Corporate Management' },
+  { title: 'Communication & Data Management' },
+  { title: 'Security, Environment, Health and Safety' },
+  { title: 'Pre-Sales & Sales', href: 'https://drive.google.com/file/d/1BMzNeXVfHf_3sB0TS-bI3XV5YRdwwDR2/view' },
+  { title: 'Time and Materials & Field Services', href: 'https://drive.google.com/file/d/15WcmJY5tvI4KZ0i-5xT5SCbwlBWHAQT-/view' },
+  { title: 'Customer Satisfaction and Quality Assurance', href: 'https://drive.google.com/file/d/1Tmbty26yxKtUtu8q08amTYOfwdr41K4W/view' },
+  { title: 'Human Resources' },
+  { title: 'Finances' },
+  { title: 'Purchasing' },
+  { title: 'Information Technologies', href: 'https://drive.google.com/file/d/189W6Oj-V87CZ2B_KuQ0I-e5k1aqxDPHw/view' },
+];
+
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<Base title="Lessons learned">
+  <PageHero
+    tag="Calidad"
+    before="Lessons "
+    kw="learned"
+    subtitle="Las lecciones aprendidas son una herramienta que nos permite capitalizar lo vivido, evitando repetir errores y potenciando prácticas exitosas. Nos apoyan a acelerar la curva de aprendizaje e institucionalizar el éxito."
+    subtitleSize="tagline"
+  />
+
+  <section class="section" aria-labelledby="year-2026">
+    <div class="year-head" data-reveal>
+      <h2 id="year-2026" class="year">2026</h2>
+      <span class="sc-tag">4 documentos · 10 áreas</span>
+    </div>
+    <div class="grid">
+      {areas.map((a, i) =>
+        a.href ? (
+          <a class="area area--doc" href={a.href} target="_blank" rel="noopener" data-reveal data-reveal-delay={(i % 3) * 70}>
+            <div class="area-top">
+              <span class="num num--active">{pad(i + 1)}</span>
+              <ArrowUpRight class="arrow" size={22} stroke-width={1.5} aria-hidden="true" />
+            </div>
+            <div class="area-copy">
+              <h3 class="area-title area-title--doc">{a.title}</h3>
+              <span class="sc-tag area-cta">Ver lessons learned</span>
+            </div>
+          </a>
+        ) : (
+          <article class="area area--soon" data-reveal data-reveal-delay={(i % 3) * 70}>
+            <span class="num">{pad(i + 1)}</span>
+            <div class="area-copy">
+              <h3 class="area-title">{a.title}</h3>
+              <span class="sc-tag">Próximamente</span>
+            </div>
+          </article>
+        )
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .section {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .year-head {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  .year {
+    margin: 0;
+    font: 300 clamp(40px, 4.4vw, 64px) / 1 var(--font-sans);
+    letter-spacing: -0.03em;
+    color: var(--brand-lightblue);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .area {
+    grid-column: span 4;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 40px;
+    min-height: 240px;
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .area--soon {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--border-subtle);
+  }
+  .area--doc {
+    background: var(--surface-card);
+    text-decoration: none;
+    color: #FFFFFF;
+    transition:
+      opacity var(--duration-slow) var(--ease-out-expo),
+      transform var(--duration-slow) var(--ease-out-expo),
+      box-shadow var(--duration-base) var(--ease-card),
+      background-color var(--duration-base) var(--ease-card);
+  }
+  .area--doc:hover {
+    box-shadow: var(--shadow-dark);
+    background: var(--surface-panel);
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+  .area-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .area-top :global(.arrow) {
+    flex: none;
+    color: var(--brand-lightblue);
+  }
+  .num {
+    font: 300 40px / 1 var(--font-sans);
+    color: var(--text-muted);
+    letter-spacing: -0.03em;
+  }
+  .num--active { color: var(--brand-lightblue); }
+  .area-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .area-title {
+    margin: 0;
+    font: 400 clamp(20px, 1.8vw, 24px) / 1.25 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .area-title--doc { color: var(--text-card-title); }
+  .area-cta { color: var(--brand-lightblue); }
+
+  @media (max-width: 1024px) {
+    .area { grid-column: span 6; }
+  }
+  @media (max-width: 640px) {
+    .area { grid-column: span 12; }
+  }
+</style>
