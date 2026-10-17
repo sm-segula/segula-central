@@ -1,0 +1,183 @@
+---
+import { ArrowUpRight } from 'lucide-astro';
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
+
+interface Guide {
+  title: string;
+  href: string;
+}
+interface App {
+  id: string;
+  name: string;
+  meta: string;
+  guides: Guide[];
+  soon?: string;
+}
+
+const apps: App[] = [
+  {
+    id: 'gmail',
+    name: 'Gmail',
+    meta: '8 guías',
+    guides: [
+      { title: 'Guía básica', href: 'https://drive.google.com/file/d/1m-AXbpFCxkVofH2mpLOvg2epvwKFlNGm/view' },
+      { title: 'Labels', href: 'https://drive.google.com/file/d/1qb6uOqV7glcB9rOZQEzBQN68M-zKXDzi/view' },
+      { title: 'Integrated sidebar', href: 'https://drive.google.com/file/d/1TIwZvSlKb0Ke5eyfW7DGH6k6sOgQCbRW/view' },
+      { title: 'Comandos de búsqueda', href: 'https://drive.google.com/file/d/1TkUCikf2wawPLiuh1TfaM3dHsc_CC-eI/view' },
+      { title: 'Smart compose y Smart reply', href: 'https://drive.google.com/file/d/10satVWiypQnlifZ9HlK0WRJMvq6GHAqh/view' },
+      { title: 'Confidential mode', href: 'https://drive.google.com/file/d/1YnGFPV08qLOtJm7EMWhBJX0ldm0Qxrbb/view' },
+      { title: 'Crea un evento desde un correo', href: 'https://drive.google.com/file/d/1hTvjz2N3uLgI--BwBLixuZb81Y-FfBR8/view' },
+      { title: 'Gemini en Gmail', href: 'https://drive.google.com/file/d/17FLc_VvXEQxDY7yYnxY5MA_bX9GxIsu4/view' },
+    ],
+  },
+  {
+    id: 'chat',
+    name: 'Chat',
+    meta: '6 guías',
+    guides: [
+      { title: 'Guía básica', href: 'https://drive.google.com/file/d/1eRwIBwthstiH-9GJOcuYxZpKc7diWVYh/view' },
+      { title: 'DM & Spaces', href: 'https://drive.google.com/file/d/1qQ6AcaNiG-62dC-VqC73F2tzOPplC9L8/view' },
+      { title: 'Threads', href: 'https://drive.google.com/file/d/17jgJeweMjDxzp3Qv3FmLtHyH-LSmMD50/view' },
+      { title: 'Huddle', href: 'https://drive.google.com/file/d/1qcqElx490kuOh9yFtffN3tXXs_IICDL7/view' },
+      { title: 'Menciones', href: 'https://drive.google.com/file/d/1PRyUHQ_rcFVnqj08x1rzP8qIaSp53vSL/view' },
+      { title: 'Estatus', href: 'https://drive.google.com/file/d/1BCg1TqhjiwDAbLha5Hkd6Qpjev9M83vM/view' },
+    ],
+  },
+  { id: 'calendar', name: 'Calendar', meta: 'Próximamente', guides: [], soon: 'Las guías de Calendar estarán disponibles próximamente.' },
+  { id: 'meet', name: 'Meet', meta: 'Próximamente', guides: [], soon: 'Las guías de Meet estarán disponibles próximamente.' },
+];
+
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<Base title="Google Workspace">
+  <PageHero tag="TI" before="Google " kw="Workspace" bottom="md" />
+
+  <section class="cover" aria-label="Portada">
+    <div class="cover-media" data-reveal>
+      <ImagePlaceholder placeholder="Imagen · Google Workspace" alt="Google Workspace" radius={20} width={2400} loading="eager" />
+    </div>
+  </section>
+
+  {apps.map((app) => (
+    <section class="app" aria-labelledby={`gw-${app.id}`}>
+      <div class="year">
+        <div class="aside" data-reveal>
+          <div class="icon">
+            <ImagePlaceholder placeholder={`Ícono · ${app.name}`} alt={app.name} radius={12} width={144} height={144} />
+          </div>
+          <h2 id={`gw-${app.id}`} class="app-title">{app.name}</h2>
+          <span class="sc-tag">{app.meta}</span>
+        </div>
+        <div class="list" data-reveal data-reveal-delay="90">
+          {app.soon ? (
+            <p class="soon">{app.soon}</p>
+          ) : (
+            app.guides.map((g, i) => (
+              <a class="guide" href={g.href} target="_blank" rel="noopener">
+                <span class="num">{pad(i + 1)}</span>
+                <span class="guide-title">{g.title}</span>
+                <ArrowUpRight class="arrow" size={20} stroke-width={1.5} aria-hidden="true" />
+              </a>
+            ))
+          )}
+        </div>
+      </div>
+    </section>
+  ))}
+</Base>
+
+<style>
+  .cover,
+  .app {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(72px, 8vw, 112px);
+  }
+  .cover { padding-bottom: clamp(96px, 10vw, 144px); }
+  .cover-media {
+    width: 100%;
+    aspect-ratio: 21 / 9;
+  }
+
+  .year {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: clamp(24px, 3vw, 48px);
+    align-items: start;
+  }
+  .aside {
+    position: sticky;
+    top: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .icon {
+    width: 72px;
+    height: 72px;
+    flex: none;
+  }
+  .app-title {
+    margin: 0;
+    font: 400 clamp(32px, 3.4vw, 48px) / 1.1 var(--font-sans);
+    color: #FFFFFF;
+  }
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .guide {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-height: 64px;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    color: #FFFFFF;
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-standard);
+  }
+  .guide:hover {
+    background: var(--surface-card);
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+  .num {
+    font: 300 28px / 1 var(--font-sans);
+    color: var(--brand-lightblue);
+    letter-spacing: -0.03em;
+    width: 40px;
+    flex: none;
+  }
+  .guide-title {
+    font: 300 clamp(16px, 1.3vw, 19px) / 1.4 var(--font-sans);
+    flex: 1 1 0;
+    min-width: 0;
+    text-wrap: pretty;
+  }
+  .guide :global(.arrow) {
+    flex: none;
+    color: var(--brand-lightblue);
+  }
+  .soon {
+    margin: 0;
+    padding: 20px;
+    font: 300 clamp(17px, 1.4vw, 20px) / 1.5 var(--font-sans);
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 1024px) {
+    .year { grid-template-columns: minmax(0, 1fr); }
+    .aside {
+      position: static;
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+  }
+</style>
