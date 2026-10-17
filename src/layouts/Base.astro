@@ -38,6 +38,7 @@ const pageTitle = title === SITE ? SITE : `${title} · ${SITE}`;
     <script is:inline>document.documentElement.classList.add('js');</script>
   </head>
   <body>
+    <slot name="splash" />
     <Header menuTrigger={menuTrigger} />
     <slot />
     <Footer />
