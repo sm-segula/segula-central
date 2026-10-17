@@ -1,0 +1,150 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import RuleCard from '../../components/RuleCard.astro';
+import Card from '../../components/Card.astro';
+import Panel from '../../components/Panel.astro';
+import Button from '../../components/Button.astro';
+import { ROUTES } from '../../data/nav';
+
+const MENDEL = 'https://mx.app.mendel.com/login';
+
+const resources = [
+  { title: 'Guía del llenado del reporte', href: '#', cta: 'Ver', placeholder: 'Documento · Guía del llenado del reporte', delay: 0 },
+  { title: 'Calendario de reembolsos', href: '#', cta: 'Ver', placeholder: 'Documento · Calendario de reembolsos', delay: 70 },
+  { title: 'Casos excepcionales', href: ROUTES['Centro de ayuda'], cta: 'FAQs', placeholder: 'Documento · Casos excepcionales', delay: 140 },
+];
+
+const rules = [
+  {
+    number: '01',
+    title: 'El plazo de los 7 días hábiles',
+    text: 'Es imperativo enviar el reporte detallado de gastos en AceProject dentro de 7 días hábiles posteriores al viaje. Incumplir este periodo es la causa principal de sanciones administrativas.',
+    placeholder: 'Imagen · El plazo de los 7 días hábiles',
+    delay: 0,
+  },
+  {
+    number: '02',
+    title: 'Comprobación con CFDI 4.0 válido',
+    text: 'Todo gasto reportado debe estar respaldado por una factura electrónica CFDI 4.0 timbrada con los datos fiscales de Segula Servicios Empresariales (RFC: SSE180726756). Tickets simples, recibos o facturas con conceptos no permitidos (como alcohol o gastos personales) se rechazarán automáticamente.',
+    placeholder: 'Imagen · Comprobación con CFDI 4.0 válido',
+    delay: 70,
+  },
+  {
+    number: '03',
+    title: 'Prevención de descuento vía nómina',
+    text: 'La falta de comprobación o una comprobación incompleta resultará en el descuento total o parcial del anticipo en la nómina del colaborador. El sobrante del anticipo en efectivo debe devolverse por transferencia con el concepto "Devolución de viáticos" para evitarlo.',
+    placeholder: 'Imagen · Prevención de descuento vía nómina',
+    delay: 140,
+  },
+];
+---
+
+<Base title="Después de tu viaje">
+  <PageHero tag="Viajes · Paso 3 de 3" kw="Después" after=" de tu viaje">
+    <div class="hero-cta" data-reveal data-reveal-delay="210">
+      <Button variant="primary" href={MENDEL}>Haz tu comprobación de viáticos</Button>
+    </div>
+  </PageHero>
+
+  <section class="section" aria-label="Recursos">
+    <div class="grid">
+      {resources.map((r) => (
+        <Card
+          class="doc"
+          title={r.title}
+          href={r.href}
+          cta={r.cta}
+          placeholder={r.placeholder}
+          imageHeight={260}
+          titleFlex="1 1 180px"
+          hover={false}
+          revealDelay={r.delay}
+        />
+      ))}
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="reglas-title">
+    <SectionHead tag="Reglas de oro" id="reglas-title">Tres reglas después del viaje</SectionHead>
+    <div class="grid">
+      {rules.map((r) => (
+        <RuleCard class="doc" number={r.number} title={r.title} text={r.text} placeholder={r.placeholder} revealDelay={r.delay} />
+      ))}
+    </div>
+  </section>
+
+  <section class="section section--last" aria-labelledby="plazo-title">
+    <Panel as="div" class="plazo">
+      <div class="plazo-num">
+        <span class="seven" aria-hidden="true">7</span>
+        <span class="sc-tag">Días hábiles</span>
+      </div>
+      <div class="plazo-copy">
+        <h2 id="plazo-title" class="plazo-title">Envía tu reporte de gastos en AceProject dentro de los 7 días hábiles posteriores al viaje.</h2>
+        <Button variant="primary" href={MENDEL}>Haz tu comprobación de viáticos</Button>
+      </div>
+    </Panel>
+  </section>
+</Base>
+
+<style>
+  .hero-cta { align-self: flex-start; }
+
+  .section {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(96px, 10vw, 144px);
+  }
+  .section--last { padding-bottom: clamp(112px, 12vw, 176px); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .doc { grid-column: span 4; }
+  /* Prototype: the "Ver" / "FAQs" link is flex:none */
+  .doc :global(.btn) { flex: none; }
+
+  /* "7 días hábiles" panel */
+  .plazo {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(32px, 4vw, 64px);
+    align-items: center;
+  }
+  .plazo-num {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .seven {
+    font: 300 clamp(96px, 12vw, 176px) / 1 var(--font-sans);
+    color: var(--brand-pink);
+    letter-spacing: -0.04em;
+  }
+  .plazo-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    min-width: 0;
+  }
+  .plazo-title {
+    margin: 0;
+    font: 400 clamp(24px, 2.6vw, 36px) / 1.25 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+
+  @media (max-width: 1024px) {
+    .doc { grid-column: span 6; }
+    .plazo { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .doc { grid-column: span 12; }
+  }
+</style>
