@@ -1,0 +1,176 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import SearchList, { type Comunicado } from '../../islands/SearchList';
+import comunicados from '../../data/comunicados.json';
+
+const items: Comunicado[] = comunicados;
+---
+
+<Base title="Comunicados">
+  <PageHero tag="Recursos Humanos" kw="Comunicados" kwColor="pink" bottom="md">
+    <p class="hero-sub" data-reveal data-reveal-delay="210">
+      Accede al histórico de nuestros comunicados para mantenerte informado.
+    </p>
+  </PageHero>
+
+  <div class="comunicados">
+    <SearchList client:load items={items} />
+  </div>
+  <div class="spacer" aria-hidden="true"></div>
+</Base>
+
+<style>
+  /* Hero subtitle: the prototype uses 300 clamp(20px,1.8vw,26px)/1.4 with no top
+     margin / max-width, which matches neither PageHero subtitle size. */
+  .hero-sub {
+    margin: 0;
+    font: 300 clamp(20px, 1.8vw, 26px) / 1.4 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: pretty;
+  }
+
+  .comunicados :global(.cm-search),
+  .comunicados :global(.cm-group),
+  .comunicados :global(.cm-empty) {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(72px, 8vw, 112px);
+  }
+  .comunicados :global(.cm-search) {
+    padding-bottom: clamp(56px, 6vw, 80px);
+  }
+  .comunicados :global(.cm-empty) {
+    padding-bottom: clamp(112px, 12vw, 176px);
+  }
+
+  .comunicados :global(.cm-toolbar) {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .comunicados :global(.cm-pill) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 52px;
+    padding: 0 20px;
+    border-radius: var(--radius-full);
+    background: var(--surface-panel);
+    color: var(--text-muted);
+    flex: 1 1 320px;
+    max-width: 560px;
+    box-sizing: border-box;
+    transition: background-color 200ms var(--ease-standard);
+  }
+  .comunicados :global(.cm-pill:hover) {
+    background: var(--surface-card);
+  }
+  .comunicados :global(.cm-input) {
+    flex: 1 1 0;
+    min-width: 0;
+    width: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #FFFFFF;
+    font: 300 16px/1 var(--font-sans);
+    padding: 0;
+  }
+  .comunicados :global(.cm-input:focus),
+  .comunicados :global(.cm-input:focus-visible) {
+    box-shadow: none;
+  }
+  .comunicados :global(.cm-pill:focus-within) {
+    box-shadow: var(--focus-glow);
+  }
+  .comunicados :global(.cm-count),
+  .comunicados :global(.cm-year-count) {
+    font: var(--font-tag);
+    letter-spacing: var(--type-tag-tracking);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .comunicados :global(.cm-count) {
+    white-space: nowrap;
+  }
+
+  .comunicados :global(.cm-year) {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: clamp(24px, 3vw, 48px);
+    align-items: start;
+  }
+  .comunicados :global(.cm-year-head) {
+    position: sticky;
+    top: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .comunicados :global(.cm-year-title) {
+    margin: 0;
+    font: 300 clamp(40px, 4.4vw, 64px) / 1 var(--font-sans);
+    letter-spacing: -0.03em;
+  }
+  .comunicados :global(.cm-list) {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .comunicados :global(.cm-row) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 64px;
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    color: #FFFFFF;
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-standard);
+  }
+  .comunicados :global(.cm-row:hover) {
+    background: var(--surface-card);
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+  .comunicados :global(.cm-row-title) {
+    font: 300 clamp(16px, 1.3vw, 19px) / 1.4 var(--font-sans);
+    text-wrap: pretty;
+    min-width: 0;
+  }
+  .comunicados :global(.cm-row-icon) {
+    flex: none;
+    color: var(--brand-lightblue);
+  }
+
+  .comunicados :global(.cm-empty p) {
+    margin: 0;
+    font: 300 clamp(18px, 1.5vw, 22px) / 1.5 var(--font-sans);
+    color: var(--text-muted);
+  }
+
+  .spacer {
+    height: clamp(40px, 4vw, 64px);
+  }
+
+  @media (max-width: 1024px) {
+    .comunicados :global(.cm-year) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .comunicados :global(.cm-year-head) {
+      position: static;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 16px;
+    }
+  }
+  @media (max-width: 640px) {
+    .hero-sub {
+      font-size: 19px;
+    }
+  }
+</style>
