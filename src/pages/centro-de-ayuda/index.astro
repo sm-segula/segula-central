@@ -1,0 +1,152 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
+import Button from '../../components/Button.astro';
+
+const intro = [
+  'Pregunta tu saldo de vacaciones, solicita equipo de protección o reporta el extravío de tu tarjeta PLUXEE levantando un ticket en RH Contigo.',
+  'Solicitar apoyo para temas de equipo de cómputo levantando un Ticket de TI.',
+  'Compartir tus sugerencias o alertas de forma totalmente anónima en nuestro buzón SEGULA Te escucha.',
+];
+
+const channels = [
+  { title: 'RH Contigo', href: 'https://forms.monday.com/forms/3ef7fdb8bac23525f6d8a8103341557f?r=use1', cta: 'Levantar ticket', variant: 'primary' as const, delay: 0 },
+  { title: 'Ticket de TI', href: 'https://forms.monday.com/forms/d4839e029c2646d2d19e7cfdb5a070ed?r=use1', cta: 'Levantar ticket', variant: 'ghost' as const, delay: 70 },
+  { title: 'SEGULA Te escucha', href: 'https://forms.monday.com/forms/1fb05d761141c7048f7f7b5937fb5044?r=use1', cta: 'Llenar formulario', variant: 'ghost' as const, delay: 140 },
+];
+---
+
+<Base title="Centro de ayuda">
+  <PageHero tag="Soporte" before="Centro de " kw="ayuda" kwColor="blue" subtitle="En esta sección podrás:">
+    <ol class="intro">
+      {intro.map((text, i) => (
+        <li class="intro-li" data-reveal data-reveal-delay={i * 70}>
+          <span class="intro-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          <p class="intro-text">{text}</p>
+        </li>
+      ))}
+    </ol>
+  </PageHero>
+
+  <section class="section" aria-label="Canales">
+    <div class="docs">
+      {channels.map((c) => (
+        <article class="channel" data-reveal data-reveal-delay={c.delay}>
+          <div class="media">
+            <ImagePlaceholder placeholder={`Imagen · ${c.title}`} alt={c.title} radius={12} width={1000} height={520} />
+          </div>
+          <div class="body">
+            <h3 class="channel-title">{c.title}</h3>
+            <Button variant={c.variant} href={c.href}>{c.cta}</Button>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section" aria-label="Cierre de contenido">
+    <p class="closing" data-reveal>
+      Nuestra prioridad es brindarte soluciones eficientes y mantener un entorno de transparencia donde tu experiencia y bienestar sean el motor de nuestra <span class="sc-kw">mejora continua</span>.
+    </p>
+  </section>
+</Base>
+
+<style>
+  /* The prototype's <ol> sits outside the 28px-gap column, offset by clamp(40px,5vw,64px). */
+  .intro {
+    list-style: none;
+    margin: calc(clamp(40px, 5vw, 64px) - 28px) 0 0;
+    padding: 0;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(28px, 3vw, 40px);
+  }
+  .intro-li {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  .intro-num {
+    font: 300 clamp(40px, 4vw, 56px) / 1 var(--font-sans);
+    color: var(--brand-lightblue);
+    letter-spacing: -0.02em;
+    flex: none;
+    width: 72px;
+  }
+  .intro-text {
+    margin: 0;
+    font: 300 clamp(18px, 1.5vw, 22px) / 1.5 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: pretty;
+  }
+
+  .section {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .docs {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .channel {
+    grid-column: span 4;
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+    transition:
+      opacity var(--duration-slow) var(--ease-out-expo),
+      transform var(--duration-slow) var(--ease-out-expo),
+      box-shadow var(--duration-base) var(--ease-card),
+      background-color var(--duration-base) var(--ease-card);
+  }
+  .channel:hover {
+    box-shadow: var(--shadow-dark);
+    background: var(--surface-panel);
+  }
+  .media {
+    width: 100%;
+    height: 260px;
+  }
+  .body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 0 8px 8px;
+    flex: 1;
+    justify-content: space-between;
+  }
+  .channel-title {
+    margin: 0;
+    font: 400 clamp(24px, 2vw, 28px) / 1.2 var(--font-sans);
+    color: var(--text-card-title);
+    text-wrap: balance;
+  }
+
+  .closing {
+    margin: 0;
+    max-width: 960px;
+    font: 400 clamp(26px, 3vw, 44px) / 1.2 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+
+  @media (max-width: 1024px) {
+    .channel { grid-column: span 6; }
+  }
+  @media (max-width: 640px) {
+    .channel { grid-column: span 12; }
+    .intro-li {
+      flex-direction: column;
+      gap: 8px;
+    }
+  }
+</style>
