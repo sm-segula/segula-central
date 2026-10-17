@@ -1,0 +1,68 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import Card from '../../components/Card.astro';
+import PlayButton from '../../components/PlayButton.astro';
+
+interface Video {
+  title: string;
+  href: string;
+  cta: string;
+  label: string;
+  delay: number;
+}
+
+const videos: Video[] = [
+  { title: 'Campaña de Capacitación · Plan de Capacitación 2026', href: 'https://share.synthesia.io/0bcbb018-6ba1-4034-8564-5ea5c724c0d5', cta: 'Ver video', label: 'Ver video: Campaña de Capacitación · Plan de Capacitación 2026', delay: 0 },
+  { title: 'Campaña de Evaluación', href: 'https://share.synthesia.io/3e743838-4d66-4aea-ac8d-0285620401f5', cta: 'Ver video', label: 'Ver video: Campaña de Evaluación', delay: 70 },
+  { title: 'Evaluatest', href: 'https://share.synthesia.io/b848ddae-7771-4efe-b29d-87a8ffd212ff', cta: 'Ver videos', label: 'Ver videos: Evaluatest', delay: 140 },
+  { title: 'MySkills', href: 'https://share.synthesia.io/9babd226-8dd3-4b25-a54e-3c74a8681d6d', cta: 'Ver video', label: 'Ver video: MySkills', delay: 0 },
+  { title: 'RH Contigo', href: 'https://share.synthesia.io/a7460122-6a76-4457-a459-fbd33e9f9cf0', cta: 'Ver video', label: 'Ver video: RH Contigo', delay: 70 },
+  { title: 'SEGULA Te escucha', href: 'https://share.synthesia.io/d6172534-8e38-426e-91ed-bbfa2ac81f65', cta: 'Ver video', label: 'Ver video: SEGULA Te escucha', delay: 140 },
+];
+---
+
+<Base title="Videos de capacitación e informativos">
+  <PageHero tag="Recursos Humanos" before="" kw="Videos" after=" de capacitación e informativos" kwColor="pink" />
+
+  <section class="videos" aria-label="Videos">
+    <div class="docs">
+      {videos.map((v) => (
+        <Card
+          class="doc"
+          title={v.title}
+          href={v.href}
+          cta={v.cta}
+          placeholder={`Miniatura · ${v.title}`}
+          aspect="16/9"
+          titleSize="md"
+          titleFlex="1 1 200px"
+          revealDelay={v.delay}
+        >
+          <PlayButton slot="media" href={v.href} label={v.label} />
+        </Card>
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .videos {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .docs {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .doc { grid-column: span 4; }
+
+  @media (max-width: 1024px) {
+    .doc { grid-column: span 6; }
+  }
+  @media (max-width: 640px) {
+    .doc { grid-column: span 12; }
+  }
+</style>
