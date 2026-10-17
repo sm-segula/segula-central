@@ -1,0 +1,277 @@
+---
+import { ArrowRight, ArrowUpRight } from 'lucide-astro';
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import RuleCard from '../../components/RuleCard.astro';
+import Panel from '../../components/Panel.astro';
+import Button from '../../components/Button.astro';
+import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
+import { ROUTES } from '../../data/nav';
+
+const rules = [
+  {
+    number: '01',
+    title: 'Uso correcto de la tarjeta Pluxee',
+    text: 'Los pagos deben realizarse siempre insertando el chip en la terminal; queda estrictamente prohibido el uso del método contactless (sin contacto) para evitar cargos duplicados.',
+    placeholder: 'Imagen · Uso correcto de la tarjeta Pluxee',
+    delay: 0,
+  },
+  {
+    number: '02',
+    title: 'Exclusión de gastos no permitidos',
+    text: 'No se aceptarán facturas por gastos personales (ropa, aseo, medicamentos) ni comprobantes de alimentos que incluyan el consumo de alcohol.',
+    placeholder: 'Imagen · Exclusión de gastos no permitidos',
+    delay: 70,
+  },
+  {
+    number: '03',
+    title: 'Prioridad de atención en emergencias',
+    text: 'Ante cualquier eventualidad con vuelos, hoteles o transporte durante el viaje, el primer punto de contacto debe ser la oficina de emergencia 24/7 de la agencia de viajes.',
+    placeholder: 'Imagen · Prioridad de atención en emergencias',
+    delay: 140,
+  },
+];
+---
+
+<Base title="Durante tu viaje">
+  <PageHero tag="Viajes · Paso 2 de 3" kw="Durante" after=" tu viaje" />
+
+  <section class="section" aria-labelledby="agencia-title">
+    <Panel as="div" class="duo">
+      <div class="duo-copy">
+        <span class="sc-tag">Agencia de viajes</span>
+        <h2 id="agencia-title" class="h2">Tu acompañante <span class="sc-kw--blue">24/7</span></h2>
+        <p class="lead">Recuerda que para cualquier emergencia durante tu viaje, la agencia cuenta con un servicio de apoyo continuo por medio de los siguientes contactos:</p>
+        <Button variant="primary" href="mailto:segula@gate18.mx">Correo de emergencia</Button>
+      </div>
+      <div class="duo-media">
+        <ImagePlaceholder placeholder="Tarjeta de contacto · Agencia 24/7" radius={12} />
+      </div>
+    </Panel>
+  </section>
+
+  <section class="section" aria-labelledby="reglas-title">
+    <SectionHead tag="Reglas de oro" id="reglas-title">Tres reglas durante el viaje</SectionHead>
+    <div class="grid">
+      {rules.map((r) => (
+        <RuleCard class="rule" number={r.number} title={r.title} text={r.text} placeholder={r.placeholder} revealDelay={r.delay} />
+      ))}
+    </div>
+  </section>
+
+  <section class="section" aria-label="Gastos y facturación">
+    <div class="grid">
+      <article class="tile tile--half" data-reveal>
+        <div class="tile-media">
+          <ImagePlaceholder placeholder="Documento · Datos fiscales" radius={12} />
+        </div>
+        <div class="tile-row">
+          <div class="tile-copy">
+            <h3 class="tile-title">Datos de facturación</h3>
+            <p class="tile-text">Datos fiscales de Segula Servicios Empresariales.</p>
+          </div>
+          <Button variant="ghost" size="sm" href="#" class="tile-btn">Descargar</Button>
+        </div>
+      </article>
+      <article class="tile tile--half" data-reveal>
+        <div class="tile-media">
+          <ImagePlaceholder placeholder="Infografía · Gastos personales y de la empresa" radius={12} />
+        </div>
+        <div class="tile-row">
+          <div class="tile-copy">
+            <h3 class="tile-title">Gastos personales y de la empresa</h3>
+          </div>
+        </div>
+      </article>
+      <article class="tile tile--full" data-reveal>
+        <div class="tile-media">
+          <ImagePlaceholder placeholder="Imagen · Tips de uso de la tarjeta" radius={12} />
+        </div>
+        <div class="tile-row">
+          <div class="tile-copy">
+            <h3 class="tile-title">Tips de uso de la tarjeta</h3>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section section--last" aria-label="Siguiente paso">
+    <div class="grid">
+      <a class="link-card link-card--faq" href={ROUTES['Centro de ayuda']} data-reveal>
+        <div class="link-copy">
+          <span class="sc-tag">¿Dudas?</span>
+          <span class="faq-title">FAQs</span>
+        </div>
+        <ArrowUpRight size={28} stroke-width={1.5} aria-hidden="true" class="link-icon" />
+      </a>
+      <a class="link-card link-card--next" href={ROUTES['Después de tu viaje']} data-reveal data-reveal-delay="70">
+        <div class="link-copy">
+          <span class="sc-tag">Paso 3 de 3</span>
+          <span class="next-title">Continúa tu proceso después de tu viaje</span>
+        </div>
+        <ArrowRight size={32} stroke-width={1.5} aria-hidden="true" class="link-icon" />
+      </a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .section {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(96px, 10vw, 144px);
+  }
+  .section--last { padding-bottom: clamp(112px, 12vw, 176px); }
+
+  .h2 {
+    margin: 0;
+    font: 400 clamp(28px, 3vw, 40px) / 1.15 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .lead {
+    margin: 0;
+    font: 300 clamp(17px, 1.4vw, 21px) / 1.55 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: pretty;
+  }
+
+  /* 24/7 panel */
+  .duo {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    gap: clamp(32px, 4vw, 64px);
+    align-items: center;
+  }
+  .duo-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    min-width: 0;
+  }
+  .duo-media {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .rule { grid-column: span 4; }
+
+  /* Billing / expenses / tips tiles (no hover) */
+  .tile {
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+  }
+  .tile--half { grid-column: span 6; }
+  .tile--full { grid-column: span 12; }
+  .tile-media {
+    width: 100%;
+    height: 300px;
+  }
+  .tile-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 0 8px 8px;
+    flex-wrap: wrap;
+  }
+  .tile-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    flex: 1 1 240px;
+  }
+  .tile-title {
+    margin: 0;
+    font: 400 clamp(22px, 1.9vw, 26px) / 1.2 var(--font-sans);
+    color: var(--text-card-title);
+    text-wrap: balance;
+  }
+  .tile-text {
+    margin: 0;
+    font: 300 16px / 1.5 var(--font-sans);
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+  .tile-row :global(.tile-btn) { flex: none; }
+
+  /* FAQs + next step cards */
+  .link-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: #FFFFFF;
+    min-width: 0;
+    transition:
+      opacity var(--duration-slow) var(--ease-out-expo),
+      transform var(--duration-slow) var(--ease-out-expo),
+      box-shadow var(--duration-base) var(--ease-card),
+      background-color var(--duration-base) var(--ease-card);
+  }
+  .link-card:hover {
+    background: var(--surface-panel);
+    box-shadow: var(--shadow-dark);
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+  .link-card--faq {
+    grid-column: span 4;
+    flex-direction: column;
+    padding: clamp(28px, 3vw, 40px);
+  }
+  .link-card--next {
+    grid-column: span 8;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: clamp(28px, 3vw, 40px) clamp(28px, 4vw, 48px);
+  }
+  .link-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .faq-title {
+    font: 400 clamp(22px, 2vw, 28px) / 1.2 var(--font-sans);
+    color: #FFFFFF;
+  }
+  .next-title {
+    font: 400 clamp(24px, 2.6vw, 36px) / 1.2 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .link-card :global(.link-icon) {
+    flex: none;
+    color: var(--brand-lightblue);
+  }
+
+  @media (max-width: 1024px) {
+    .duo { grid-template-columns: minmax(0, 1fr); }
+    .rule { grid-column: span 6; }
+  }
+  @media (max-width: 640px) {
+    .rule,
+    .tile--half,
+    .tile--full,
+    .link-card--faq,
+    .link-card--next { grid-column: span 12; }
+    .tile-media { height: 220px; }
+  }
+</style>
