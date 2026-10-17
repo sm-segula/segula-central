@@ -1,0 +1,360 @@
+---
+import { ArrowRight } from 'lucide-astro';
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import RuleCard from '../../components/RuleCard.astro';
+import Panel from '../../components/Panel.astro';
+import Button from '../../components/Button.astro';
+import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
+import { ROUTES } from '../../data/nav';
+
+const cc = [
+  { name: 'Mariana Fonseca', email: 'mariana.fonseca@segulagrp.com' },
+  { name: 'Karina Hernández', email: 'karina.hernandez@segulagrp.com' },
+  { name: 'Evelyn Abarca', email: 'evelyn.abarca@segulagrp.com' },
+  { name: 'Jessica Trejo', email: 'jessica.trejo@segulagrp.com' },
+];
+
+const rules = [
+  {
+    number: '01',
+    title: 'Generación del STRA',
+    text: 'Debes completar la solicitud de autorización (STRA) en DocuSign usando la plantilla oficial y asegurar las firmas de PMO y Administración de RRHH.',
+    placeholder: 'Imagen · Generación del STRA',
+    delay: 0,
+  },
+  {
+    number: '02',
+    title: 'Validación por proyecto',
+    text: 'Pueden existir requisitos previos al STRA dependiendo del proyecto asignado, consulta con tu PMO sobre tu situación particular y anticipa tus solicitudes.',
+    placeholder: 'Imagen · Validación por proyecto',
+    delay: 70,
+  },
+  {
+    number: '03',
+    title: 'Gestión de reservas',
+    text: 'Las reservaciones de transporte, hotel y renta de auto deben hacerse mediante la agencia autorizada (Gate18), copiando obligatoriamente a los responsables designados.',
+    placeholder: 'Imagen · Gestión de reservas',
+    delay: 140,
+  },
+];
+
+const suaSteps = [
+  { n: '1', title: 'Solicítalo con anticipación', text: 'Es responsabilidad del colaborador tener este documento a la mano antes de iniciar el viaje.' },
+  { n: '2', title: 'Contacto', text: 'Debes enviar correo a Roberto Pérez para solicitar tu comprobante de alta.' },
+  { n: '3', title: 'Portabilidad', text: 'Te recomendamos llevarlo de forma digital o impresa junto con tus otros documentos de viaje (como VISA o pasaporte) para cualquier eventualidad.' },
+];
+---
+
+<Base title="Antes de tu viaje">
+  <PageHero tag="Viajes · Paso 1 de 3" kw="Antes" after=" de tu viaje" />
+
+  <section class="section" aria-labelledby="stra-title">
+    <article class="news">
+      <div class="news-media news-media--stra" data-reveal>
+        <ImagePlaceholder placeholder="Guía · Solicitud de viajes (portada)" radius={20} />
+      </div>
+      <div class="news-body news-body--stra" data-reveal data-reveal-delay="90">
+        <span class="sc-tag">¿Cómo solicitar un viaje?</span>
+        <h2 id="stra-title" class="h2">Solicitud de Viaje y Viáticos (STRA)</h2>
+        <p class="lead">Genera tu solicitud a través de DocuSign utilizando la plantilla oficial. Este paso es el requisito indispensable para que la empresa pueda gestionar tus reservaciones de transporte, hospedaje y el fondeo de tu tarjeta corporativa.</p>
+        <div class="actions">
+          <Button variant="primary" href="https://account.docusign.com/">Haz tu solicitud de viaje</Button>
+          <Button variant="ghost" href="#">Ver la guía</Button>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="section" aria-labelledby="agencia-title">
+    <article class="news">
+      <div class="news-body news-body--agencia" data-reveal>
+        <span class="sc-tag">Gestión de la agencia de viajes</span>
+        <h2 id="agencia-title" class="h2">Gestiona tus reservaciones</h2>
+        <p class="lead">Después de que tu solicitud haya sido aceptada, favor de contactar con <a class="inline-link" href="mailto:segula@gate18.mx">segula@gate18.mx</a> para poder comenzar con la gestión de las reservas. Con cada correo que mandes, copia a:</p>
+        <ul class="cc">
+          {cc.map((p) => (
+            <li class="cc-item">
+              <span class="cc-name">{p.name}</span>
+              <a class="cc-link cc-link--ellipsis" href={`mailto:${p.email}`}>{p.email}</a>
+            </li>
+          ))}
+          <li class="cc-item">
+            <span class="cc-name">Tu PMO asignado</span>
+            <a class="cc-link" href={ROUTES['Directorio']}>Consulta el directorio</a>
+          </li>
+        </ul>
+      </div>
+      <div class="news-media news-media--agencia" data-reveal data-reveal-delay="90">
+        <ImagePlaceholder placeholder="Imagen · Agencia de viajes" radius={20} />
+      </div>
+    </article>
+  </section>
+
+  <section class="section" aria-labelledby="reglas-title">
+    <SectionHead tag="Reglas de oro" id="reglas-title">Tres reglas antes de viajar</SectionHead>
+    <div class="grid">
+      {rules.map((r) => (
+        <RuleCard class="rule" number={r.number} title={r.title} text={r.text} placeholder={r.placeholder} revealDelay={r.delay} />
+      ))}
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="sua-title">
+    <Panel as="div" class="sua">
+      <div class="sua-intro">
+        <span class="sc-tag">Requisito de seguridad</span>
+        <h2 id="sua-title" class="h2">SUA</h2>
+        <p class="lead">El SUA (Sistema Único de Autodeterminación) es un documento fundamental para tus viajes de negocios, ya que funciona como el comprobante oficial de que estás dado de alta ante el IMSS que garantiza que tienes cobertura médica vigente en caso de cualquier accidente o emergencia de salud durante tu trayecto o estancia laboral.</p>
+        <div class="sua-media">
+          <ImagePlaceholder placeholder="Imagen · SUA" radius={12} />
+        </div>
+      </div>
+      <div class="sua-steps">
+        <h3 class="h3">¿Qué hacer si lo necesitas o te lo solicitan?</h3>
+        <ol class="steps">
+          {suaSteps.map((s) => (
+            <li class="step">
+              <span class="step-n" aria-hidden="true">{s.n}</span>
+              <div class="step-body">
+                <span class="step-title">{s.title}</span>
+                <span class="step-text">{s.text}</span>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div class="actions-single">
+          <Button variant="primary" href="mailto:roberto.perez@segulagrp.com">Haz tu solicitud de SUA</Button>
+        </div>
+      </div>
+    </Panel>
+  </section>
+
+  <section class="section section--last" aria-label="Siguiente paso">
+    <a class="next" href={ROUTES['Durante tu viaje']} data-reveal>
+      <div class="next-copy">
+        <span class="sc-tag">Paso 2 de 3</span>
+        <span class="next-title">Continúa tu proceso durante tu viaje</span>
+      </div>
+      <ArrowRight size={32} stroke-width={1.5} aria-hidden="true" class="next-icon" />
+    </a>
+  </section>
+</Base>
+
+<style>
+  .section {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(96px, 10vw, 144px);
+  }
+  .section--last { padding-bottom: clamp(112px, 12vw, 176px); }
+
+  .h2 {
+    margin: 0;
+    font: 400 clamp(28px, 3vw, 40px) / 1.15 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .h3 {
+    margin: 0;
+    font: 400 clamp(22px, 2vw, 28px) / 1.25 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .lead {
+    margin: 0;
+    font: 300 clamp(17px, 1.4vw, 21px) / 1.55 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: pretty;
+  }
+  .inline-link {
+    color: var(--brand-lightblue);
+    text-decoration: none;
+  }
+  .inline-link:hover { color: #FFFFFF; }
+
+  /* News blocks (12-col grid) */
+  .news {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+    align-items: center;
+  }
+  .news-media,
+  .news-body { grid-row: 1; min-width: 0; }
+  .news-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .news-media--stra { grid-column: 1 / span 7; height: 400px; }
+  .news-body--stra { grid-column: 9 / span 4; }
+  .news-body--agencia { grid-column: 1 / span 5; }
+  .news-media--agencia { grid-column: 7 / span 6; height: 440px; }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .actions-single { display: flex; }
+
+  /* CC list */
+  .cc {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    width: 100%;
+  }
+  .cc-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 40px;
+  }
+  .cc-name {
+    font: 400 16px / 1.3 var(--font-sans);
+    color: #FFFFFF;
+  }
+  .cc-link {
+    font: 300 16px / 1.3 var(--font-sans);
+    /* 40px hit target, visually identical inside the 40px row */
+    line-height: 40px;
+    color: var(--brand-lightblue);
+    text-decoration: none;
+  }
+  .cc-link--ellipsis {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .cc-link:hover {
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+
+  /* Rules grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .rule { grid-column: span 4; }
+
+  /* SUA panel */
+  .sua {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(32px, 4vw, 64px);
+    align-items: start;
+  }
+  .sua-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+  }
+  .sua-media {
+    width: 100%;
+    height: 260px;
+  }
+  .sua-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    min-width: 0;
+  }
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+  .step-n {
+    font: 300 36px / 1 var(--font-sans);
+    color: var(--brand-lightblue);
+    letter-spacing: -0.03em;
+  }
+  .step-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .step-title {
+    font: 400 18px / 1.3 var(--font-sans);
+    color: #FFFFFF;
+  }
+  .step-text {
+    font: 300 16px / 1.5 var(--font-sans);
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+
+  /* Next step card */
+  .next {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    padding: clamp(28px, 3vw, 40px) clamp(28px, 4vw, 48px);
+    text-decoration: none;
+    color: #FFFFFF;
+    transition:
+      opacity var(--duration-slow) var(--ease-out-expo),
+      transform var(--duration-slow) var(--ease-out-expo),
+      box-shadow var(--duration-base) var(--ease-card),
+      background-color var(--duration-base) var(--ease-card);
+  }
+  .next:hover {
+    background: var(--surface-panel);
+    box-shadow: var(--shadow-dark);
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+  .next-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .next-title {
+    font: 400 clamp(24px, 2.6vw, 36px) / 1.2 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .next :global(.next-icon) {
+    flex: none;
+    color: var(--brand-lightblue);
+  }
+
+  @media (max-width: 1024px) {
+    .news { grid-template-columns: minmax(0, 1fr); }
+    .news > * { grid-column: auto; grid-row: auto; }
+    .news-media { order: -1; height: 320px; }
+    .rule { grid-column: span 6; }
+    .sua { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .news-media { height: 240px; }
+    .rule { grid-column: span 12; }
+  }
+</style>
