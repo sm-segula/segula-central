@@ -98,7 +98,14 @@ const Heading = headingLevel;
 
   @media (max-width: 1024px) {
     .news { grid-template-columns: minmax(0, 1fr); }
-    .news > * { grid-column: auto; grid-row: auto; }
+    /* Same specificity as the desktop placement rules so the reset wins. */
+    .news--left .media,
+    .news--left .body,
+    .news--right .media,
+    .news--right .body {
+      grid-column: auto;
+      grid-row: auto;
+    }
     .media { order: -1; height: 320px; }
   }
   @media (max-width: 640px) {

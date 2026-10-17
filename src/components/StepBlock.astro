@@ -97,7 +97,14 @@ const {
 
   @media (max-width: 1024px) {
     .step { grid-template-columns: minmax(0, 1fr); }
-    .step > * { grid-column: auto; grid-row: auto; }
+    /* Same specificity as the desktop placement rules so the reset wins. */
+    .step--left .media,
+    .step--left .body,
+    .step--right .media,
+    .step--right .body {
+      grid-column: auto;
+      grid-row: auto;
+    }
     .media { order: -1; height: 320px; }
   }
   @media (max-width: 640px) {

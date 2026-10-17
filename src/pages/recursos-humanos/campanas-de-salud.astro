@@ -37,9 +37,14 @@ const years: Year[] = [
 ---
 
 <Base title="Campañas de salud">
-  <PageHero tag="Recursos Humanos" before="Campañas de " kw="salud" kwColor="pink">
-    <p class="tagline" data-reveal data-reveal-delay="210">Tu salud, nuestra mejor inversión.</p>
-  </PageHero>
+  <PageHero
+    tag="Recursos Humanos"
+    before="Campañas de "
+    kw="salud"
+    kwColor="pink"
+    subtitle="Tu salud, nuestra mejor inversión."
+    subtitleSize="tagline"
+  />
 
   {years.map((y, i) => (
     <section class:list={['year', { 'year--last': i === years.length - 1 }]} aria-labelledby={`year-${y.year}`}>
@@ -66,12 +71,6 @@ const years: Year[] = [
 </Base>
 
 <style>
-  .tagline {
-    margin: 0;
-    font: 300 clamp(20px, 1.8vw, 26px) / 1.4 var(--font-sans);
-    color: #FFFFFF;
-    text-wrap: pretty;
-  }
   .year {
     max-width: 1312px;
     margin: 0 auto;
@@ -102,7 +101,6 @@ const years: Year[] = [
     .doc { grid-column: span 6; }
   }
   @media (max-width: 640px) {
-    .tagline { font-size: 19px; }
     .doc { grid-column: span 12; }
   }
 </style>

@@ -8,11 +8,14 @@ const items: Comunicado[] = comunicados;
 ---
 
 <Base title="Comunicados">
-  <PageHero tag="Recursos Humanos" kw="Comunicados" kwColor="pink" bottom="md">
-    <p class="hero-sub" data-reveal data-reveal-delay="210">
-      Accede al histórico de nuestros comunicados para mantenerte informado.
-    </p>
-  </PageHero>
+  <PageHero
+    tag="Recursos Humanos"
+    kw="Comunicados"
+    kwColor="pink"
+    bottom="md"
+    subtitle="Accede al histórico de nuestros comunicados para mantenerte informado."
+    subtitleSize="tagline"
+  />
 
   <div class="comunicados">
     <SearchList client:load items={items} />
@@ -21,15 +24,6 @@ const items: Comunicado[] = comunicados;
 </Base>
 
 <style>
-  /* Hero subtitle: the prototype uses 300 clamp(20px,1.8vw,26px)/1.4 with no top
-     margin / max-width, which matches neither PageHero subtitle size. */
-  .hero-sub {
-    margin: 0;
-    font: 300 clamp(20px, 1.8vw, 26px) / 1.4 var(--font-sans);
-    color: #FFFFFF;
-    text-wrap: pretty;
-  }
-
   .comunicados :global(.cm-search),
   .comunicados :global(.cm-group),
   .comunicados :global(.cm-empty) {
@@ -166,11 +160,6 @@ const items: Comunicado[] = comunicados;
       flex-direction: row;
       align-items: baseline;
       gap: 16px;
-    }
-  }
-  @media (max-width: 640px) {
-    .hero-sub {
-      font-size: 19px;
     }
   }
 </style>
