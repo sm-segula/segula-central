@@ -1,0 +1,218 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import Panel from '../../components/Panel.astro';
+import Button from '../../components/Button.astro';
+import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
+import editions from '../../data/sabias-que.json';
+
+interface Edition {
+  n: string;
+  t: string;
+  h: string;
+}
+
+const eds: Edition[] = editions;
+// The first entry is the latest edition (pinned); the rest is the archive.
+const latest: Edition = eds[0] ?? { n: '', t: '', h: '#' };
+const archive = eds.slice(1);
+const count = eds.length ? String(eds.length) : '';
+---
+
+<Base title="¿Sabías qué?">
+  <PageHero
+    tag="Recursos Humanos"
+    before="¿Sabías "
+    kw="qué"
+    after="?"
+    kwColor="blue"
+    subtitle="Este medio sirve para dar a conocer más de nuestra organización. A través de él, difundimos información de interés general con la finalidad de aportar conocimiento significativo para tus actividades del día a día."
+    subtitleSize="md"
+  />
+
+  <section class="latest-section" aria-label="Última edición">
+    <Panel class="latest" surface="card" padding="20px" hover>
+      <div class="latest-media">
+        <ImagePlaceholder placeholder={`Imagen · Edición ${latest.n}`} radius={12} />
+      </div>
+      <div class="latest-body">
+        <div class="latest-text">
+          <span class="sc-tag">Última edición</span>
+          <span class="latest-n">{latest.n}</span>
+          <h2 class="latest-title">{latest.t}</h2>
+        </div>
+        <div class="latest-action">
+          <Button variant="primary" href={latest.h}>Ver edición</Button>
+        </div>
+      </div>
+    </Panel>
+  </section>
+
+  <section class="archive-section" aria-labelledby="archive-title">
+    <div class="archive-head" data-reveal>
+      <h2 id="archive-title" class="archive-title">Ediciones anteriores</h2>
+      <span class="sc-tag">{count} ediciones</span>
+    </div>
+    <div class="sq-grid">
+      {archive.map((e) => (
+        <a class="sq-row" href={e.h} target="_blank" rel="noopener">
+          <span class="sq-n">{e.n}</span>
+          <span class="sq-t">{e.t}</span>
+          <svg class="sq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M8 7h9v9"></path></svg>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="opinion-section" aria-labelledby="opinion-title">
+    <div class="opinion">
+      <div class="opinion-text" data-reveal>
+        <h2 id="opinion-title" class="opinion-title">¿Te gusta esta <span class="sc-kw">iniciativa</span>?</h2>
+        <p class="opinion-p">Agradecemos de antemano nos compartas tu opinión escaneando el siguiente código QR y no te pierdas ninguna de nuestras próximas ediciones.</p>
+      </div>
+      <div class="opinion-qr" data-reveal data-reveal-delay="90">
+        <div class="qr">
+          <ImagePlaceholder placeholder="Código QR" radius={20} />
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .latest-section {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(96px, 10vw, 144px);
+  }
+  .latest {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+  .latest-media {
+    width: 100%;
+    height: 360px;
+  }
+  .latest-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 32px;
+    padding: clamp(8px, 1.5vw, 24px);
+  }
+  .latest-text {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .latest-n {
+    font: 300 clamp(64px, 7vw, 104px) / 1 var(--font-sans);
+    color: var(--brand-lightblue);
+    letter-spacing: -0.03em;
+  }
+  .latest-title {
+    margin: 0;
+    font: 400 clamp(26px, 2.6vw, 36px) / 1.2 var(--font-sans);
+    color: var(--text-card-title);
+    text-wrap: balance;
+  }
+  .latest-action { display: flex; }
+
+  .archive-section,
+  .opinion-section {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .archive-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: clamp(40px, 5vw, 64px);
+  }
+  .archive-title {
+    margin: 0;
+    font: 400 clamp(28px, 3vw, 44px) / 1.15 var(--font-sans);
+    color: #FFFFFF;
+  }
+  .sq-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 48px;
+  }
+  .sq-row {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr) 24px;
+    align-items: center;
+    gap: 16px;
+    min-height: 64px;
+    padding: 12px 16px;
+    margin: 0 -16px;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: #FFFFFF;
+    transition: background-color 200ms var(--ease-standard);
+  }
+  .sq-row:hover {
+    background: var(--surface-card);
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+  .sq-n {
+    font: 300 24px / 1 var(--font-sans);
+    color: var(--brand-lightblue);
+    letter-spacing: -0.02em;
+  }
+  .sq-t {
+    font: 300 17px / 1.35 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: pretty;
+  }
+  .sq-icon { color: var(--text-muted); }
+
+  .opinion {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 24px;
+    align-items: center;
+  }
+  .opinion-text {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 640px;
+  }
+  .opinion-title {
+    margin: 0;
+    font: 400 clamp(30px, 3.4vw, 48px) / 1.15 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .opinion-p {
+    margin: 0;
+    font: 300 clamp(18px, 1.5vw, 22px) / 1.5 var(--font-sans);
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+  .opinion-qr {
+    display: flex;
+    justify-content: center;
+  }
+  .qr {
+    width: min(100%, 320px);
+    height: 320px;
+  }
+
+  @media (max-width: 1024px) {
+    .latest,
+    .opinion { grid-template-columns: minmax(0, 1fr); }
+    .sq-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .sq-row { grid-template-columns: 56px minmax(0, 1fr) 20px; }
+  }
+</style>
