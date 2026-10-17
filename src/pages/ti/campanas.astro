@@ -1,0 +1,116 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import Card from '../../components/Card.astro';
+import Panel from '../../components/Panel.astro';
+import Button from '../../components/Button.astro';
+
+const materials = [
+  { title: 'Distinción de cuentas', href: 'https://drive.google.com/file/d/1aARwZhsFJsqpo-FLYEFW_yGMCk3rCE4Y/view?usp=drive_link', placeholder: 'Imagen · Distinción de cuentas', delay: 0 },
+  { title: 'Anatomía de una URL', href: 'https://drive.google.com/file/d/1P0KLYFy7SCZi21BniFiMuVOd-lakFmBk/view?usp=sharing', placeholder: 'Imagen · Anatomía de una URL', delay: 70 },
+  { title: 'Antes del click', href: 'https://drive.google.com/file/d/1X9BwvsIoZSaF3oOKbjSeAxDIRUovb_5e/view?usp=drive_link', placeholder: 'Imagen · Antes del click', delay: 140 },
+];
+---
+
+<Base title="Campañas">
+  <PageHero tag="TI · Campañas" before="Campaña de " kw="ciberseguridad" after=" 2026-01" kwColor="blue" />
+
+  <section class="section" aria-label="Materiales">
+    <div class="docs">
+      {materials.map((m) => (
+        <Card class="doc" title={m.title} href={m.href} placeholder={m.placeholder} imageHeight={260} titleSize="md" revealDelay={m.delay} />
+      ))}
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="challenge-title">
+    <Panel as="div" class="bento">
+      <div class="copy">
+        <span class="sc-tag">Reto</span>
+        <h2 id="challenge-title" class="title">¡Participa en el <span class="sc-kw">Cyber Challenge</span>!</h2>
+        <p class="lead">Contesta las preguntas y al finalizar, envía el código al correo <a href="mailto:comunicados@segula.mx">comunicados@segula.mx</a></p>
+        <p class="note">Los puntos se acumulan de acuerdo al orden en el que se reciben los correos.</p>
+        <div class="cta"><Button variant="primary" href="https://view.genially.com/6a061fb8e7c1a70dea0021ff">Participar</Button></div>
+      </div>
+      <div class="figure">
+        <span class="big" aria-hidden="true">15</span>
+        <p class="figure-text">¡Los primeros 15 correos en mandar el código podrán participar para ganar premios al final del año!</p>
+      </div>
+    </Panel>
+  </section>
+</Base>
+
+<style>
+  .section {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .docs {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .doc { grid-column: span 4; }
+
+  .bento {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(32px, 4vw, 64px);
+    align-items: center;
+  }
+  .copy {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+  }
+  .title {
+    margin: 0;
+    font: 400 clamp(30px, 3.4vw, 48px) / 1.15 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+  .lead {
+    margin: 0;
+    font: 300 clamp(18px, 1.5vw, 22px) / 1.5 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: pretty;
+  }
+  .lead a {
+    color: var(--brand-lightblue);
+    text-decoration: none;
+  }
+  .note {
+    margin: 0;
+    font: 300 clamp(17px, 1.3vw, 20px) / 1.55 var(--font-sans);
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+  .cta { display: flex; }
+  .figure {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  .big {
+    font: 300 clamp(72px, 8vw, 120px) / 1 var(--font-sans);
+    color: var(--brand-lightblue);
+    letter-spacing: -0.03em;
+  }
+  .figure-text {
+    margin: 0;
+    font: 400 clamp(20px, 1.8vw, 26px) / 1.3 var(--font-sans);
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+
+  @media (max-width: 1024px) {
+    .doc { grid-column: span 6; }
+    .bento { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .doc { grid-column: span 12; }
+  }
+</style>
