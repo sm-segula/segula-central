@@ -1,0 +1,116 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
+import Slider from '../../islands/Slider';
+
+const SLIDES = 5;
+const slides = Array.from({ length: SLIDES }, (_, i) => `Política de horas · Lámina ${i + 1} de ${SLIDES}`);
+---
+
+<Base title="Política de horas">
+  <PageHero tag="Operaciones" before="Política de " kw="horas" bottom="md" />
+
+  <section class="horas" aria-label="Láminas de la política de horas">
+    <div class="slider" data-reveal>
+      <Slider client:load count={SLIDES} label="Política de horas, 5 láminas">
+        {slides.map((caption) => (
+          <div class="slide">
+            <div class="slide-media"><ImagePlaceholder placeholder={caption} radius={20} /></div>
+          </div>
+        ))}
+      </Slider>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .horas {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .slider {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .horas :global(.slider-viewport) {
+    overflow: hidden;
+    border-radius: 20px;
+    outline: none;
+  }
+  .horas :global(.slider-viewport:focus-visible) { box-shadow: var(--focus-glow); }
+  .horas :global(.slider-track) {
+    display: flex;
+    transition: transform 600ms var(--ease-out-expo);
+  }
+  .slide {
+    flex: 0 0 100%;
+    min-width: 0;
+    padding: 0 2px;
+    box-sizing: border-box;
+  }
+  .slide-media { aspect-ratio: 16 / 9; }
+
+  .horas :global(.slider-bar) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .horas :global(.slider-dots) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .horas :global(.slider-dot) {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .horas :global(.slider-dot > span) {
+    display: block;
+    height: 4px;
+    border-radius: 999px;
+    transition:
+      width 300ms var(--ease-standard),
+      background-color 300ms var(--ease-standard);
+  }
+  .horas :global(.slider-arrows) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .horas :global(.slider-arrow) {
+    width: 48px;
+    height: 48px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--surface-panel);
+    color: #FFFFFF;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background-color var(--duration-fast) var(--ease-standard);
+  }
+  .horas :global(.slider-arrow:hover) { background: var(--color-selected); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .horas :global(.slider-track) { transition: none; }
+  }
+  @media (max-width: 640px) {
+    .horas :global(.slider-bar) { justify-content: center; }
+    .horas :global(.slider-counter) {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>
