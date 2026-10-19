@@ -97,6 +97,7 @@ El Header (megamenú de escritorio y acordeón móvil) se genera a partir de `NA
 - **Reveals.** Añade `data-reveal` y, si aplica, `data-reveal-delay="90"` a cualquier elemento; el estado inicial y la transición están en `global.css`, `reveal.ts` los activa una sola vez. Con `prefers-reduced-motion` todo se muestra sin animar.
 - **Clases desde la página.** Los componentes aceptan `class` y hacen spread del resto de props en su raíz, por lo que `.doc { grid-column: span 4 }` definido en la página sí alcanza a `<Card class="doc" />`.
 - **Enlaces externos.** `Button` con `href` http(s) añade `target="_blank" rel="noopener"` automáticamente.
+- **Iconos.** Importa cada icono por su ruta: `import ArrowRight from 'lucide-astro/ArrowRight'`. Nunca desde el barrel `'lucide-astro'`: carga 1883 módulos en cada petición del dev server y cada página tarda ~3 s.
 - **Islas.** Solo Preact y solo donde hay estado. Todo lo demás es HTML estático más scripts vanilla en `src/scripts/`.
 - **Textos.** Español de México, "SEGULA" siempre en mayúsculas, sin emoji. El copy se copia literal del prototipo.
 
