@@ -202,12 +202,10 @@ export async function buildPdf(d: TravelData): Promise<PdfResult> {
   text(tot, W - M - 12 - tw(tot, F.black, 14), y - 34, { size: 14, font: F.black, color: C.navy });
   y -= 60;
 
-  section('03', 'Attachments');
-  if (!files.length) {
-    ensure(24);
-    text('No attachments.', M, y - 10, { size: 10, font: F.reg, color: C.muted });
-    y -= 24;
-  } else {
+  // Without attachments the section is omitted entirely, so a typical request
+  // fits on a single page instead of spilling a "No attachments." page.
+  if (files.length) {
+    section('03', 'Attachments');
     table(
       [{ label: '#', w: 0.06 }, { label: 'File', w: 0.5 }, { label: 'Size', w: 0.14, align: 'right' }, { label: 'Status', w: 0.3 }],
       files.map((fl, i) => [
