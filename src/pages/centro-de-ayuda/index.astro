@@ -3,6 +3,9 @@ import Base from '../../layouts/Base.astro';
 import PageHero from '../../components/PageHero.astro';
 import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
 import Button from '../../components/Button.astro';
+import rhContigo from '../../assets/centro-de-ayuda/rhcontigo.webp';
+import mesaIt from '../../assets/centro-de-ayuda/mesa-de-soporte-it.webp';
+import teEscucha from '../../assets/centro-de-ayuda/segula-te-escucha.webp';
 
 const intro = [
   'Pregunta tu saldo de vacaciones, solicita equipo de protección o reporta el extravío de tu tarjeta PLUXEE levantando un ticket en RH Contigo.',
@@ -11,9 +14,9 @@ const intro = [
 ];
 
 const channels = [
-  { title: 'RH Contigo', href: 'https://forms.monday.com/forms/3ef7fdb8bac23525f6d8a8103341557f?r=use1', cta: 'Levantar ticket', variant: 'primary' as const, delay: 0 },
-  { title: 'Ticket de TI', href: 'https://forms.monday.com/forms/d4839e029c2646d2d19e7cfdb5a070ed?r=use1', cta: 'Levantar ticket', variant: 'ghost' as const, delay: 70 },
-  { title: 'SEGULA Te escucha', href: 'https://forms.monday.com/forms/1fb05d761141c7048f7f7b5937fb5044?r=use1', cta: 'Llenar formulario', variant: 'ghost' as const, delay: 140 },
+  { title: 'RH Contigo', src: rhContigo, href: 'https://forms.monday.com/forms/3ef7fdb8bac23525f6d8a8103341557f?r=use1', cta: 'Levantar ticket', variant: 'primary' as const, delay: 0 },
+  { title: 'Ticket de TI', src: mesaIt, href: 'https://forms.monday.com/forms/d4839e029c2646d2d19e7cfdb5a070ed?r=use1', cta: 'Levantar ticket', variant: 'ghost' as const, delay: 70 },
+  { title: 'SEGULA Te escucha', src: teEscucha, href: 'https://forms.monday.com/forms/1fb05d761141c7048f7f7b5937fb5044?r=use1', cta: 'Llenar formulario', variant: 'ghost' as const, delay: 140 },
 ];
 ---
 
@@ -34,7 +37,7 @@ const channels = [
       {channels.map((c) => (
         <article class="channel" data-reveal data-reveal-delay={c.delay}>
           <div class="media">
-            <ImagePlaceholder placeholder={`Imagen · ${c.title}`} alt={c.title} radius={12} width={1000} height={520} />
+            <ImagePlaceholder src={c.src} placeholder={`Imagen · ${c.title}`} alt={c.title} radius={12} width={1000} height={520} />
           </div>
           <div class="body">
             <h3 class="channel-title">{c.title}</h3>

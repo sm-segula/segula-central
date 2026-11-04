@@ -4,8 +4,14 @@ import PageHero from '../../components/PageHero.astro';
 import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
 import Slider from '../../islands/Slider';
 
-const SLIDES = 5;
-const slides = Array.from({ length: SLIDES }, (_, i) => `Política de horas · Lámina ${i + 1} de ${SLIDES}`);
+import lamina1 from '../../assets/operaciones/politica-de-horas-1.webp';
+import lamina2 from '../../assets/operaciones/politica-de-horas-2.webp';
+import lamina3 from '../../assets/operaciones/politica-de-horas-3.webp';
+import lamina4 from '../../assets/operaciones/politica-de-horas-4.webp';
+
+const images = [lamina1, lamina2, lamina3, lamina4];
+const SLIDES = images.length;
+const slides = images.map((src, i) => ({ src, alt: `Política de horas · Lámina ${i + 1} de ${SLIDES}` }));
 ---
 
 <Base title="Política de horas">
@@ -13,10 +19,10 @@ const slides = Array.from({ length: SLIDES }, (_, i) => `Política de horas · L
 
   <section class="horas" aria-label="Láminas de la política de horas">
     <div class="slider" data-reveal>
-      <Slider client:load count={SLIDES} label="Política de horas, 5 láminas">
-        {slides.map((caption) => (
+      <Slider client:load count={SLIDES} label={`Política de horas, ${SLIDES} láminas`}>
+        {slides.map((s) => (
           <div class="slide">
-            <div class="slide-media"><ImagePlaceholder placeholder={caption} radius={20} /></div>
+            <div class="slide-media"><ImagePlaceholder src={s.src} alt={s.alt} radius={20} /></div>
           </div>
         ))}
       </Slider>
