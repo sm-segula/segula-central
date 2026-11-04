@@ -119,11 +119,12 @@ function archive_(email, folio, pdf) {
       var cell = row < 0 ? null : sh.getRange(row, 5);
       if (!cell || cell.getValue()) {
         discard_(file);
+        file = null;
       } else {
         cell.setValue(file.getUrl());
+        file = null; // linked from the sheet now: never trash it, even if flush fails
         SpreadsheetApp.flush();
       }
-      file = null;
     } finally {
       lock.releaseLock();
     }
