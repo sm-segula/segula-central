@@ -4,10 +4,12 @@ import PageHero from '../../components/PageHero.astro';
 import Card from '../../components/Card.astro';
 import Panel from '../../components/Panel.astro';
 import Button from '../../components/Button.astro';
+import cuentas from '../../assets/ti/distincion-de-cuentas.webp';
+import url from '../../assets/ti/anatomia-de-una-url.webp';
 
 const materials = [
-  { title: 'Distinción de cuentas', href: 'https://drive.google.com/file/d/1aARwZhsFJsqpo-FLYEFW_yGMCk3rCE4Y/view?usp=drive_link', placeholder: 'Imagen · Distinción de cuentas', delay: 0 },
-  { title: 'Anatomía de una URL', href: 'https://drive.google.com/file/d/1P0KLYFy7SCZi21BniFiMuVOd-lakFmBk/view?usp=sharing', placeholder: 'Imagen · Anatomía de una URL', delay: 70 },
+  { title: 'Distinción de cuentas', src: cuentas, alt: 'Infografía: distinción de cuentas', href: 'https://drive.google.com/file/d/1aARwZhsFJsqpo-FLYEFW_yGMCk3rCE4Y/view?usp=drive_link', placeholder: 'Imagen · Distinción de cuentas', delay: 0 },
+  { title: 'Anatomía de una URL', src: url, alt: 'Infografía: anatomía de una URL', href: 'https://drive.google.com/file/d/1P0KLYFy7SCZi21BniFiMuVOd-lakFmBk/view?usp=sharing', placeholder: 'Imagen · Anatomía de una URL', delay: 70 },
   { title: 'Antes del click', href: 'https://drive.google.com/file/d/1X9BwvsIoZSaF3oOKbjSeAxDIRUovb_5e/view?usp=drive_link', placeholder: 'Imagen · Antes del click', delay: 140 },
 ];
 ---
@@ -18,7 +20,7 @@ const materials = [
   <section class="section" aria-label="Materiales">
     <div class="docs">
       {materials.map((m) => (
-        <Card class="doc" title={m.title} href={m.href} placeholder={m.placeholder} imageHeight={260} titleSize="md" revealDelay={m.delay} />
+        <Card class="doc" title={m.title} href={m.href} src={m.src} alt={m.alt} placeholder={m.placeholder} imageHeight={260} titleSize="md" revealDelay={m.delay} />
       ))}
     </div>
   </section>

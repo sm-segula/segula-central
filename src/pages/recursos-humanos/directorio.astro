@@ -140,6 +140,17 @@ const teams: Team[] = directorio;
     font: 300 13px/1.3 var(--font-sans);
     text-align: center;
     user-select: none;
+    overflow: hidden;
+  }
+  .directorio :global(.dr-avatar:has(img)) {
+    padding: 0;
+  }
+  .directorio :global(.dr-avatar img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    display: block;
   }
   .directorio :global(.dr-meta) {
     display: flex;

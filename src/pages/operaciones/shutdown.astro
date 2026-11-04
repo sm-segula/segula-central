@@ -4,8 +4,17 @@ import PageHero from '../../components/PageHero.astro';
 import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
 import Panel from '../../components/Panel.astro';
 import Button from '../../components/Button.astro';
+import type { ImageMetadata } from 'astro';
+import portada from '../../assets/operaciones/shutdown.webp';
+import queEs from '../../assets/operaciones/que-es-el-shutdown-automotriz.webp';
+import comoOpera from '../../assets/operaciones/como-opera-segula-durante-el-shutdown.webp';
+import comoDias from '../../assets/operaciones/como-se-consideran-los-dias-durante-este-periodo.webp';
+import paso1 from '../../assets/operaciones/valida-el-calendario-con-tu-pmo.webp';
+import paso2 from '../../assets/operaciones/revisa-tu-saldo-en-gn3.webp';
+import paso3 from '../../assets/operaciones/formaliza-tu-eleccion-a-tiempo.webp';
 
 interface Step {
+  src: ImageMetadata;
   number: string;
   title: string;
   text: string;
@@ -15,12 +24,14 @@ interface Step {
 
 const steps: Step[] = [
   {
+    src: paso1,
     number: '01',
     title: 'Valida el calendario con tu PMO',
     text: 'Confirma el primer y último día de paro operativo en el proyecto/cliente donde estás asignado.',
     side: 'left',
   },
   {
+    src: paso2,
     number: '02',
     title: 'Revisa tu saldo en GN3',
     text: 'Comprueba tus días de vacaciones disponibles para tomar la mejor decisión.',
@@ -28,6 +39,7 @@ const steps: Step[] = [
     button: { label: 'Ir a GN3', href: 'https://segula.portalgn3.com/GN3Portal/#/home' },
   },
   {
+    src: paso3,
     number: '03',
     title: 'Formaliza tu elección a tiempo',
     text: 'Envía tu solicitud en GN3 antes de la fecha límite informada por Operaciones para evitar contratiempos en tus pagos o registros.',
@@ -47,14 +59,14 @@ const steps: Step[] = [
 
   <section class="block" aria-label="Portada">
     <div class="cover" data-reveal>
-      <ImagePlaceholder placeholder="Imagen · Shutdown" radius={20} />
+      <ImagePlaceholder src={portada} alt="Shutdown automotriz" placeholder="Imagen · Shutdown" radius={20} />
     </div>
   </section>
 
   <section class="block" aria-labelledby="sd-que-es">
     <article class="news news--left">
       <div class="news-media" data-reveal>
-        <ImagePlaceholder placeholder="Imagen · Definición" radius={20} />
+        <ImagePlaceholder src={queEs} alt="¿Qué es el Shutdown Automotriz?" placeholder="Imagen · Definición" radius={20} />
       </div>
       <div class="news-body" data-reveal data-reveal-delay="90">
         <span class="sc-tag">Definición</span>
@@ -85,7 +97,7 @@ const steps: Step[] = [
         <p class="text">Aunque es un paro mandatorio para el cliente, en SEGULA Technologies México buscamos siempre respaldarte ofreciéndote opciones claras y flexibles para que este periodo sea considerado como tiempo laboral efectivo o de descanso planificado.</p>
       </div>
       <div class="news-media" data-reveal>
-        <ImagePlaceholder placeholder="Imagen · SEGULA" radius={20} />
+        <ImagePlaceholder src={comoOpera} alt="¿Cómo opera SEGULA durante el Shutdown?" placeholder="Imagen · SEGULA" radius={20} />
       </div>
     </article>
   </section>
@@ -97,7 +109,7 @@ const steps: Step[] = [
         <h2 id="sd-opciones" class="h2">¿Cómo se consideran los días durante este periodo?</h2>
       </div>
       <div class="infographic" data-reveal data-reveal-delay="90">
-        <ImagePlaceholder placeholder="Infografía · Opciones de gestión de tiempo" radius={20} />
+        <ImagePlaceholder src={comoDias} alt="Infografía: opciones de gestión de tiempo durante el Shutdown" placeholder="Infografía · Opciones de gestión de tiempo" radius={20} />
       </div>
     </div>
   </section>
@@ -111,7 +123,7 @@ const steps: Step[] = [
       {steps.map((s) => (
         <article class:list={['news', 'step', `step--${s.side}`]}>
           <div class="news-media step-media" data-reveal>
-            <ImagePlaceholder placeholder={`Imagen · ${s.title}`} radius={20} />
+            <ImagePlaceholder src={s.src} alt={s.title} placeholder={`Imagen · ${s.title}`} radius={20} />
           </div>
           <div class="news-body step-body" data-reveal data-reveal-delay="90">
             <span class="step-num">{s.number}</span>

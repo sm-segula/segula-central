@@ -1,10 +1,16 @@
 ---
+import type { ImageMetadata } from 'astro';
 import Base from '../../layouts/Base.astro';
 import PageHero from '../../components/PageHero.astro';
 import Card from '../../components/Card.astro';
+import sarampion from '../../assets/salud/campana-de-vacunacion-sarampion.webp';
+import influenza from '../../assets/salud/campana-de-vacunacion-influenza-2025.webp';
+import agudezaVisual from '../../assets/salud/campana-de-valoracion-y-correccion-de-agudeza-visual.webp';
 
 interface Campaign {
   title: string;
+  src: ImageMetadata;
+  alt: string;
   href: string;
   delay: number;
 }
@@ -21,7 +27,7 @@ const years: Year[] = [
     label: '1 campaña',
     current: true,
     items: [
-      { title: 'Campaña de Vacunación Sarampión', href: 'https://drive.google.com/file/d/1anwFZR6yCR4Hf2E4BZXqJUCs1gMbzmMa/view?usp=drive_link', delay: 0 },
+      { title: 'Campaña de Vacunación Sarampión', src: sarampion, alt: 'Campaña de vacunación contra el sarampión', href: 'https://drive.google.com/file/d/1anwFZR6yCR4Hf2E4BZXqJUCs1gMbzmMa/view?usp=drive_link', delay: 0 },
     ],
   },
   {
@@ -29,8 +35,8 @@ const years: Year[] = [
     label: '2 campañas',
     current: false,
     items: [
-      { title: 'Campaña de Vacunación Influenza', href: 'https://drive.google.com/file/d/1erRcHtivuCnDoINb4a5UyQGZxZEgCIn0/view?usp=drive_link', delay: 0 },
-      { title: 'Campaña de Valoración y Corrección de Agudeza Visual', href: 'https://drive.google.com/file/d/1vOxMyV3ilpA38ciMEL61mQL1ZN1zypiN/view?usp=drive_link', delay: 70 },
+      { title: 'Campaña de Vacunación Influenza', src: influenza, alt: 'Campaña de vacunación contra la influenza 2025', href: 'https://drive.google.com/file/d/1erRcHtivuCnDoINb4a5UyQGZxZEgCIn0/view?usp=drive_link', delay: 0 },
+      { title: 'Campaña de Valoración y Corrección de Agudeza Visual', src: agudezaVisual, alt: 'Campaña de valoración y corrección de agudeza visual', href: 'https://drive.google.com/file/d/1vOxMyV3ilpA38ciMEL61mQL1ZN1zypiN/view?usp=drive_link', delay: 70 },
     ],
   },
 ];
@@ -58,7 +64,8 @@ const years: Year[] = [
             class="doc"
             title={c.title}
             href={c.href}
-            placeholder={`Imagen · ${c.title}`}
+            src={c.src}
+            alt={c.alt}
             imageHeight={260}
             titleSize="md"
             titleFlex="1 1 200px"

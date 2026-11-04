@@ -7,11 +7,12 @@ import GradientRule from '../components/GradientRule.astro';
 import Button from '../components/Button.astro';
 import NewsBlock from '../components/NewsBlock.astro';
 import { ROUTES } from '../data/nav';
-import viajes from '../assets/viajes.png';
-import politicas from '../assets/politicas.png';
-import ayuda from '../assets/ayuda.jpg';
-import kindle from '../assets/kindle.png';
-import it from '../assets/it.jpg';
+import viajes from '../assets/home/vacaciones-e-incidencias.webp';
+import politicas from '../assets/home/politicas-y-documentos.webp';
+import ayuda from '../assets/home/centro-de-ayuda.webp';
+import kindle from '../assets/home/gazzette.webp';
+import it from '../assets/home/comunicados.webp';
+import salud from '../assets/home/campanas-de-salud.webp';
 ---
 
 <Base title="SEGULA Central">
@@ -124,7 +125,8 @@ import it from '../assets/it.jpg';
         text="Tu salud, nuestra mejor inversión."
         imageSide="left"
         imageHeight={400}
-        placeholder="Imagen · Campaña de salud"
+        src={salud}
+        alt="Campañas de salud"
       >
         <Button variant="ghost" href={ROUTES['Campañas de salud']}>Ver</Button>
       </NewsBlock>

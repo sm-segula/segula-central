@@ -3,9 +3,14 @@ import Base from '../../layouts/Base.astro';
 import PageHero from '../../components/PageHero.astro';
 import Card from '../../components/Card.astro';
 import PlayButton from '../../components/PlayButton.astro';
+import type { ImageMetadata } from 'astro';
+import capacitacion from '../../assets/rh/video-plan-de-capacitacion-2026.webp';
+import evaluacion from '../../assets/rh/video-de-evaluacion-de-desempeno.webp';
 
 interface Video {
   title: string;
+  src?: ImageMetadata;
+  alt?: string;
   href: string;
   cta: string;
   label: string;
@@ -13,8 +18,8 @@ interface Video {
 }
 
 const videos: Video[] = [
-  { title: 'Campaña de Capacitación · Plan de Capacitación 2026', href: 'https://share.synthesia.io/0bcbb018-6ba1-4034-8564-5ea5c724c0d5', cta: 'Ver video', label: 'Ver video: Campaña de Capacitación · Plan de Capacitación 2026', delay: 0 },
-  { title: 'Campaña de Evaluación', href: 'https://share.synthesia.io/3e743838-4d66-4aea-ac8d-0285620401f5', cta: 'Ver video', label: 'Ver video: Campaña de Evaluación', delay: 70 },
+  { title: 'Campaña de Capacitación · Plan de Capacitación 2026', src: capacitacion, alt: 'Miniatura del video Plan de Capacitación 2026', href: 'https://share.synthesia.io/0bcbb018-6ba1-4034-8564-5ea5c724c0d5', cta: 'Ver video', label: 'Ver video: Campaña de Capacitación · Plan de Capacitación 2026', delay: 0 },
+  { title: 'Campaña de Evaluación', src: evaluacion, alt: 'Miniatura del video Campaña de Evaluación de Desempeño', href: 'https://share.synthesia.io/3e743838-4d66-4aea-ac8d-0285620401f5', cta: 'Ver video', label: 'Ver video: Campaña de Evaluación', delay: 70 },
   { title: 'Evaluatest', href: 'https://share.synthesia.io/b848ddae-7771-4efe-b29d-87a8ffd212ff', cta: 'Ver videos', label: 'Ver videos: Evaluatest', delay: 140 },
   { title: 'MySkills', href: 'https://share.synthesia.io/9babd226-8dd3-4b25-a54e-3c74a8681d6d', cta: 'Ver video', label: 'Ver video: MySkills', delay: 0 },
   { title: 'RH Contigo', href: 'https://share.synthesia.io/a7460122-6a76-4457-a459-fbd33e9f9cf0', cta: 'Ver video', label: 'Ver video: RH Contigo', delay: 70 },
@@ -33,6 +38,8 @@ const videos: Video[] = [
           title={v.title}
           href={v.href}
           cta={v.cta}
+          src={v.src}
+          alt={v.alt}
           placeholder={`Miniatura · ${v.title}`}
           aspect="16/9"
           titleSize="md"

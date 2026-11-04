@@ -3,7 +3,7 @@ import Search from 'lucide-astro/Search';
 import Menu from 'lucide-astro/Menu';
 import X from 'lucide-astro/X';
 import ChevronDown from 'lucide-astro/ChevronDown';
-import { NAV, hrefFor } from '../data/nav';
+import { MENU, hrefFor } from '../data/nav';
 
 interface Props {
   menuTrigger?: 'hover' | 'click';
@@ -23,7 +23,7 @@ const { menuTrigger = 'hover' } = Astro.props;
     </a>
 
     <nav data-nav data-menu-trigger={menuTrigger} class="nav" aria-label="Principal">
-      {NAV.map((item) => (
+      {MENU.map((item) => (
         <div class="nav-item" data-nav-item>
           {item.children ? (
             <>
@@ -72,7 +72,7 @@ const { menuTrigger = 'hover' } = Astro.props;
     <input type="search" placeholder="Buscar" aria-label="Buscar en SEGULA Central" />
   </label>
   <div class="mobile-list">
-    {NAV.map((item) => (
+    {MENU.map((item) => (
       <div class="acc" data-acc>
         {item.children ? (
           <>
