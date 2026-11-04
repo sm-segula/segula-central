@@ -93,8 +93,11 @@ function archive_(email, folio, pdf) {
   if (pdf.length > Math.ceil(MAX_PDF_BYTES / 3) * 4) return json_({ ok: false, error: 'too_large' });
   var file = null;
   try {
-    var folderId = PropertiesService.getScriptProperties().getProperty(DRIVE_FOLDER_KEY);
-    if (!folderId) return json_({ ok: false, error: 'not_configured' });
+    var folderId = folderId_();
+    if (!folderId) {
+      console.error('archive ' + folio + ': missing Script Property ' + DRIVE_FOLDER_KEY);
+      return json_({ ok: false, error: 'not_configured' });
+    }
     var sh = sheet_();
     var row = findRow_(sh, folio, email);
     if (row < 0) return json_({ ok: false, error: 'not_found' });
@@ -130,9 +133,32 @@ function archive_(email, folio, pdf) {
     }
     return json_({ ok: true });
   } catch (err) {
+    // The requester is never told; the Executions panel keeps the cause.
+    console.error('archive ' + folio + ': ' + (err && err.message ? err.message : err));
     if (file) discard_(file);
     return json_({ ok: false, error: 'server_error' });
   }
+}
+
+function folderId_() {
+  return String(PropertiesService.getScriptProperties().getProperty(DRIVE_FOLDER_KEY) || '').trim();
+}
+
+/**
+ * Run once from the editor (select checkSetup, then Ejecutar): Google asks to
+ * authorize Drive, and the log shows whether DRIVE_FOLDER_ID opens the folder.
+ * Creates nothing.
+ */
+function checkSetup() {
+  var id = folderId_();
+  if (!id) throw new Error('Falta la propiedad del script ' + DRIVE_FOLDER_KEY + '.');
+  var folder;
+  try {
+    folder = DriveApp.getFolderById(id);
+  } catch (err) {
+    throw new Error('No se pudo abrir la carpeta ' + id + ': ' + (err && err.message ? err.message : err));
+  }
+  Logger.log('Carpeta OK: "' + folder.getName() + '" (' + id + '). Las copias se guardarán ahí.');
 }
 
 // Row number (1-based) of `folio` when `email` reserved it, otherwise -1.

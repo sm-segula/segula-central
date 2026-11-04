@@ -21,10 +21,10 @@ Borrar filas de la hoja **no** reinicia ni reutiliza números. Para corregir el 
 5. **Desplegar.** Ve a **Implementar → Nueva implementación → Aplicación web** y usa:
    - *Ejecutar como:* **Yo**.
    - *Quién tiene acceso:* **Cualquier usuario**. La página llama sin sesión de Google.
-   Google pide autorizar los permisos de Hojas de cálculo y de Drive (este último para guardar las copias).
+   Antes de desplegar, en el editor elige la función `checkSetup` y pulsa **Ejecutar**: Google pide autorizar Drive (necesario para las copias) y el registro muestra `Carpeta OK: "<nombre>"`, o qué falta (la propiedad o el acceso a la carpeta). Sin esa autorización las reservas y el registro de descargas funcionan, pero cada copia falla con un error de permisos.
 6. **Copiar la URL.** Copia la URL que termina en `/exec` y ponla en el sitio como `PUBLIC_TRAVEL_FOLIO_URL` (en `.env` o en las variables del build), y vuelve a publicar el sitio.
 
-Si cambias `Code.gs`, crea una **nueva versión** de la misma implementación (**Implementar → Administrar implementaciones → Editar**); así la URL no cambia. Si la versión nueva usa un permiso nuevo (la copia en Drive lo usa), Google pide autorizarlo al guardarla. El script nunca sobreescribe datos de la hoja: si la pestaña `Folios` está vacía le pone el encabezado; si la fila 1 ya tiene un folio (pestaña creada a mano sin encabezado) inserta el encabezado arriba; si tiene un encabezado anterior (Folio, Emitido, Correo; o sin "Archivo") solo renombra "Emitido" a "Reservado" y agrega "Descargado" y "Archivo" si faltan; cualquier otro contenido de la fila 1 se deja como está.
+Si cambias `Code.gs`, crea una **nueva versión** de la misma implementación (**Implementar → Administrar implementaciones → Editar**); así la URL no cambia. Si la versión nueva usa un permiso nuevo (la copia en Drive lo usa), autorízalo ejecutando `checkSetup` desde el editor; Google no lo pide por su cuenta al crear la versión. El script nunca sobreescribe datos de la hoja: si la pestaña `Folios` está vacía le pone el encabezado; si la fila 1 ya tiene un folio (pestaña creada a mano sin encabezado) inserta el encabezado arriba; si tiene un encabezado anterior (Folio, Emitido, Correo; o sin "Archivo") solo renombra "Emitido" a "Reservado" y agrega "Descargado" y "Archivo" si faltan; cualquier otro contenido de la fila 1 se deja como está.
 
 **Orden al actualizar:** publica primero el `Code.gs` nuevo y después la página. Un `Code.gs` de la primera versión no conoce las acciones "downloaded" ni "archive" y las trataría como una reserva; la página lo detecta y no lo reintenta, pero ese intento ya habría gastado un número. Un `Code.gs` que ya conoce "downloaded" rechaza "archive" con `bad_request` sin gastar números.
 
@@ -66,7 +66,7 @@ Si esta llamada falla, la descarga ya ocurrió: la página avisa y guarda el pen
 - `{ "ok": false, "error": "not_configured" }`: falta `DRIVE_FOLDER_ID`.
 - `{ "ok": false, "error": "invalid_email" | "busy" | "server_error" }`
 
-La página no reintenta ni avisa si la copia falla: la descarga y su registro siguen igual y **Archivo** queda vacío. El PDF no cabe en `localStorage`, por eso no hay cola de reintentos para la copia.
+La página no reintenta ni avisa si la copia falla: la descarga y su registro siguen igual y **Archivo** queda vacío. La causa queda en el panel **Ejecuciones** del Apps Script, como un error `archive <folio>: …` (por ejemplo, falta de permiso de Drive o de `DRIVE_FOLDER_ID`). El PDF no cabe en `localStorage`, por eso no hay cola de reintentos para la copia.
 
 ## Límites
 
