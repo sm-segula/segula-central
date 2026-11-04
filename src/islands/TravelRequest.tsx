@@ -68,7 +68,7 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
         <h2 id="tr-p1" class="tr-panel-title">01 · Datos de la solicitud</h2>
         <div class="tr-grid">
           {field('requestDate', 'Fecha de solicitud', { type: 'date' })}
-          {field('employeeName', 'Nombre del empleado', { required: true })}
+          {field('employeeName', 'Nombre completo del empleado', { required: true })}
           {field('employeeNumber', 'Número de empleado / TID', { required: true })}
           {field('email', 'Correo SEGULA', { required: true, type: 'email' })}
           {field('clientProject', 'Cliente / proyecto', { required: true })}

@@ -52,6 +52,7 @@ export async function buildPdf(d: TravelData): Promise<PdfResult> {
     reg: await doc.embedFont(StandardFonts.Helvetica),
     semi: await doc.embedFont(StandardFonts.HelveticaBold),
     tech: await doc.embedFont(StandardFonts.Courier),
+    sign: await doc.embedFont(StandardFonts.TimesRomanItalic),
   };
   let logo: Awaited<ReturnType<PDFDocument['embedPng']>> | null = null;
   try {
@@ -179,7 +180,7 @@ export async function buildPdf(d: TravelData): Promise<PdfResult> {
 
   newPage();
   section('01', 'Request');
-  row([['Request date', fmtDate(f.requestDate), 3], ["Employee's name", f.employeeName, 5], ['Employee number / TID', f.employeeNumber, 4]]);
+  row([['Request date', fmtDate(f.requestDate), 3], ["Employee's full name", f.employeeName, 5], ['Employee number / TID', f.employeeNumber, 4]]);
   row([['SEGULA email', f.email, 6], ['Client / Project', f.clientProject, 6]]);
   row([['Travel objective', f.objective, 12]]);
   row([['Departure date', fmtDate(f.departureDate), 3], ['Return date', fmtDate(f.returnDate), 3], ['Origin of the trip', f.origin, 6]]);
@@ -201,14 +202,16 @@ export async function buildPdf(d: TravelData): Promise<PdfResult> {
   y -= 60;
 
   // Authorization: requester and direct manager signature boxes side by side.
+  // The requester does not sign by hand: the full name IS the signature.
   // Space for the title AND the boxes is reserved first, so they never split
   // across pages (section() alone only reserves room for the title).
   const half = CW / 2 - 8;
   const fieldH = (v: string): number => 22 + wrap(v || '—', F.reg, 10, half - 20).length * 13;
-  const ah = 26 + Math.max(fieldH(f.employeeName), fieldH(f.managerName) + fieldH(f.managerPosition)) + 44;
+  const signLines = wrap(f.employeeName, F.sign, 15, half - 20);
+  const ah = Math.max(26 + signLines.length * 18 + 38, 26 + fieldH(f.managerName) + fieldH(f.managerPosition) + 44);
   ensure(56 + ah + 8);
   section('03', 'Authorization');
-  const box = (x: number, title: string, fields: [string, string][]): void => {
+  const box = (x: number, title: string, fields: [string, string][], signature?: string[]): void => {
     pg.drawRectangle({ x, y: y - ah, width: half, height: ah, borderColor: C.line, borderWidth: 0.8 });
     text(title, x + 10, y - 14, { size: 7, font: F.tech, color: C.blue });
     let yy = y - 26;
@@ -219,9 +222,12 @@ export async function buildPdf(d: TravelData): Promise<PdfResult> {
       yy -= 22 + lines.length * 13;
     });
     pg.drawLine({ start: { x: x + 10, y: y - ah + 24 }, end: { x: x + half - 10, y: y - ah + 24 }, thickness: 0.6, color: C.dark });
-    text('SIGNATURE / DATE', x + 10, y - ah + 13, { size: 6.5, font: F.tech, color: C.muted });
+    signature?.forEach((ln, i) =>
+      text(ln, x + 10, y - ah + 30 + (signature.length - 1 - i) * 18, { size: 15, font: F.sign, color: C.navy }),
+    );
+    text(signature ? 'SIGNATURE (FULL NAME)' : 'SIGNATURE / DATE', x + 10, y - ah + 13, { size: 6.5, font: F.tech, color: C.muted });
   };
-  box(M, 'REQUESTER', [['Name', f.employeeName]]);
+  box(M, 'REQUESTER', [], signLines);
   box(M + CW / 2 + 8, 'DIRECT MANAGER', [['Name', f.managerName], ['Position', f.managerPosition]]);
   y -= ah + 16;
 

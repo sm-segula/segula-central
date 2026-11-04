@@ -65,6 +65,10 @@ export function validate(f: Fields): Partial<Record<Field, string>> {
   REQUIRED.forEach((k) => {
     if (!String(f[k] ?? '').trim()) e[k] = 'Campo obligatorio.';
   });
+  // The full name doubles as the requester signature in the PDF: at least two words.
+  if (!e.employeeName && f.employeeName.trim().split(/\s+/).length < 2) {
+    e.employeeName = 'Escribe tu nombre completo (mínimo 2 palabras).';
+  }
   if (f.email && !e.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) e.email = 'Escribe un correo válido.';
   if (f.departureDate && f.returnDate && f.returnDate < f.departureDate) {
     e.returnDate = 'La fecha de regreso no puede ser anterior a la salida.';
