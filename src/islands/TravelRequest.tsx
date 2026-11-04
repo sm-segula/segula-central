@@ -1,8 +1,15 @@
 import { REQ, money, total, fmtSize, type Currency, type Field } from './travel/model';
 import { useTravelRequest } from './travel/useTravelRequest';
 import {
-  Button, Dropzone, IconButton, IconCircle, Input, Modal, StatTile, StatusBadge, Textarea, Toast,
+  Button, Dropzone, IconButton, IconCircle, Input, Modal, Segmented, StatTile, StatusBadge, Textarea, Toast,
 } from './travel/ui';
+
+const CURRENCIES = ['MXN', 'USD'] as const;
+const CURRENCY_NAME: Record<Currency, string> = {
+  MXN: 'pesos mexicanos (MXN)',
+  USD: 'dólares estadounidenses (USD)',
+  EUR: 'euros (EUR)',
+};
 import Icon from './icons';
 
 interface Props {
@@ -15,9 +22,9 @@ interface Props {
  * attaches receipts and downloads one PDF with a unique folio. Port of the
  * Claude Design prototype "Solicitud de Viajes". Styles: travel/travel.css.
  */
-export default function TravelRequest({ currency = 'MXN', folioPrefix = 'SEG-VJ' }: Props) {
-  const s = useTravelRequest(currency, folioPrefix);
-  const { f, errors: err } = s;
+export default function TravelRequest({ currency: initialCurrency = 'MXN', folioPrefix = 'SEG-VJ' }: Props) {
+  const s = useTravelRequest(initialCurrency, folioPrefix);
+  const { f, errors: err, currency } = s;
   const totalFmt = money(total(s));
   const n = s.files.length;
   const summary = `${n === 0 ? 'Sin adjuntos' : n === 1 ? '1 adjunto' : `${n} adjuntos`} · Total $ ${totalFmt} ${currency}`;
@@ -81,8 +88,11 @@ export default function TravelRequest({ currency = 'MXN', folioPrefix = 'SEG-VJ'
       </section>
 
       <section class="tr-panel" aria-labelledby="tr-p2">
-        <h2 id="tr-p2" class="tr-panel-title">02 · Requerimientos especiales</h2>
-        <p class="tr-note">Indica solo lo que necesites. Los costos se suman al total aprobado.</p>
+        <div class="tr-panel-head">
+          <h2 id="tr-p2" class="tr-panel-title">02 · Requerimientos especiales</h2>
+          <Segmented label="Moneda de los gastos" options={CURRENCIES} value={currency} onChange={s.setCurrency} />
+        </div>
+        <p class="tr-note">Indica solo lo que necesites. Los costos se suman al total aprobado. Elige la moneda en la que capturas tus gastos.</p>
         <div class="tr-rows">
           {REQ.map((r) => (
             <div class="tr-req" key={r.key}>
@@ -144,7 +154,7 @@ export default function TravelRequest({ currency = 'MXN', folioPrefix = 'SEG-VJ'
           <div class="tr-bar-actions">
             <Button variant="ghost" icon="rotate-ccw" onClick={s.reset}>Nueva solicitud</Button>
             <Button variant="secondary" icon="eye" loading={s.busyPreview} onClick={s.preview}>Vista previa</Button>
-            <Button variant="primary" icon="download" loading={s.busyDownload} onClick={s.download}>Descargar PDF</Button>
+            <Button variant="primary" icon="download" loading={s.busyDownload} onClick={s.requestDownload}>Descargar PDF</Button>
           </div>
         </div>
       </div>
@@ -160,8 +170,19 @@ export default function TravelRequest({ currency = 'MXN', folioPrefix = 'SEG-VJ'
           <iframe title="Vista previa" src={s.previewUrl} class="tr-preview-frame" />
           <div class="tr-preview-actions">
             <Button variant="secondary" onClick={s.closePreview}>Seguir editando</Button>
-            <Button variant="primary" icon="download" loading={s.busyDownload} onClick={s.download}>Descargar PDF</Button>
+            <Button variant="primary" icon="download" loading={s.busyDownload} onClick={s.requestDownload}>Descargar PDF</Button>
           </div>
+        </div>
+      </Modal>
+
+      <Modal open={s.confirmOpen} title="Confirma la moneda de tus gastos" width={560} onClose={s.closeConfirm}>
+        <p class="tr-confirm-text">
+          Tus gastos se registrarán en <strong>{CURRENCY_NAME[currency]}</strong>. Verifica que todos los costos que capturaste estén en {currency} antes de generar el PDF.
+        </p>
+        <p class="tr-confirm-total">$ {totalFmt} {currency}</p>
+        <div class="tr-confirm-actions">
+          <Button variant="secondary" onClick={s.closeConfirm}>Cambiar moneda</Button>
+          <Button variant="primary" icon="download" onClick={s.confirmDownload}>Sí, están en {currency}</Button>
         </div>
       </Modal>
     </div>

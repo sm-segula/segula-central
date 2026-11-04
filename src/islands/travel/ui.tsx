@@ -137,6 +137,26 @@ export function IconButton({ icon, label, onClick }: { icon: IconName; label: st
   );
 }
 
+/** Two or more mutually exclusive options (radio group styled as a pill switch). */
+export function Segmented<T extends string>({ label, options, value, onChange }: { label: string; options: readonly T[]; value: T; onChange: (v: T) => void }) {
+  return (
+    <div class="tr-seg" role="radiogroup" aria-label={label}>
+      {options.map((o) => (
+        <button
+          key={o}
+          type="button"
+          role="radio"
+          aria-checked={o === value}
+          class={`tr-seg-opt${o === value ? ' is-active' : ''}`}
+          onClick={() => onChange(o)}
+        >
+          {o}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /* ---------- Data ---------- */
 
 export type Status = 'pending' | 'partial' | 'complete' | 'error' | 'info';

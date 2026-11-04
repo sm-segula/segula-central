@@ -304,6 +304,49 @@ body:has(.tr-bar) { padding-bottom: 82px; }
 .tr-close:hover { background: var(--color-hover); color: var(--text-primary); }
 .tr-close--toast { width: 32px; height: 32px; margin: -6px -6px 0 0; border-radius: 8px; }
 
+/* ---------- Segmented (currency) ---------- */
+.tr-seg {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+}
+.tr-seg-opt {
+  min-width: 72px;
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font: 500 14px/1 var(--font-sans);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background-color var(--duration-fast), color var(--duration-fast);
+}
+.tr-seg-opt:hover { color: var(--text-primary); background: var(--color-hover); }
+.tr-seg-opt.is-active { background: var(--gradient-brand); color: #FFFFFF; }
+.tr-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.tr-panel-head .tr-panel-title { margin: 0; }
+.tr-confirm-text { margin: 0; font: var(--font-body); color: var(--text-muted); }
+.tr-confirm-text strong { color: var(--text-primary); font-weight: 500; }
+.tr-confirm-total {
+  margin: 20px 0 0;
+  font: 300 clamp(32px, 4vw, 44px) / 1 var(--font-sans);
+  letter-spacing: -0.02em;
+  color: var(--brand-lightblue);
+}
+.tr-confirm-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 28px; }
+
 /* ---------- Data ---------- */
 .tr-badge {
   display: inline-flex;

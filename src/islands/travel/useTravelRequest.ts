@@ -18,7 +18,9 @@ export interface ToastState {
 
 let nextId = 1;
 
-export function useTravelRequest(currency: Currency, prefix: string) {
+export function useTravelRequest(initialCurrency: Currency, prefix: string) {
+  const [currency, setCurrency] = useState<Currency>(initialCurrency);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [f, setF] = useState<Fields>(emptyFields);
   const [req, setReq] = useState<Record<ReqKey, ReqRow>>(emptyReq);
   const [files, setFiles] = useState<Attachment[]>([]);
@@ -112,6 +114,18 @@ export function useTravelRequest(currency: Currency, prefix: string) {
     }
   };
 
+  // "Descargar PDF" validates first, then asks the user to confirm the currency
+  // of their expenses; the PDF is only generated after that confirmation.
+  const requestDownload = (): void => {
+    if (busyDownload || !check()) return;
+    setPreviewOpen(false);
+    setConfirmOpen(true);
+  };
+  const confirmDownload = (): void => {
+    setConfirmOpen(false);
+    void download();
+  };
+
   const download = async (): Promise<void> => {
     if (busyDownload || !check()) return;
     setBusyDownload(true);
@@ -149,6 +163,8 @@ export function useTravelRequest(currency: Currency, prefix: string) {
     setIssued(false);
     setPreviewUrl('');
     setPreviewOpen(false);
+    setConfirmOpen(false);
+    setCurrency(initialCurrency);
     setToast(null);
     setFolio(peekFolio(prefix));
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -156,10 +172,12 @@ export function useTravelRequest(currency: Currency, prefix: string) {
 
   const closePreview = useCallback(() => setPreviewOpen(false), []);
   const closeToast = useCallback(() => setToast(null), []);
+  const closeConfirm = useCallback(() => setConfirmOpen(false), []);
 
   return {
+    currency, setCurrency, confirmOpen,
     f, req, files, errors, folio, issued, previewUrl, previewOpen, busyPreview, busyDownload, toast,
     setField, setReqField, addFiles, removeFile,
-    preview, download, reset, closePreview, closeToast,
+    preview, requestDownload, confirmDownload, reset, closePreview, closeToast, closeConfirm,
   };
 }
