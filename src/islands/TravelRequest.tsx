@@ -193,6 +193,28 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
         </div>
       </Modal>
 
+      {/* Download finished: every way of closing it (button, X, Esc, backdrop) goes to the site root. */}
+      <Modal open={!!s.done} title="PDF descargado" width={520} onClose={s.closeDone}>
+        {s.done && (
+          <div class="tr-done">
+            <IconCircle name="circle-check" size={64} color="var(--brand-green)" />
+            <p class="tr-done-title">Archivo descargado exitosamente</p>
+            <span class="tr-folio-label">Folio emitido</span>
+            <p class="tr-done-folio">{s.done.folio}</p>
+            {s.done.notes.map((note) => (
+              <p class="tr-done-note" key={note}>
+                <Icon name="triangle-alert" size={16} color="var(--brand-yellow)" />
+                <span>{note}</span>
+              </p>
+            ))}
+            <p class="tr-confirm-text">Al cerrar volverás al inicio.</p>
+            <div class="tr-confirm-actions tr-done-actions">
+              <Button variant="primary" onClick={s.closeDone}>Cerrar</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
       {s.step && <Loader message={s.step} />}
 
       {/* Access gate: no onClose, so it cannot be dismissed. noValidate keeps the

@@ -36,6 +36,8 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
   const [accessEmail, setAccessEmail] = useState('');
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Download finished: issued folio + warnings, shown in a modal that leads to the site root.
+  const [done, setDone] = useState<{ folio: string; notes: string[] } | null>(null);
   const [f, setF] = useState<Fields>(emptyFields);
   const [req, setReq] = useState<Record<ReqKey, ReqRow>>(emptyReq);
   const [files, setFiles] = useState<Attachment[]>([]);
@@ -238,7 +240,8 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
         failed.length ? `No se fusionó: ${failed.join(', ')}.` : '',
         registered ? '' : 'No se pudo registrar la descarga en el control de folios; se reintentará automáticamente.',
       ].filter(Boolean);
-      notify(notes.length ? 'warning' : 'success', 'PDF descargado', `Folio ${current} emitido.${notes.length ? ` ${notes.join(' ')}` : ''}`);
+      setToast(null);
+      setDone({ folio: current, notes });
     } catch (err) {
       notify('error', 'No se pudo generar el PDF', err instanceof Error ? err.message : String(err));
     } finally {
@@ -274,10 +277,13 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
   const closePreview = useCallback(() => setPreviewOpen(false), []);
   const closeToast = useCallback(() => setToast(null), []);
   const closeConfirm = useCallback(() => setConfirmOpen(false), []);
+  // Closing the "downloaded" modal leaves the page, so staying here cannot
+  // reserve another folio by accident.
+  const closeDone = useCallback(() => window.location.assign(import.meta.env.BASE_URL || '/'), []);
 
   return {
     gateOpen, gateEmail, gateRemember, gateError, setGateField, setGateRemember: toggleRemember, enter,
-    currency, setCurrency, confirmOpen,
+    currency, setCurrency, confirmOpen, done, closeDone,
     f, req, files, errors, folio, reserving, issued, step, previewUrl, previewOpen, busyPreview, busyDownload, toast,
     setField, setReqField, addFiles, removeFile,
     preview, requestDownload, confirmDownload, reset, closePreview, closeToast, closeConfirm,
