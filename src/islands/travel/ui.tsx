@@ -29,16 +29,18 @@ interface InputProps {
   icon?: IconName;
   suffix?: string;
   inputMode?: 'decimal' | 'text' | 'email';
+  readOnly?: boolean;
+  autoComplete?: string;
 }
 
-export function Input({ label, value, onInput, type = 'text', required, error, icon, suffix, inputMode }: InputProps) {
+export function Input({ label, value, onInput, type = 'text', required, error, icon, suffix, inputMode, readOnly, autoComplete }: InputProps) {
   const id = useId();
   const [focus, setFocus] = useState(false);
   // Date inputs always show their mask, so their label stays floated.
   const floated = focus || value.length > 0 || type === 'date';
   return (
     <div class="tr-field-wrap">
-      <div class={`tr-field${focus ? ' is-focus' : ''}${error ? ' is-error' : ''}`}>
+      <div class={`tr-field${focus ? ' is-focus' : ''}${error ? ' is-error' : ''}${readOnly ? ' is-readonly' : ''}`}>
         {icon && (
           <span class="tr-field-icon">
             <Icon name={icon} size={20} />
@@ -52,6 +54,8 @@ export function Input({ label, value, onInput, type = 'text', required, error, i
           type={type}
           value={value}
           inputMode={inputMode}
+          readOnly={readOnly}
+          autoComplete={autoComplete}
           required={required}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-h` : undefined}
@@ -157,6 +161,15 @@ export function Segmented<T extends string>({ label, options, value, onChange }:
   );
 }
 
+export function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label class="tr-check">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.currentTarget.checked)} />
+      <span>{label}</span>
+    </label>
+  );
+}
+
 /* ---------- Data ---------- */
 
 export type Status = 'pending' | 'partial' | 'complete' | 'error' | 'info';
@@ -226,17 +239,19 @@ export function Toast({ tone, title, children, onClose }: { tone: Tone; title: s
   );
 }
 
-export function Modal({ open, title, width = 560, onClose, children }: { open: boolean; title: string; width?: number; onClose: () => void; children: ComponentChildren }) {
+/** Without `onClose` the modal cannot be dismissed (no close button, Esc or backdrop). */
+export function Modal({ open, title, width = 560, onClose, children }: { open: boolean; title: string; width?: number; onClose?: () => void; children: ComponentChildren }) {
   const panel = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onClose?.();
     };
     document.addEventListener('keydown', onKey);
     const prev = document.documentElement.style.overflow;
     document.documentElement.style.overflow = 'hidden';
-    panel.current?.focus();
+    // Focus the first input when there is one (the access gate), else the panel.
+    (panel.current?.querySelector<HTMLElement>('input') ?? panel.current)?.focus();
     return () => {
       document.removeEventListener('keydown', onKey);
       document.documentElement.style.overflow = prev;
@@ -244,16 +259,18 @@ export function Modal({ open, title, width = 560, onClose, children }: { open: b
   }, [open, onClose]);
   if (!open) return null;
   return (
-    <div class="tr-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div class="tr-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
       <div ref={panel} class="tr-modal" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} style={{ width: `${width}px` }}>
         <div class="tr-modal-head">
           <div class="tr-modal-title">
             <h2>{title}</h2>
             <span class="tr-rule" aria-hidden="true" />
           </div>
-          <button type="button" class="tr-close" aria-label="Cerrar" onClick={onClose}>
-            <Icon name="x" size={20} />
-          </button>
+          {onClose && (
+            <button type="button" class="tr-close" aria-label="Cerrar" onClick={onClose}>
+              <Icon name="x" size={20} />
+            </button>
+          )}
         </div>
         {children}
       </div>

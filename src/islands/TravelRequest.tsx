@@ -1,8 +1,9 @@
 import { REQ, money, total, fmtSize, type Currency, type Field } from './travel/model';
 import { useTravelRequest } from './travel/useTravelRequest';
 import {
-  Button, Dropzone, IconButton, IconCircle, Input, Modal, Segmented, StatTile, StatusBadge, Textarea, Toast,
+  Button, Checkbox, Dropzone, IconButton, IconCircle, Input, Modal, Segmented, StatTile, StatusBadge, Textarea, Toast,
 } from './travel/ui';
+import Icon from './icons';
 
 const CURRENCIES = ['MXN', 'USD'] as const;
 const CURRENCY_NAME: Record<Currency, string> = {
@@ -10,11 +11,12 @@ const CURRENCY_NAME: Record<Currency, string> = {
   USD: 'dólares estadounidenses (USD)',
   EUR: 'euros (EUR)',
 };
-import Icon from './icons';
 
 interface Props {
   currency?: Currency;
   folioPrefix?: string;
+  /** Apps Script web app that issues folios; without it a per-browser counter is used. */
+  folioEndpoint?: string;
 }
 
 /**
@@ -22,20 +24,21 @@ interface Props {
  * attaches receipts and downloads one PDF with a unique folio. Port of the
  * Claude Design prototype "Solicitud de Viajes". Styles: travel/travel.css.
  */
-export default function TravelRequest({ currency: initialCurrency = 'MXN', folioPrefix = 'STRA-VJ' }: Props) {
-  const s = useTravelRequest(initialCurrency, folioPrefix);
+export default function TravelRequest({ currency: initialCurrency = 'MXN', folioPrefix = 'STRA-VJ', folioEndpoint }: Props) {
+  const s = useTravelRequest(initialCurrency, folioPrefix, folioEndpoint);
   const { f, errors: err, currency } = s;
   const totalFmt = money(total(s));
   const n = s.files.length;
   const summary = `${n === 0 ? 'Sin adjuntos' : n === 1 ? '1 adjunto' : `${n} adjuntos`} · Total $ ${totalFmt} ${currency}`;
 
   // Shorthand for a bound single-line field.
-  const field = (k: Field, label: string, opts: { required?: boolean; type?: 'text' | 'email' | 'date'; icon?: 'map-pin'; wide?: boolean } = {}) => (
+  const field = (k: Field, label: string, opts: { required?: boolean; type?: 'text' | 'email' | 'date'; icon?: 'map-pin'; wide?: boolean; readOnly?: boolean } = {}) => (
     <div data-field={k} class={opts.wide ? 'tr-span' : undefined}>
       <Input
         label={label}
         type={opts.type}
         required={opts.required}
+        readOnly={opts.readOnly}
         icon={opts.icon}
         value={f[k]}
         error={err[k]}
@@ -60,7 +63,7 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
         <div class="tr-folio" data-reveal data-reveal-delay="140">
           <span class="tr-folio-label">Folio</span>
           <span class="tr-folio-value">{s.folio || '—'}</span>
-          <StatusBadge status={s.issued ? 'complete' : 'pending'}>{s.issued ? 'Emitido' : 'Reservado'}</StatusBadge>
+          <StatusBadge status={s.issued ? 'complete' : 'pending'}>{s.issued ? 'Emitido' : 'Por asignar'}</StatusBadge>
         </div>
       </header>
 
@@ -70,7 +73,7 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
           {field('requestDate', 'Fecha de solicitud', { type: 'date' })}
           {field('employeeName', 'Nombre completo del empleado', { required: true })}
           {field('employeeNumber', 'Número de empleado / TID', { required: true })}
-          {field('email', 'Correo SEGULA', { required: true, type: 'email' })}
+          {field('email', 'Correo SEGULA', { required: true, type: 'email', readOnly: true })}
           {field('clientProject', 'Cliente / proyecto', { required: true })}
           {field('po', 'PO a facturar')}
           <div data-field="objective" class="tr-span">
@@ -180,6 +183,28 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
           <Button variant="secondary" onClick={s.closeConfirm}>Cambiar moneda</Button>
           <Button variant="primary" icon="download" onClick={s.confirmDownload}>Sí, están en {currency}</Button>
         </div>
+      </Modal>
+
+      {/* Access gate: no onClose, so it cannot be dismissed. noValidate keeps the
+          browser from adding its own hints to the single "Correo incorrecto." */}
+      <Modal open={s.gateOpen} title="Acceso a SEGULA Travel" width={480}>
+        <form
+          class="tr-gate"
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            s.enter();
+          }}
+        >
+          <p class="tr-confirm-text">Ingresa tu correo corporativo para continuar.</p>
+          <Input label="Correo corporativo" inputMode="email" autoComplete="email" value={s.gateEmail} error={s.gateError} onInput={s.setGateField} />
+          <Checkbox label="Recordar correo" checked={s.gateRemember} onChange={s.setGateRemember} />
+          <div class="tr-confirm-actions">
+            <button type="submit" class="tr-btn tr-btn--primary tr-btn--md">
+              <span class="tr-btn-label">Continuar</span>
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

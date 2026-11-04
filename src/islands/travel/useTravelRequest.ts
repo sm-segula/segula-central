@@ -1,14 +1,20 @@
 /**
  * State and actions of the travel request form (port of the prototype's
  * Component class). The PDF module is imported on demand so pdf-lib is only
- * downloaded when the user asks for a preview or a download.
+ * downloaded when the user asks for a preview or a download. The page opens
+ * behind an access gate (corporate email) and the folio is issued only when
+ * the user confirms the download.
  */
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import {
-  FIELDS, MAX_MB, bumpSeq, emptyFields, emptyReq, fileKind, peekFolio, validate,
+  FIELDS, MAX_MB, emptyFields, emptyReq, fileKind, validate,
   type Attachment, type Currency, type Field, type Fields, type ReqKey, type ReqRow,
 } from './model';
+import { EMAIL_ERROR, isCorporateEmail, issueFolio, normalizeEmail, readRememberedEmail, rememberEmail } from './folio';
 import type { Tone } from './ui';
+
+/** Folio printed on preview PDFs, before the real one is issued at download. */
+const PREVIEW_FOLIO = 'PREVIEW';
 
 export interface ToastState {
   tone: Tone;
@@ -18,7 +24,12 @@ export interface ToastState {
 
 let nextId = 1;
 
-export function useTravelRequest(initialCurrency: Currency, prefix: string) {
+export function useTravelRequest(initialCurrency: Currency, prefix: string, endpoint?: string) {
+  const [gateOpen, setGateOpen] = useState(true);
+  const [gateEmail, setGateEmail] = useState('');
+  const [gateRemember, setGateRemember] = useState(false);
+  const [gateError, setGateError] = useState('');
+  const [accessEmail, setAccessEmail] = useState('');
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [f, setF] = useState<Fields>(emptyFields);
@@ -35,8 +46,14 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string) {
   const toastTimer = useRef<number>();
   const urlRef = useRef('');
 
-  // localStorage only exists in the browser: reserve the folio after mount.
-  useEffect(() => setFolio(peekFolio(prefix)), [prefix]);
+  // localStorage only exists in the browser: read the remembered email after mount.
+  useEffect(() => {
+    const saved = readRememberedEmail();
+    if (saved) {
+      setGateEmail(saved);
+      setGateRemember(true);
+    }
+  }, []);
   useEffect(() => () => {
     window.clearTimeout(toastTimer.current);
     if (urlRef.current) URL.revokeObjectURL(urlRef.current);
@@ -48,7 +65,25 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string) {
     toastTimer.current = window.setTimeout(() => setToast(null), 6000);
   }, []);
 
+  const setGateField = (v: string): void => {
+    setGateEmail(v);
+    setGateError('');
+  };
+  // Access gate: any rejection gets the same message, with no hint of the domain.
+  const enter = (): void => {
+    const email = normalizeEmail(gateEmail);
+    if (!isCorporateEmail(email)) {
+      setGateError(EMAIL_ERROR);
+      return;
+    }
+    rememberEmail(email, gateRemember);
+    setAccessEmail(email);
+    setF((s) => ({ ...s, email }));
+    setGateOpen(false);
+  };
+
   const setField = (k: Field, v: string): void => {
+    if (k === 'email') return; // locked to the email given at the access gate
     setF((s) => ({ ...s, [k]: v }));
     setErrors((e) => {
       if (!e[k]) return e;
@@ -89,9 +124,9 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string) {
     return false;
   };
 
-  const build = async (): Promise<{ url: string; failed: string[] }> => {
+  const build = async (pdfFolio: string): Promise<{ url: string; failed: string[] }> => {
     const { buildPdf } = await import('./pdf');
-    const { bytes, failed } = await buildPdf({ f, req, files, folio, currency });
+    const { bytes, failed } = await buildPdf({ f, req, files, folio: pdfFolio, currency });
     if (urlRef.current) URL.revokeObjectURL(urlRef.current);
     // Copy into a plain ArrayBuffer-backed view: Blob does not accept SharedArrayBuffer views.
     const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'application/pdf' }));
@@ -104,7 +139,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string) {
     if (busyPreview || !check()) return;
     setBusyPreview(true);
     try {
-      const { failed } = await build();
+      const { failed } = await build(folio || PREVIEW_FOLIO);
       setPreviewOpen(true);
       if (failed.length) notify('warning', 'Adjuntos no fusionados', failed.join(', '));
     } catch (err) {
@@ -129,22 +164,31 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string) {
   const download = async (): Promise<void> => {
     if (busyDownload || !check()) return;
     setBusyDownload(true);
+    // The folio is issued once per request; later downloads reuse it.
+    let current = folio;
+    if (!current) {
+      try {
+        current = await issueFolio(endpoint, accessEmail, prefix);
+      } catch (err) {
+        notify('error', 'No se pudo asignar el folio', err instanceof Error ? err.message : String(err));
+        setBusyDownload(false);
+        return;
+      }
+      setFolio(current);
+      setIssued(true);
+    }
     try {
-      const { url, failed } = await build();
+      const { url, failed } = await build(current);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${folio}.pdf`;
+      a.download = `${current}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
-      if (!issued) {
-        bumpSeq();
-        setIssued(true);
-      }
       notify(
         failed.length ? 'warning' : 'success',
         'PDF descargado',
-        failed.length ? `Folio ${folio}. No se fusionó: ${failed.join(', ')}` : `Folio ${folio} emitido.`,
+        failed.length ? `Folio ${current}. No se fusionó: ${failed.join(', ')}` : `Folio ${current} emitido.`,
       );
     } catch (err) {
       notify('error', 'No se pudo generar el PDF', err instanceof Error ? err.message : String(err));
@@ -156,7 +200,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string) {
   const reset = (): void => {
     if (urlRef.current) URL.revokeObjectURL(urlRef.current);
     urlRef.current = '';
-    setF(emptyFields());
+    setF({ ...emptyFields(), email: accessEmail });
     setReq(emptyReq());
     setFiles([]);
     setErrors({});
@@ -166,7 +210,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string) {
     setConfirmOpen(false);
     setCurrency(initialCurrency);
     setToast(null);
-    setFolio(peekFolio(prefix));
+    setFolio('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -175,6 +219,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string) {
   const closeConfirm = useCallback(() => setConfirmOpen(false), []);
 
   return {
+    gateOpen, gateEmail, gateRemember, gateError, setGateField, setGateRemember, enter,
     currency, setCurrency, confirmOpen,
     f, req, files, errors, folio, issued, previewUrl, previewOpen, busyPreview, busyDownload, toast,
     setField, setReqField, addFiles, removeFile,
