@@ -217,6 +217,34 @@ export async function retryUnmarked(endpoint: string | undefined, email: string,
   if (done.length) writeUnmarked(readUnmarked().filter((x) => !done.some((d) => sameEntry(d, x))));
 }
 
+/** Largest PDF sent for the internal copy (Apps Script documents no doPost limit). */
+export const MAX_ARCHIVE_BYTES = 20 * 1024 * 1024;
+
+const toBase64 = (bytes: Uint8Array): string => {
+  let bin = '';
+  // Chunked: spreading a whole PDF into fromCharCode would overflow the call stack.
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+};
+
+/**
+ * Sends the downloaded PDF to the folio service, which keeps an internal copy
+ * in Drive linked from the folio sheet. Internal control only: it never throws,
+ * is never retried and its outcome is never shown to the requester. Resolves to
+ * whether the copy was stored.
+ */
+export async function archivePdf(
+  endpoint: string | undefined, email: string, folio: string, bytes: Uint8Array, timeoutMs = 45000,
+): Promise<boolean> {
+  if (!endpoint || !bytes.length || bytes.length > MAX_ARCHIVE_BYTES) return false;
+  try {
+    const data = await post(endpoint, { action: 'archive', email: normalizeEmail(email), folio, pdf: toBase64(bytes) }, timeoutMs);
+    return data.ok === true && !data.folio;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Issues the next folio. With an endpoint, the Apps Script web app assigns it
  * atomically (shared across users). Without one (local dev), the old per-browser
