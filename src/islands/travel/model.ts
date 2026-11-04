@@ -103,5 +103,5 @@ export const bumpSeq = (): void => {
     /* storage blocked: folio stays the same next time */
   }
 };
-export const peekFolio = (prefix = 'SEG-VJ'): string =>
+export const peekFolio = (prefix = 'STRA-VJ'): string =>
   `${prefix}-${new Date().getFullYear()}-${String(readSeq() + 1).padStart(6, '0')}`;

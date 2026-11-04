@@ -22,7 +22,7 @@ interface Props {
  * attaches receipts and downloads one PDF with a unique folio. Port of the
  * Claude Design prototype "Solicitud de Viajes". Styles: travel/travel.css.
  */
-export default function TravelRequest({ currency: initialCurrency = 'MXN', folioPrefix = 'SEG-VJ' }: Props) {
+export default function TravelRequest({ currency: initialCurrency = 'MXN', folioPrefix = 'STRA-VJ' }: Props) {
   const s = useTravelRequest(initialCurrency, folioPrefix);
   const { f, errors: err, currency } = s;
   const totalFmt = money(total(s));

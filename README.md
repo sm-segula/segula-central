@@ -98,8 +98,8 @@ La ruta `/segula-travel` (entrada "SEGULA Travel" del menú) es el formulario de
 - **Isla.** `src/islands/TravelRequest.tsx` pinta la vista. El estado y las acciones viven en `src/islands/travel/useTravelRequest.ts`; campos, validación y totales en `model.ts`; los primitivos del DS (Input, Button, Modal, Dropzone…) en `ui.tsx`; los estilos `tr-*` en `travel.css`, importado desde la página.
 - **PDF.** `src/islands/travel/pdf.ts` genera el documento con `pdf-lib`. Se carga con `import()` solo al pulsar "Vista previa" o "Descargar PDF", así que no pesa en la carga inicial. Los adjuntos PDF se fusionan, las imágenes PNG/JPG se agregan como página y el resto de formatos solo se listan. Usa las fuentes estándar del PDF (Helvetica/Courier) porque la licencia web de Proxima Nova y Rakesly no está confirmada.
 - **Logo del PDF.** `public/assets/segula-logo-classic-darkblue.png`, derivado del logo blanco. Reemplázalo por el oficial cuando esté disponible.
-- **Folio.** Formato `SEG-VJ-<año>-<consecutivo de 6 dígitos>`. El consecutivo se guarda en `localStorage` (`segula.viajes.seq`) del navegador de cada usuario y avanza al descargar el PDF. No es único entre usuarios: para un folio global hace falta un backend.
-- **Moneda y prefijo.** Se pasan como props en `src/pages/segula-travel.astro` (`currency="MXN"`, `folioPrefix="SEG-VJ"`).
+- **Folio.** Formato `STRA-VJ-<año>-<consecutivo de 6 dígitos>`. El consecutivo se guarda en `localStorage` (`segula.viajes.seq`) del navegador de cada usuario y avanza al descargar el PDF. No es único entre usuarios: para un folio global hace falta un backend.
+- **Moneda y prefijo.** Se pasan como props en `src/pages/segula-travel.astro` (`currency="MXN"`, `folioPrefix="STRA-VJ"`).
 
 ## Convenciones
 
