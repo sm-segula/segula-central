@@ -151,7 +151,7 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
         <div class="tr-bar-inner">
           <span class="tr-bar-summary">{summary}</span>
           <div class="tr-bar-actions">
-            <Button variant="ghost" icon="rotate-ccw" onClick={s.reset}>Nueva solicitud</Button>
+            <Button variant="ghost" icon="rotate-ccw" disabled={s.busyDownload} onClick={s.reset}>Nueva solicitud</Button>
             <Button variant="secondary" icon="eye" loading={s.busyPreview} onClick={s.preview}>Vista previa</Button>
             <Button variant="primary" icon="download" loading={s.busyDownload} onClick={s.requestDownload}>Descargar PDF</Button>
           </div>

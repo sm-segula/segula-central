@@ -114,16 +114,17 @@ interface ButtonProps {
   size?: 'md' | 'sm';
   icon?: IconName;
   loading?: boolean;
+  disabled?: boolean;
   onClick?: () => void;
   children: ComponentChildren;
 }
 
-export function Button({ variant = 'primary', size = 'md', icon, loading, onClick, children }: ButtonProps) {
+export function Button({ variant = 'primary', size = 'md', icon, loading, disabled, onClick, children }: ButtonProps) {
   return (
     <button
       type="button"
       class={`tr-btn tr-btn--${variant} tr-btn--${size}`}
-      disabled={loading}
+      disabled={loading || disabled}
       aria-busy={loading || undefined}
       onClick={onClick}
     >

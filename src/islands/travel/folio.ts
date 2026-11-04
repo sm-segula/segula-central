@@ -57,12 +57,13 @@ export async function issueFolio(endpoint: string | undefined, email: string, pr
   } catch {
     throw new FolioError('Sin conexión con el servicio de folios. Intenta de nuevo.');
   }
-  let data: { ok?: boolean; folio?: string; error?: string };
+  let data: { ok?: boolean; folio?: string; error?: string } | null;
   try {
     data = await res.json();
   } catch {
-    throw new FolioError('El servicio de folios respondió algo inesperado.');
+    data = null;
   }
+  if (!data || typeof data !== 'object') throw new FolioError('El servicio de folios respondió algo inesperado.');
   if (data.ok && typeof data.folio === 'string' && data.folio.startsWith(`${prefix}-`)) return data.folio;
   if (data.error === 'invalid_email') throw new FolioError(EMAIL_ERROR);
   if (data.error === 'busy') throw new FolioError('El servicio de folios está ocupado. Intenta de nuevo.');

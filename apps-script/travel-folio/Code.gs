@@ -20,6 +20,7 @@ function doPost(e) {
   } catch (err) {
     return json_({ ok: false, error: 'bad_request' });
   }
+  if (!body || typeof body !== 'object') return json_({ ok: false, error: 'bad_request' });
   var email = String(body.email || '').trim().toLowerCase();
   if (!CORPORATE.test(email)) return json_({ ok: false, error: 'invalid_email' });
 
@@ -29,12 +30,16 @@ function doPost(e) {
     var year = new Date().getFullYear();
     var props = PropertiesService.getScriptProperties();
     var key = 'seq-' + year;
-    var seq = Number(props.getProperty(key) || '0') + 1;
+    var prev = Number(props.getProperty(key) || '0');
+    // A hand-edited, non-numeric or exhausted counter must stop, not issue "000NaN".
+    if (!isFinite(prev) || prev < 0 || prev % 1 !== 0 || prev >= 999999) return json_({ ok: false, error: 'server_error' });
+    var seq = prev + 1;
     // Save the counter before logging: if the log fails, the number is skipped,
     // never handed out twice.
     props.setProperty(key, String(seq));
     var folio = PREFIX + '-' + year + '-' + ('000000' + seq).slice(-6);
     sheet_().appendRow([folio, new Date(), email]);
+    SpreadsheetApp.flush(); // write the row before releasing the lock, so rows stay in folio order
     return json_({ ok: true, folio: folio });
   } catch (err) {
     return json_({ ok: false, error: 'server_error' });

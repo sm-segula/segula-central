@@ -65,6 +65,11 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     toastTimer.current = window.setTimeout(() => setToast(null), 6000);
   }, []);
 
+  // Unchecking "Recordar correo" forgets the stored email right away.
+  const toggleRemember = (v: boolean): void => {
+    setGateRemember(v);
+    if (!v) rememberEmail('', false);
+  };
   const setGateField = (v: string): void => {
     setGateEmail(v);
     setGateError('');
@@ -174,8 +179,8 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
         setBusyDownload(false);
         return;
       }
+      // Kept even if the build below fails, so a retry reuses it (no number burned).
       setFolio(current);
-      setIssued(true);
     }
     try {
       const { url, failed } = await build(current);
@@ -185,6 +190,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
       document.body.appendChild(a);
       a.click();
       a.remove();
+      setIssued(true);
       notify(
         failed.length ? 'warning' : 'success',
         'PDF descargado',
@@ -198,6 +204,8 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
   };
 
   const reset = (): void => {
+    // A reset while a folio is being issued would hand that folio to the new form.
+    if (busyDownload) return;
     if (urlRef.current) URL.revokeObjectURL(urlRef.current);
     urlRef.current = '';
     setF({ ...emptyFields(), email: accessEmail });
@@ -219,7 +227,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
   const closeConfirm = useCallback(() => setConfirmOpen(false), []);
 
   return {
-    gateOpen, gateEmail, gateRemember, gateError, setGateField, setGateRemember, enter,
+    gateOpen, gateEmail, gateRemember, gateError, setGateField, setGateRemember: toggleRemember, enter,
     currency, setCurrency, confirmOpen,
     f, req, files, errors, folio, issued, previewUrl, previewOpen, busyPreview, busyDownload, toast,
     setField, setReqField, addFiles, removeFile,
