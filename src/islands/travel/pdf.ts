@@ -1,7 +1,8 @@
 /**
  * Travel request PDF (pdf-lib). Port of the prototype's buildPdf(): Letter page,
- * header with logo + folio + gradient rule, sections 01–05, attachments merged
- * (PDF pages copied, images as one page each, other formats only listed) and a
+ * header with logo + folio + gradient rule, sections 01 Request (incl. direct
+ * manager), 02 Special requirements + total and 03 Attachments, attachments
+ * merged (PDF pages copied, images as one page each, other formats only listed) and a
  * footer on every page. Uses the PDF standard fonts: the Proxima Nova / Rakesly
  * TTFs are not shipped because their web licence is unconfirmed.
  */
@@ -52,7 +53,6 @@ export async function buildPdf(d: TravelData): Promise<PdfResult> {
     reg: await doc.embedFont(StandardFonts.Helvetica),
     semi: await doc.embedFont(StandardFonts.HelveticaBold),
     tech: await doc.embedFont(StandardFonts.Courier),
-    sign: await doc.embedFont(StandardFonts.TimesRomanItalic),
   };
   let logo: Awaited<ReturnType<PDFDocument['embedPng']>> | null = null;
   try {
@@ -186,6 +186,7 @@ export async function buildPdf(d: TravelData): Promise<PdfResult> {
   row([['Departure date', fmtDate(f.departureDate), 3], ['Return date', fmtDate(f.returnDate), 3], ['Origin of the trip', f.origin, 6]]);
   row([['Destination', f.destination, 4], ['Destination address', f.destinationAddress, 8]]);
   row([['Return destination', f.returnDestination, 6], ['PO to invoice', f.po, 6]]);
+  row([['Direct manager', f.managerName, 6], ['Direct manager position', f.managerPosition, 6]]);
 
   section('02', 'Special requirements');
   table(
@@ -201,37 +202,7 @@ export async function buildPdf(d: TravelData): Promise<PdfResult> {
   text(tot, W - M - 12 - tw(tot, F.black, 14), y - 34, { size: 14, font: F.black, color: C.navy });
   y -= 60;
 
-  // Authorization: requester and direct manager signature boxes side by side.
-  // The requester does not sign by hand: the full name IS the signature.
-  // Space for the title AND the boxes is reserved first, so they never split
-  // across pages (section() alone only reserves room for the title).
-  const half = CW / 2 - 8;
-  const fieldH = (v: string): number => 22 + wrap(v || '—', F.reg, 10, half - 20).length * 13;
-  const signLines = wrap(f.employeeName, F.sign, 15, half - 20);
-  const ah = Math.max(26 + signLines.length * 18 + 38, 26 + fieldH(f.managerName) + fieldH(f.managerPosition) + 44);
-  ensure(56 + ah + 8);
-  section('03', 'Authorization');
-  const box = (x: number, title: string, fields: [string, string][], signature?: string[]): void => {
-    pg.drawRectangle({ x, y: y - ah, width: half, height: ah, borderColor: C.line, borderWidth: 0.8 });
-    text(title, x + 10, y - 14, { size: 7, font: F.tech, color: C.blue });
-    let yy = y - 26;
-    fields.forEach(([l, v]) => {
-      text(l.toUpperCase(), x + 10, yy - 8, { size: 6.5, font: F.tech, color: C.muted });
-      const lines = wrap(v || '—', F.reg, 10, half - 20);
-      lines.forEach((ln, i) => text(ln, x + 10, yy - 20 - i * 13, { size: 10, font: F.reg, color: v ? C.dark : C.muted }));
-      yy -= 22 + lines.length * 13;
-    });
-    pg.drawLine({ start: { x: x + 10, y: y - ah + 24 }, end: { x: x + half - 10, y: y - ah + 24 }, thickness: 0.6, color: C.dark });
-    signature?.forEach((ln, i) =>
-      text(ln, x + 10, y - ah + 30 + (signature.length - 1 - i) * 18, { size: 15, font: F.sign, color: C.navy }),
-    );
-    text(signature ? 'SIGNATURE (FULL NAME)' : 'SIGNATURE / DATE', x + 10, y - ah + 13, { size: 6.5, font: F.tech, color: C.muted });
-  };
-  box(M, 'REQUESTER', [], signLines);
-  box(M + CW / 2 + 8, 'DIRECT MANAGER', [['Name', f.managerName], ['Position', f.managerPosition]]);
-  y -= ah + 16;
-
-  section('04', 'Attachments');
+  section('03', 'Attachments');
   if (!files.length) {
     ensure(24);
     text('No attachments.', M, y - 10, { size: 10, font: F.reg, color: C.muted });

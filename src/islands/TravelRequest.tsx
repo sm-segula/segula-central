@@ -85,6 +85,11 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
           {field('returnDestination', 'Destino de regreso')}
           {field('destinationAddress', 'Dirección del destino', { icon: 'map-pin', wide: true })}
         </div>
+        <span class="tr-auth-tag tr-auth-tag--gap">Jefe directo</span>
+        <div class="tr-grid tr-grid--auth">
+          {field('managerName', 'Nombre del jefe directo', { required: true })}
+          {field('managerPosition', 'Puesto del jefe directo', { required: true })}
+        </div>
       </section>
 
       <section class="tr-panel" aria-labelledby="tr-p2">
@@ -109,22 +114,13 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
             </div>
           ))}
         </div>
-      </section>
-
-      <section class="tr-panel" aria-labelledby="tr-p3">
-        <h2 id="tr-p3" class="tr-panel-title">03 · Autorización</h2>
-        <span class="tr-auth-tag">Jefe directo</span>
-        <div class="tr-grid tr-grid--auth">
-          {field('managerName', 'Nombre del jefe directo', { required: true })}
-          {field('managerPosition', 'Puesto del jefe directo', { required: true })}
-        </div>
         <div class="tr-total">
           <StatTile value={`$ ${totalFmt}`} unit={currency} label="Total cost approved" caption="Suma de requerimientos especiales" icon="calculator" />
         </div>
       </section>
 
-      <section class="tr-panel" aria-labelledby="tr-p4">
-        <h2 id="tr-p4" class="tr-panel-title">04 · Archivos adjuntos</h2>
+      <section class="tr-panel" aria-labelledby="tr-p3">
+        <h2 id="tr-p3" class="tr-panel-title">03 · Archivos adjuntos</h2>
         <p class="tr-note">
           Opcional. PDF e imágenes se fusionan en el mismo documento; Excel, Word u otros formatos solo se listan en la hoja de anexos.
         </p>

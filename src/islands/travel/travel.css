@@ -130,6 +130,7 @@ body:has(.tr-bar) { padding-bottom: 82px; }
   letter-spacing: 0.08em;
   color: var(--brand-lightblue);
 }
+.tr-auth-tag--gap { margin-top: 24px; }
 .tr-total {
   margin-top: 24px;
   display: flex;
