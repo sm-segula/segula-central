@@ -138,19 +138,83 @@ async function post(endpoint: string, payload: Record<string, string>, timeoutMs
   return data;
 }
 
+type MarkStatus = 'ok' | 'retry' | 'rejected';
+
+async function mark(endpoint: string, email: string, folio: string, timeoutMs: number): Promise<MarkStatus> {
+  let data: Reply;
+  try {
+    data = await post(endpoint, { action: 'downloaded', email: normalizeEmail(email), folio }, timeoutMs);
+  } catch {
+    return 'retry'; // network, timeout or garbled reply: worth trying again
+  }
+  // A reply carrying a folio comes from an older Code.gs that treated the call
+  // as a reservation: retrying would burn more numbers, so give up.
+  if (data.ok === true && !data.folio) return 'ok';
+  if (data.folio || data.error === 'not_found' || data.error === 'bad_request' || data.error === 'invalid_email') return 'rejected';
+  return 'retry';
+}
+
 /**
  * Records in the folio sheet that the PDF of `folio` was downloaded. Never
- * throws: a failure only leaves the row unmarked (the download already
- * happened), so it resolves to false and the caller can warn and retry later.
+ * throws: a failure only leaves the row unmarked (the download already happened).
  */
 export async function markDownloaded(endpoint: string | undefined, email: string, folio: string, timeoutMs = 20000): Promise<boolean> {
   if (!endpoint) return true;
+  return (await mark(endpoint, email, folio, timeoutMs)) === 'ok';
+}
+
+// Downloads whose registration failed, kept in the browser so a later download
+// or a later visit retries them, even after "Nueva solicitud" or a reload.
+const UNMARKED_KEY = 'segula.travel.unmarked';
+type Unmarked = { folio: string; email: string };
+const sameEntry = (a: Unmarked, b: Unmarked): boolean => a.folio === b.folio && a.email === b.email;
+
+export const readUnmarked = (): Unmarked[] => {
   try {
-    const data = await post(endpoint, { action: 'downloaded', email: normalizeEmail(email), folio }, timeoutMs);
-    return data.ok === true;
+    const v: unknown = JSON.parse(localStorage.getItem(UNMARKED_KEY) ?? '[]');
+    return Array.isArray(v)
+      ? v.filter((x): x is Unmarked => !!x && typeof x.folio === 'string' && typeof x.email === 'string')
+      : [];
   } catch {
-    return false;
+    return [];
   }
+};
+const writeUnmarked = (list: Unmarked[]): void => {
+  try {
+    if (list.length) localStorage.setItem(UNMARKED_KEY, JSON.stringify(list));
+    else localStorage.removeItem(UNMARKED_KEY);
+  } catch {
+    /* storage blocked: the retry only lives in this page */
+  }
+};
+
+/**
+ * Records the download of `folio`. On a retryable failure it is queued so
+ * retryUnmarked() sends it again later. Resolves to whether it is registered.
+ */
+export async function registerDownload(endpoint: string | undefined, email: string, folio: string, timeoutMs = 20000): Promise<boolean> {
+  if (!endpoint) return true;
+  const entry = { folio, email: normalizeEmail(email) };
+  const status = await mark(endpoint, email, folio, timeoutMs);
+  const rest = readUnmarked().filter((x) => !sameEntry(x, entry));
+  writeUnmarked(status === 'retry' ? [...rest, entry] : rest);
+  return status === 'ok';
+}
+
+/**
+ * Sends again the queued registrations of this email (other emails' entries
+ * are kept: the sheet only accepts the email that reserved the folio).
+ * Registered or rejected entries leave the queue; entries added meanwhile stay.
+ */
+export async function retryUnmarked(endpoint: string | undefined, email: string, skipFolio = '', timeoutMs = 20000): Promise<void> {
+  if (!endpoint) return;
+  const me = normalizeEmail(email);
+  const done: Unmarked[] = [];
+  for (const it of readUnmarked()) {
+    if (it.email !== me || it.folio === skipFolio) continue;
+    if ((await mark(endpoint, it.email, it.folio, timeoutMs)) !== 'retry') done.push(it);
+  }
+  if (done.length) writeUnmarked(readUnmarked().filter((x) => !done.some((d) => sameEntry(d, x))));
 }
 
 /**

@@ -11,7 +11,8 @@ import {
   type Attachment, type Currency, type Field, type Fields, type ReqKey, type ReqRow,
 } from './model';
 import {
-  EMAIL_ERROR, createFolioReserver, isCorporateEmail, issueFolio, markDownloaded, normalizeEmail, readRememberedEmail, rememberEmail,
+  EMAIL_ERROR, createFolioReserver, isCorporateEmail, issueFolio, normalizeEmail, readRememberedEmail, registerDownload, rememberEmail,
+  retryUnmarked,
   type FolioReserver,
 } from './folio';
 import type { Tone } from './ui';
@@ -112,6 +113,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     setF((s) => ({ ...s, email }));
     setGateOpen(false);
     reserve(email);
+    void retryUnmarked(endpoint, email); // downloads from earlier visits that could not be registered
   };
 
   const setField = (k: Field, v: string): void => {
@@ -224,16 +226,17 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
       a.remove();
       setIssued(true);
       // Record the download in the folio sheet once; a failure never undoes the
-      // download, it only warns and retries on the next download.
+      // download: it is queued and retried on the next download or visit.
       let registered = markedRef.current === current;
       if (!registered) {
         setStep('Registrando descarga…');
-        registered = await markDownloaded(endpoint, accessEmail, current);
+        registered = await registerDownload(endpoint, accessEmail, current);
         if (registered) markedRef.current = current;
       }
+      void retryUnmarked(endpoint, accessEmail, current); // older failed registrations, in the background
       const notes = [
         failed.length ? `No se fusionó: ${failed.join(', ')}.` : '',
-        registered ? '' : 'No se pudo registrar la descarga en el control de folios; se intentará de nuevo en la próxima descarga.',
+        registered ? '' : 'No se pudo registrar la descarga en el control de folios; se reintentará automáticamente.',
       ].filter(Boolean);
       notify(notes.length ? 'warning' : 'success', 'PDF descargado', `Folio ${current} emitido.${notes.length ? ` ${notes.join(' ')}` : ''}`);
     } catch (err) {

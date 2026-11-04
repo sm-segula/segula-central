@@ -21,7 +21,9 @@ Borrar filas de la hoja **no** reinicia ni reutiliza números. Para corregir el 
    - *Quién tiene acceso:* **Cualquier usuario**. La página llama sin sesión de Google.
 5. **Copiar la URL.** Copia la URL que termina en `/exec` y ponla en el sitio como `PUBLIC_TRAVEL_FOLIO_URL` (en `.env` o en las variables del build), y vuelve a publicar el sitio.
 
-Si cambias `Code.gs`, crea una **nueva versión** de la misma implementación (**Implementar → Administrar implementaciones → Editar**); así la URL no cambia. Si la hoja la creó la primera versión (columnas Folio, Emitido, Correo), el encabezado se actualiza solo a las 4 columnas nuevas y las filas existentes se conservan.
+Si cambias `Code.gs`, crea una **nueva versión** de la misma implementación (**Implementar → Administrar implementaciones → Editar**); así la URL no cambia. El script nunca sobreescribe datos de la hoja: si la pestaña `Folios` está vacía le pone el encabezado; si la fila 1 ya tiene un folio (pestaña creada a mano sin encabezado) inserta el encabezado arriba; si tiene el encabezado de la primera versión (Folio, Emitido, Correo) solo renombra "Emitido" a "Reservado" y agrega "Descargado"; cualquier otro contenido de la fila 1 se deja como está.
+
+**Orden al actualizar:** publica primero el `Code.gs` nuevo y después la página. Un `Code.gs` anterior no conoce la acción "downloaded" y la trataría como una reserva; la página lo detecta y no lo reintenta, pero ese intento ya habría gastado un número.
 
 ## Contrato
 
@@ -46,7 +48,7 @@ Si cambias `Code.gs`, crea una **nueva versión** de la misma implementación (*
 - `{ "ok": false, "error": "not_found" }`: el folio no existe o lo reservó otro correo; no se escribe nada.
 - `{ "ok": false, "error": "invalid_email" | "bad_request" | "server_error" }`
 
-Si esta llamada falla, la descarga ya ocurrió: la página avisa y lo intenta de nuevo en la siguiente descarga.
+Si esta llamada falla, la descarga ya ocurrió: la página avisa y guarda el pendiente en el navegador (`localStorage`, `segula.travel.unmarked`); lo reintenta en la siguiente descarga y la próxima vez que esa persona entre a la página, aunque haya pulsado "Nueva solicitud" o recargado. Si el servidor lo rechaza (`not_found`), se descarta.
 
 ## Límites
 

@@ -45,11 +45,13 @@ function reserve_(email) {
     // A hand-edited, non-numeric or exhausted counter must stop, not issue "000NaN".
     if (!isFinite(prev) || prev < 0 || prev % 1 !== 0 || prev >= 999999) return json_({ ok: false, error: 'server_error' });
     var seq = prev + 1;
+    // Open the sheet before touching the counter, so a broken sheet burns no number.
+    var sh = sheet_();
     // Save the counter before logging: if the log fails, the number is skipped,
     // never handed out twice.
     props.setProperty(key, String(seq));
     var folio = PREFIX + '-' + year + '-' + ('000000' + seq).slice(-6);
-    sheet_().appendRow([folio, new Date(), email, '']);
+    sh.appendRow([folio, new Date(), email, '']);
     SpreadsheetApp.flush(); // write the row before releasing the lock, so rows stay in folio order
     return json_({ ok: true, folio: folio });
   } catch (err) {
@@ -77,6 +79,12 @@ function downloaded_(email, folio) {
   }
 }
 
+// Returns the "Folios" sheet with the 4-column header, never overwriting data:
+// - missing sheet: created with the header;
+// - empty sheet: header written;
+// - row 1 holds a folio (tab created by hand, no header): a header row is inserted above;
+// - row 1 is the old header ("Folio | Emitido | Correo"): only B1/D1 are renamed or filled;
+// - anything else in row 1 is left untouched.
 function sheet_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sh = ss.getSheetByName(SHEET_NAME);
@@ -84,9 +92,23 @@ function sheet_() {
     sh = ss.insertSheet(SHEET_NAME);
     sh.appendRow(HEADERS);
     sh.setFrozenRows(1);
-  } else if (sh.getRange(1, 1, 1, 4).getValues()[0].join('|') !== HEADERS.join('|')) {
-    // Sheets created by the first version had "Emitido" and no "Descargado".
-    sh.getRange(1, 1, 1, 4).setValues([HEADERS]);
+    return sh;
+  }
+  var n = HEADERS.length;
+  if (sh.getMaxColumns() < n) sh.insertColumnsAfter(sh.getMaxColumns(), n - sh.getMaxColumns());
+  if (sh.getLastRow() === 0) {
+    sh.getRange(1, 1, 1, n).setValues([HEADERS]);
+    sh.setFrozenRows(1);
+    return sh;
+  }
+  var first = sh.getRange(1, 1, 1, n).getValues()[0];
+  if (FOLIO.test(String(first[0]))) {
+    sh.insertRowBefore(1);
+    sh.getRange(1, 1, 1, n).setValues([HEADERS]);
+    sh.setFrozenRows(1);
+  } else if (first[0] === 'Folio') {
+    if (first[1] === 'Emitido') sh.getRange(1, 2).setValue('Reservado');
+    if (!first[3]) sh.getRange(1, 4).setValue('Descargado');
   }
   return sh;
 }
