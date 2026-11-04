@@ -11,8 +11,8 @@ import {
   type Attachment, type Currency, type Field, type Fields, type ReqKey, type ReqRow,
 } from './model';
 import {
-  EMAIL_ERROR, createFolioReserver, isCorporateEmail, issueFolio, normalizeEmail, readRememberedEmail, registerDownload, rememberEmail,
-  retryUnmarked,
+  EMAIL_ERROR, archivePdf, createFolioReserver, isCorporateEmail, issueFolio, normalizeEmail, readRememberedEmail, registerDownload,
+  rememberEmail, retryUnmarked,
   type FolioReserver,
 } from './folio';
 import type { Tone } from './ui';
@@ -59,6 +59,8 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
   const reserver = reserverRef.current;
   // Folio whose download is already recorded in the sheet (no repeated calls).
   const markedRef = useRef('');
+  // Folio whose internal copy is already stored (no repeated uploads).
+  const archivedRef = useRef('');
   // Step shown by the blocking loader while preview/download wait ('' = hidden).
   const [step, setStep] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
@@ -160,7 +162,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     return false;
   };
 
-  const build = async (pdfFolio: string): Promise<{ url: string; failed: string[] }> => {
+  const build = async (pdfFolio: string): Promise<{ url: string; failed: string[]; bytes: Uint8Array }> => {
     const { buildPdf } = await import('./pdf');
     const { bytes, failed } = await buildPdf({ f, req, files, folio: pdfFolio, currency });
     if (urlRef.current) URL.revokeObjectURL(urlRef.current);
@@ -168,7 +170,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'application/pdf' }));
     urlRef.current = url;
     setPreviewUrl(url);
-    return { url, failed };
+    return { url, failed, bytes };
   };
 
   const preview = async (): Promise<void> => {
@@ -219,7 +221,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     }
     try {
       setStep('Generando PDF…');
-      const { url, failed } = await build(current);
+      const { url, failed, bytes } = await build(current);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${current}.pdf`;
@@ -229,12 +231,21 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
       setIssued(true);
       // Record the download in the folio sheet once; a failure never undoes the
       // download: it is queued and retried on the next download or visit.
+      setStep('Registrando descarga…');
+      // Internal copy of the PDF in Drive, sent alongside the registration. It is
+      // internal control only: never mentioned on screen, its outcome is ignored.
+      const copy =
+        archivedRef.current === current
+          ? Promise.resolve()
+          : archivePdf(endpoint, accessEmail, current, bytes).then((stored) => {
+              if (stored) archivedRef.current = current;
+            });
       let registered = markedRef.current === current;
       if (!registered) {
-        setStep('Registrando descarga…');
         registered = await registerDownload(endpoint, accessEmail, current);
         if (registered) markedRef.current = current;
       }
+      await copy; // finish before the modal, whose close leaves the page
       void retryUnmarked(endpoint, accessEmail, current); // older failed registrations, in the background
       const notes = [
         failed.length ? `No se fusionó: ${failed.join(', ')}.` : '',
