@@ -24,7 +24,7 @@ src/
 ├── assets/            Fotos optimizadas por <Image> (sharp): viajes, politicas, ayuda, kindle, it
 ├── components/        Chrome y patrones del DS (Header, Footer, PageHero, Card, Panel, NewsBlock, StepBlock, RuleCard, PlayButton, Button, GradientRule, ImagePlaceholder, SectionHead, Splash)
 ├── data/              nav.ts (menú y rutas) + JSON de contenido (comunicados, directorio, sabias-que)
-├── islands/           Islas Preact: HeroCanvas, Slider, SearchList, DirectorySearch
+├── islands/           Islas Preact: HeroCanvas, Slider, SearchList, DirectorySearch, TravelRequest (+ travel/)
 ├── layouts/Base.astro Documento HTML, fuentes, Header/Footer y arranque de scripts
 ├── pages/             Una ruta por archivo (ver mapa en src/data/nav.ts)
 ├── scripts/           reveal.ts (IntersectionObserver), lenis.ts (smooth scroll), header.ts (menús, hide-on-scroll)
@@ -90,6 +90,16 @@ Pasos:
 4. Para enlazar desde otras páginas usa `ROUTES['Etiqueta']` en lugar de escribir la ruta a mano.
 
 El Header (megamenú de escritorio y acordeón móvil) se genera a partir de `NAV`, no hay que tocar markup.
+
+## SEGULA Travel (solicitud de viajes)
+
+La ruta `/segula-travel` (entrada "SEGULA Travel" del menú) es el formulario de solicitud de viaje y autorización. Replica el prototipo `Solicitud de Viajes.dc.html` del proyecto de Claude Design "Aplicación de solicitud de viajes".
+
+- **Isla.** `src/islands/TravelRequest.tsx` pinta la vista. El estado y las acciones viven en `src/islands/travel/useTravelRequest.ts`; campos, validación y totales en `model.ts`; los primitivos del DS (Input, Button, Modal, Dropzone…) en `ui.tsx`; los estilos `tr-*` en `travel.css`, importado desde la página.
+- **PDF.** `src/islands/travel/pdf.ts` genera el documento con `pdf-lib`. Se carga con `import()` solo al pulsar "Vista previa" o "Descargar PDF", así que no pesa en la carga inicial. Los adjuntos PDF se fusionan, las imágenes PNG/JPG se agregan como página y el resto de formatos solo se listan. Usa las fuentes estándar del PDF (Helvetica/Courier) porque la licencia web de Proxima Nova y Rakesly no está confirmada.
+- **Logo del PDF.** `public/assets/segula-logo-classic-darkblue.png`, derivado del logo blanco. Reemplázalo por el oficial cuando esté disponible.
+- **Folio.** Formato `SEG-VJ-<año>-<consecutivo de 6 dígitos>`. El consecutivo se guarda en `localStorage` (`segula.viajes.seq`) del navegador de cada usuario y avanza al descargar el PDF. No es único entre usuarios: para un folio global hace falta un backend.
+- **Moneda y prefijo.** Se pasan como props en `src/pages/segula-travel.astro` (`currency="MXN"`, `folioPrefix="SEG-VJ"`).
 
 ## Convenciones
 
