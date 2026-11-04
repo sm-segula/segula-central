@@ -2,8 +2,8 @@
  * State and actions of the travel request form (port of the prototype's
  * Component class). The PDF module is imported on demand so pdf-lib is only
  * downloaded when the user asks for a preview or a download. The page opens
- * behind an access gate (corporate email) and the folio is issued only when
- * the user confirms the download.
+ * behind an access gate (corporate email); the folio is reserved as soon as the
+ * gate is passed and the same folio is used by preview and download.
  */
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import {
@@ -16,7 +16,7 @@ import {
 } from './folio';
 import type { Tone } from './ui';
 
-/** Folio printed on preview PDFs, before the real one is issued at download. */
+/** Folio printed on preview PDFs when no folio could be reserved yet. */
 const PREVIEW_FOLIO = 'PREVIEW';
 
 export interface ToastState {

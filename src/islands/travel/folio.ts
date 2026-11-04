@@ -104,28 +104,40 @@ export function createFolioReserver(
  * counter is used. POST with text/plain keeps it a "simple" request: Apps Script
  * cannot answer a CORS preflight.
  */
-export async function issueFolio(endpoint: string | undefined, email: string, prefix: string): Promise<string> {
+export async function issueFolio(endpoint: string | undefined, email: string, prefix: string, timeoutMs = 20000): Promise<string> {
   if (!endpoint) {
     const folio = peekFolio(prefix);
     bumpSeq();
     return folio;
   }
-  let res: Response;
-  try {
-    res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ email: normalizeEmail(email) }),
-      redirect: 'follow',
-    });
-  } catch {
-    throw new FolioError('Sin conexión con el servicio de folios. Intenta de nuevo.');
-  }
+  // A hung request must not leave preview/download spinning forever.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   let data: { ok?: boolean; folio?: string; error?: string } | null;
   try {
-    data = await res.json();
-  } catch {
-    data = null;
+    let res: Response;
+    try {
+      res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ email: normalizeEmail(email) }),
+        redirect: 'follow',
+        signal: ctrl.signal,
+      });
+    } catch {
+      throw new FolioError(
+        ctrl.signal.aborted
+          ? 'El servicio de folios tardó demasiado. Intenta de nuevo.'
+          : 'Sin conexión con el servicio de folios. Intenta de nuevo.',
+      );
+    }
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+  } finally {
+    clearTimeout(timer);
   }
   if (!data || typeof data !== 'object') throw new FolioError('El servicio de folios respondió algo inesperado.');
   if (data.ok && typeof data.folio === 'string' && data.folio.startsWith(`${prefix}-`)) return data.folio;

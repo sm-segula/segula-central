@@ -1,6 +1,6 @@
 # Servicio de folios de SEGULA Travel (Google Apps Script)
 
-Web app que entrega los folios `STRA-VJ-<año>-<consecutivo de 6 dígitos>` de la página `/segula-travel`. Un bloqueo (`LockService`) asegura que dos personas que descargan al mismo tiempo nunca reciban el mismo número. Cada folio queda registrado en la hoja **Folios**.
+Web app que entrega los folios `STRA-VJ-<año>-<consecutivo de 6 dígitos>` de la página `/segula-travel`. Un bloqueo (`LockService`) asegura que dos personas que piden folio al mismo tiempo nunca reciban el mismo número. La página lo pide al pasar el modal de acceso y lo muestra desde ese momento; el PDF lleva ese mismo número. Cada folio queda registrado en la hoja **Folios**.
 
 ## Qué guarda
 
