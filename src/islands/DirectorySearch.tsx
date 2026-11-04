@@ -8,6 +8,7 @@ export interface Person {
   email: string;
   slot: string;
   initials: string;
+  photo?: string;
 }
 
 export interface Team {
@@ -82,7 +83,11 @@ export default function DirectorySearch({ teams }: Props) {
               <article class="dr-card" key={p.slot} data-reveal>
                 <div class="dr-id">
                   <div class="dr-avatar" aria-hidden="true">
-                    <span>{p.initials}</span>
+                    {p.photo ? (
+                      <img src={p.photo} alt={p.name} loading="lazy" width={88} height={88} />
+                    ) : (
+                      <span>{p.initials}</span>
+                    )}
                   </div>
                   <div class="dr-meta">
                     <h3 class="dr-name">{p.name}</h3>
