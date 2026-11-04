@@ -200,25 +200,29 @@ export async function buildPdf(d: TravelData): Promise<PdfResult> {
   text(tot, W - M - 12 - tw(tot, F.black, 14), y - 34, { size: 14, font: F.black, color: C.navy });
   y -= 60;
 
-  // One signature box for the direct manager, half the content width.
-  section('03', 'Authorization');
+  // Authorization: requester and direct manager signature boxes side by side.
+  // Space for the title AND the boxes is reserved first, so they never split
+  // across pages (section() alone only reserves room for the title).
   const half = CW / 2 - 8;
   const fieldH = (v: string): number => 22 + wrap(v || '—', F.reg, 10, half - 20).length * 13;
-  const ah = 26 + fieldH(f.managerName) + fieldH(f.managerPosition) + 44;
-  ensure(ah + 8);
-  pg.drawRectangle({ x: M, y: y - ah, width: half, height: ah, borderColor: C.line, borderWidth: 0.8 });
-  text('DIRECT MANAGER', M + 10, y - 14, { size: 7, font: F.tech, color: C.blue });
-  let yy = y - 26;
-  const fld = (l: string, v: string): void => {
-    text(l.toUpperCase(), M + 10, yy - 8, { size: 6.5, font: F.tech, color: C.muted });
-    const lines = wrap(v || '—', F.reg, 10, half - 20);
-    lines.forEach((ln, i) => text(ln, M + 10, yy - 20 - i * 13, { size: 10, font: F.reg, color: v ? C.dark : C.muted }));
-    yy -= 22 + lines.length * 13;
+  const ah = 26 + Math.max(fieldH(f.employeeName), fieldH(f.managerName) + fieldH(f.managerPosition)) + 44;
+  ensure(56 + ah + 8);
+  section('03', 'Authorization');
+  const box = (x: number, title: string, fields: [string, string][]): void => {
+    pg.drawRectangle({ x, y: y - ah, width: half, height: ah, borderColor: C.line, borderWidth: 0.8 });
+    text(title, x + 10, y - 14, { size: 7, font: F.tech, color: C.blue });
+    let yy = y - 26;
+    fields.forEach(([l, v]) => {
+      text(l.toUpperCase(), x + 10, yy - 8, { size: 6.5, font: F.tech, color: C.muted });
+      const lines = wrap(v || '—', F.reg, 10, half - 20);
+      lines.forEach((ln, i) => text(ln, x + 10, yy - 20 - i * 13, { size: 10, font: F.reg, color: v ? C.dark : C.muted }));
+      yy -= 22 + lines.length * 13;
+    });
+    pg.drawLine({ start: { x: x + 10, y: y - ah + 24 }, end: { x: x + half - 10, y: y - ah + 24 }, thickness: 0.6, color: C.dark });
+    text('SIGNATURE / DATE', x + 10, y - ah + 13, { size: 6.5, font: F.tech, color: C.muted });
   };
-  fld('Name', f.managerName);
-  fld('Position', f.managerPosition);
-  pg.drawLine({ start: { x: M + 10, y: y - ah + 24 }, end: { x: M + half - 10, y: y - ah + 24 }, thickness: 0.6, color: C.dark });
-  text('SIGNATURE / DATE', M + 10, y - ah + 13, { size: 6.5, font: F.tech, color: C.muted });
+  box(M, 'REQUESTER', [['Name', f.employeeName]]);
+  box(M + CW / 2 + 8, 'DIRECT MANAGER', [['Name', f.managerName], ['Position', f.managerPosition]]);
   y -= ah + 16;
 
   section('04', 'Attachments');
