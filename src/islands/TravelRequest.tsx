@@ -63,7 +63,13 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
         <div class="tr-folio" data-reveal data-reveal-delay="140">
           <span class="tr-folio-label">Folio</span>
           <span class="tr-folio-value">{s.folio || '—'}</span>
-          <StatusBadge status={s.issued ? 'complete' : 'pending'}>{s.issued ? 'Emitido' : 'Por asignar'}</StatusBadge>
+          {s.issued ? (
+            <StatusBadge status="complete">Emitido</StatusBadge>
+          ) : s.folio ? (
+            <StatusBadge status="info">Reservado</StatusBadge>
+          ) : (
+            <StatusBadge status="pending">{s.reserving ? 'Asignando…' : 'Por asignar'}</StatusBadge>
+          )}
         </div>
       </header>
 

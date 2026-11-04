@@ -10,7 +10,10 @@ import {
   FIELDS, MAX_MB, emptyFields, emptyReq, fileKind, validate,
   type Attachment, type Currency, type Field, type Fields, type ReqKey, type ReqRow,
 } from './model';
-import { EMAIL_ERROR, isCorporateEmail, issueFolio, normalizeEmail, readRememberedEmail, rememberEmail } from './folio';
+import {
+  EMAIL_ERROR, createFolioReserver, isCorporateEmail, issueFolio, normalizeEmail, readRememberedEmail, rememberEmail,
+  type FolioReserver,
+} from './folio';
 import type { Tone } from './ui';
 
 /** Folio printed on preview PDFs, before the real one is issued at download. */
@@ -37,7 +40,20 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
   const [files, setFiles] = useState<Attachment[]>([]);
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [folio, setFolio] = useState('');
+  const [reserving, setReserving] = useState(false);
   const [issued, setIssued] = useState(false);
+  // One folio per request, reserved when the user passes the gate (see folio.ts).
+  const reserverRef = useRef<FolioReserver>();
+  if (!reserverRef.current) {
+    reserverRef.current = createFolioReserver(
+      (email) => issueFolio(endpoint, email, prefix),
+      (v, busy) => {
+        setFolio(v);
+        setReserving(busy);
+      },
+    );
+  }
+  const reserver = reserverRef.current;
   const [previewUrl, setPreviewUrl] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [busyPreview, setBusyPreview] = useState(false);
@@ -65,6 +81,12 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     toastTimer.current = window.setTimeout(() => setToast(null), 6000);
   }, []);
 
+  const reserve = (email: string): void => {
+    reserver.ensure(email).catch((err: unknown) =>
+      notify('error', 'No se pudo asignar el folio', `${err instanceof Error ? err.message : String(err)} Se intentará de nuevo al descargar.`),
+    );
+  };
+
   // Unchecking "Recordar correo" forgets the stored email right away.
   const toggleRemember = (v: boolean): void => {
     setGateRemember(v);
@@ -85,6 +107,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     setAccessEmail(email);
     setF((s) => ({ ...s, email }));
     setGateOpen(false);
+    reserve(email);
   };
 
   const setField = (k: Field, v: string): void => {
@@ -144,7 +167,9 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     if (busyPreview || !check()) return;
     setBusyPreview(true);
     try {
-      const { failed } = await build(folio || PREVIEW_FOLIO);
+      // Show the reserved folio; wait for it if the reservation is still in flight.
+      const reserved = await (reserver.pending ?? Promise.resolve(reserver.current)).catch(() => '');
+      const { failed } = await build(reserved || PREVIEW_FOLIO);
       setPreviewOpen(true);
       if (failed.length) notify('warning', 'Adjuntos no fusionados', failed.join(', '));
     } catch (err) {
@@ -169,18 +194,15 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
   const download = async (): Promise<void> => {
     if (busyDownload || !check()) return;
     setBusyDownload(true);
-    // The folio is issued once per request; later downloads reuse it.
-    let current = folio;
-    if (!current) {
-      try {
-        current = await issueFolio(endpoint, accessEmail, prefix);
-      } catch (err) {
-        notify('error', 'No se pudo asignar el folio', err instanceof Error ? err.message : String(err));
-        setBusyDownload(false);
-        return;
-      }
-      // Kept even if the build below fails, so a retry reuses it (no number burned).
-      setFolio(current);
+    // Uses the folio reserved at the gate (or waits for / retries that reservation);
+    // it is kept even if the build fails, so a retry never burns a new number.
+    let current: string;
+    try {
+      current = await reserver.ensure(accessEmail);
+    } catch (err) {
+      notify('error', 'No se pudo asignar el folio', err instanceof Error ? err.message : String(err));
+      setBusyDownload(false);
+      return;
     }
     try {
       const { url, failed } = await build(current);
@@ -212,13 +234,18 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     setReq(emptyReq());
     setFiles([]);
     setErrors({});
-    setIssued(false);
     setPreviewUrl('');
     setPreviewOpen(false);
     setConfirmOpen(false);
     setCurrency(initialCurrency);
     setToast(null);
-    setFolio('');
+    // A folio that was never downloaded stays with the new request (no number
+    // burned); once downloaded, the new request reserves its own.
+    if (issued) {
+      setIssued(false);
+      reserver.clear();
+      reserve(accessEmail);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -229,7 +256,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
   return {
     gateOpen, gateEmail, gateRemember, gateError, setGateField, setGateRemember: toggleRemember, enter,
     currency, setCurrency, confirmOpen,
-    f, req, files, errors, folio, issued, previewUrl, previewOpen, busyPreview, busyDownload, toast,
+    f, req, files, errors, folio, reserving, issued, previewUrl, previewOpen, busyPreview, busyDownload, toast,
     setField, setReqField, addFiles, removeFile,
     preview, requestDownload, confirmDownload, reset, closePreview, closeToast, closeConfirm,
   };

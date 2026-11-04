@@ -34,6 +34,70 @@ export const rememberEmail = (email: string, remember: boolean): void => {
 
 export class FolioError extends Error {}
 
+export interface FolioReserver {
+  /** The folio of the current request ('' while none is reserved). */
+  readonly current: string;
+  /** The in-flight reservation, if any. */
+  readonly pending: Promise<string> | null;
+  /** Returns the request's folio, reserving it once; concurrent callers share one request. */
+  ensure(email: string): Promise<string>;
+  /** Starts a new request: the next ensure() reserves a new folio. */
+  clear(): void;
+}
+
+/**
+ * Holds one folio per request. Once reserved it never changes until clear(),
+ * and concurrent callers (gate, preview, download) share the same in-flight
+ * request, so the number shown on screen is the number printed in the PDF.
+ * A reservation that resolves after clear() is ignored for the new request.
+ */
+export function createFolioReserver(
+  issue: (email: string) => Promise<string>,
+  onChange: (folio: string, reserving: boolean) => void,
+): FolioReserver {
+  let folio = '';
+  let pending: Promise<string> | null = null;
+  let generation = 0;
+  return {
+    get current() {
+      return folio;
+    },
+    get pending() {
+      return pending;
+    },
+    ensure(email) {
+      if (folio) return Promise.resolve(folio);
+      if (pending) return pending;
+      const gen = generation;
+      onChange('', true);
+      const p = issue(email).then(
+        (v) => {
+          if (gen !== generation) return v; // stale: belongs to a cleared request
+          folio = v;
+          pending = null;
+          onChange(folio, false);
+          return v;
+        },
+        (err: unknown) => {
+          if (gen === generation) {
+            pending = null;
+            onChange('', false);
+          }
+          throw err;
+        },
+      );
+      pending = p;
+      return p;
+    },
+    clear() {
+      generation++;
+      folio = '';
+      pending = null;
+      onChange('', false);
+    },
+  };
+}
+
 /**
  * Issues the next folio. With an endpoint, the Apps Script web app assigns it
  * atomically (shared across users). Without one (local dev), the old per-browser
