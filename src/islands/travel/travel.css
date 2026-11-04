@@ -348,6 +348,24 @@ body:has(.tr-bar) { padding-bottom: 82px; }
 }
 .tr-confirm-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 28px; }
 
+/* ---------- Loader (waits on Apps Script / PDF build) ---------- */
+.tr-overlay--loader { z-index: 110; cursor: progress; }
+.tr-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  min-width: 240px;
+  padding: 28px 32px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-panel);
+  border: 1px solid var(--color-border);
+  color: var(--brand-lightblue);
+}
+.tr-loader-text { font: var(--font-body); color: var(--text-primary); text-align: center; }
+.tr-spinner--lg { width: 40px; height: 40px; border-width: 3px; }
+.tr-spinner--sm { width: 14px; height: 14px; color: var(--brand-lightblue); }
+
 /* ---------- Access gate ---------- */
 .tr-gate { display: flex; flex-direction: column; gap: 16px; }
 .tr-gate .tr-confirm-actions { margin-top: 12px; }

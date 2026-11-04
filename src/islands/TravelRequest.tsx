@@ -1,7 +1,7 @@
 import { REQ, money, total, fmtSize, type Currency, type Field } from './travel/model';
 import { useTravelRequest } from './travel/useTravelRequest';
 import {
-  Button, Checkbox, Dropzone, IconButton, IconCircle, Input, Modal, Segmented, StatTile, StatusBadge, Textarea, Toast,
+  Button, Checkbox, Dropzone, IconButton, IconCircle, Input, Loader, Modal, Segmented, StatTile, StatusBadge, Textarea, Toast,
 } from './travel/ui';
 import Icon from './icons';
 
@@ -62,7 +62,9 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
         </div>
         <div class="tr-folio" data-reveal data-reveal-delay="140">
           <span class="tr-folio-label">Folio</span>
-          <span class="tr-folio-value">{s.folio || '—'}</span>
+          <span class="tr-folio-value">
+            {s.folio || (s.reserving ? <span class="tr-spinner tr-spinner--sm" role="img" aria-label="Asignando folio" /> : '—')}
+          </span>
           {s.issued ? (
             <StatusBadge status="complete">Emitido</StatusBadge>
           ) : s.folio ? (
@@ -190,6 +192,8 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
           <Button variant="primary" icon="download" onClick={s.confirmDownload}>Sí, están en {currency}</Button>
         </div>
       </Modal>
+
+      {s.step && <Loader message={s.step} />}
 
       {/* Access gate: no onClose, so it cannot be dismissed. noValidate keeps the
           browser from adding its own hints to the single "Correo incorrecto." */}

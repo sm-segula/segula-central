@@ -98,29 +98,24 @@ export function createFolioReserver(
   };
 }
 
+type Reply = { ok?: boolean; folio?: string; error?: string };
+
 /**
- * Issues the next folio. With an endpoint, the Apps Script web app assigns it
- * atomically (shared across users). Without one (local dev), the old per-browser
- * counter is used. POST with text/plain keeps it a "simple" request: Apps Script
- * cannot answer a CORS preflight.
+ * POSTs to the Apps Script web app. text/plain keeps it a "simple" request
+ * (Apps Script cannot answer a CORS preflight) and the timeout keeps a hung
+ * request from leaving the loader spinning forever.
  */
-export async function issueFolio(endpoint: string | undefined, email: string, prefix: string, timeoutMs = 20000): Promise<string> {
-  if (!endpoint) {
-    const folio = peekFolio(prefix);
-    bumpSeq();
-    return folio;
-  }
-  // A hung request must not leave preview/download spinning forever.
+async function post(endpoint: string, payload: Record<string, string>, timeoutMs: number): Promise<Reply> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-  let data: { ok?: boolean; folio?: string; error?: string } | null;
+  let data: Reply | null;
   try {
     let res: Response;
     try {
       res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ email: normalizeEmail(email) }),
+        body: JSON.stringify(payload),
         redirect: 'follow',
         signal: ctrl.signal,
       });
@@ -140,6 +135,36 @@ export async function issueFolio(endpoint: string | undefined, email: string, pr
     clearTimeout(timer);
   }
   if (!data || typeof data !== 'object') throw new FolioError('El servicio de folios respondió algo inesperado.');
+  return data;
+}
+
+/**
+ * Records in the folio sheet that the PDF of `folio` was downloaded. Never
+ * throws: a failure only leaves the row unmarked (the download already
+ * happened), so it resolves to false and the caller can warn and retry later.
+ */
+export async function markDownloaded(endpoint: string | undefined, email: string, folio: string, timeoutMs = 20000): Promise<boolean> {
+  if (!endpoint) return true;
+  try {
+    const data = await post(endpoint, { action: 'downloaded', email: normalizeEmail(email), folio }, timeoutMs);
+    return data.ok === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Issues the next folio. With an endpoint, the Apps Script web app assigns it
+ * atomically (shared across users). Without one (local dev), the old per-browser
+ * counter is used.
+ */
+export async function issueFolio(endpoint: string | undefined, email: string, prefix: string, timeoutMs = 20000): Promise<string> {
+  if (!endpoint) {
+    const folio = peekFolio(prefix);
+    bumpSeq();
+    return folio;
+  }
+  const data = await post(endpoint, { action: 'reserve', email: normalizeEmail(email) }, timeoutMs);
   if (data.ok && typeof data.folio === 'string' && data.folio.startsWith(`${prefix}-`)) return data.folio;
   if (data.error === 'invalid_email') throw new FolioError(EMAIL_ERROR);
   if (data.error === 'busy') throw new FolioError('El servicio de folios está ocupado. Intenta de nuevo.');

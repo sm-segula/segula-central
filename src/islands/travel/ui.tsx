@@ -240,6 +240,21 @@ export function Toast({ tone, title, children, onClose }: { tone: Tone; title: s
   );
 }
 
+/**
+ * Blocking loader with the current step, for waits on the network or the PDF
+ * build, so the page never looks frozen. Announced to screen readers.
+ */
+export function Loader({ message }: { message: string }) {
+  return (
+    <div class="tr-overlay tr-overlay--loader" role="status" aria-live="polite">
+      <div class="tr-loader">
+        <span class="tr-spinner tr-spinner--lg" aria-hidden="true" />
+        <span class="tr-loader-text">{message}</span>
+      </div>
+    </div>
+  );
+}
+
 /** Without `onClose` the modal cannot be dismissed (no close button, Esc or backdrop). */
 export function Modal({ open, title, width = 560, onClose, children }: { open: boolean; title: string; width?: number; onClose?: () => void; children: ComponentChildren }) {
   const panel = useRef<HTMLDivElement>(null);

@@ -5,7 +5,8 @@ Web app que entrega los folios `STRA-VJ-<año>-<consecutivo de 6 dígitos>` de l
 ## Qué guarda
 
 - **Consecutivo:** en las *Propiedades del script*, una clave por año (`seq-2026`, `seq-2027`…). Cada año arranca en `000001`.
-- **Registro:** una fila por folio en la hoja `Folios` (Folio, Emitido, Correo). La hoja se crea sola con su encabezado la primera vez.
+- **Registro:** una fila por folio en la hoja `Folios` con las columnas **Folio**, **Reservado** (hora en que se reservó al entrar a la página), **Correo** y **Descargado** (hora de la primera descarga del PDF). La hoja se crea sola con su encabezado la primera vez.
+- **Reservas abandonadas:** una fila con **Descargado** vacío es un folio que se reservó pero cuyo PDF nunca se descargó (la persona cerró la página). Es un salto explicado del consecutivo, no un número perdido.
 - **Números saltados:** si el registro falla después de avanzar el consecutivo, ese número se salta. Nunca se entrega dos veces.
 
 Borrar filas de la hoja **no** reinicia ni reutiliza números. Para corregir el consecutivo, edita `seq-<año>` en las Propiedades del script.
@@ -20,20 +21,32 @@ Borrar filas de la hoja **no** reinicia ni reutiliza números. Para corregir el 
    - *Quién tiene acceso:* **Cualquier usuario**. La página llama sin sesión de Google.
 5. **Copiar la URL.** Copia la URL que termina en `/exec` y ponla en el sitio como `PUBLIC_TRAVEL_FOLIO_URL` (en `.env` o en las variables del build), y vuelve a publicar el sitio.
 
-Si cambias `Code.gs`, crea una **nueva versión** de la misma implementación (**Implementar → Administrar implementaciones → Editar**); así la URL no cambia.
+Si cambias `Code.gs`, crea una **nueva versión** de la misma implementación (**Implementar → Administrar implementaciones → Editar**); así la URL no cambia. Si la hoja la creó la primera versión (columnas Folio, Emitido, Correo), el encabezado se actualiza solo a las 4 columnas nuevas y las filas existentes se conservan.
 
 ## Contrato
 
-`POST` con cuerpo JSON enviado como `text/plain`, porque Apps Script no responde el *preflight* de CORS:
+`POST` con cuerpo JSON enviado como `text/plain`, porque Apps Script no responde el *preflight* de CORS. Hay dos acciones.
+
+**Reservar** (la página lo llama al pasar el modal de acceso; sin `action` también reserva):
 
 ```json
-{ "email": "nombre.apellido@segulagrp.com" }
+{ "action": "reserve", "email": "nombre.apellido@segulagrp.com" }
 ```
-
-Respuestas:
 
 - `{ "ok": true, "folio": "STRA-VJ-2026-000001" }`
 - `{ "ok": false, "error": "invalid_email" | "busy" | "bad_request" | "server_error" }`
+
+**Marcar descarga** (la página lo llama después de descargar el PDF):
+
+```json
+{ "action": "downloaded", "email": "nombre.apellido@segulagrp.com", "folio": "STRA-VJ-2026-000001" }
+```
+
+- `{ "ok": true }`: se llenó **Descargado**, o ya estaba lleno; se conserva la primera hora.
+- `{ "ok": false, "error": "not_found" }`: el folio no existe o lo reservó otro correo; no se escribe nada.
+- `{ "ok": false, "error": "invalid_email" | "bad_request" | "server_error" }`
+
+Si esta llamada falla, la descarga ya ocurrió: la página avisa y lo intenta de nuevo en la siguiente descarga.
 
 ## Límites
 

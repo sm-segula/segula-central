@@ -11,7 +11,7 @@ import {
   type Attachment, type Currency, type Field, type Fields, type ReqKey, type ReqRow,
 } from './model';
 import {
-  EMAIL_ERROR, createFolioReserver, isCorporateEmail, issueFolio, normalizeEmail, readRememberedEmail, rememberEmail,
+  EMAIL_ERROR, createFolioReserver, isCorporateEmail, issueFolio, markDownloaded, normalizeEmail, readRememberedEmail, rememberEmail,
   type FolioReserver,
 } from './folio';
 import type { Tone } from './ui';
@@ -54,6 +54,10 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     );
   }
   const reserver = reserverRef.current;
+  // Folio whose download is already recorded in the sheet (no repeated calls).
+  const markedRef = useRef('');
+  // Step shown by the blocking loader while preview/download wait ('' = hidden).
+  const [step, setStep] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [busyPreview, setBusyPreview] = useState(false);
@@ -168,13 +172,16 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     setBusyPreview(true);
     try {
       // Show the reserved folio; wait for it if the reservation is still in flight.
+      if (reserver.pending) setStep('Asignando folio…');
       const reserved = await (reserver.pending ?? Promise.resolve(reserver.current)).catch(() => '');
+      setStep('Generando vista previa…');
       const { failed } = await build(reserved || PREVIEW_FOLIO);
       setPreviewOpen(true);
       if (failed.length) notify('warning', 'Adjuntos no fusionados', failed.join(', '));
     } catch (err) {
       notify('error', 'No se pudo generar el PDF', err instanceof Error ? err.message : String(err));
     } finally {
+      setStep('');
       setBusyPreview(false);
     }
   };
@@ -198,13 +205,16 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
     // it is kept even if the build fails, so a retry never burns a new number.
     let current: string;
     try {
+      if (!reserver.current) setStep('Asignando folio…');
       current = await reserver.ensure(accessEmail);
     } catch (err) {
       notify('error', 'No se pudo asignar el folio', err instanceof Error ? err.message : String(err));
+      setStep('');
       setBusyDownload(false);
       return;
     }
     try {
+      setStep('Generando PDF…');
       const { url, failed } = await build(current);
       const a = document.createElement('a');
       a.href = url;
@@ -213,14 +223,23 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
       a.click();
       a.remove();
       setIssued(true);
-      notify(
-        failed.length ? 'warning' : 'success',
-        'PDF descargado',
-        failed.length ? `Folio ${current}. No se fusionó: ${failed.join(', ')}` : `Folio ${current} emitido.`,
-      );
+      // Record the download in the folio sheet once; a failure never undoes the
+      // download, it only warns and retries on the next download.
+      let registered = markedRef.current === current;
+      if (!registered) {
+        setStep('Registrando descarga…');
+        registered = await markDownloaded(endpoint, accessEmail, current);
+        if (registered) markedRef.current = current;
+      }
+      const notes = [
+        failed.length ? `No se fusionó: ${failed.join(', ')}.` : '',
+        registered ? '' : 'No se pudo registrar la descarga en el control de folios; se intentará de nuevo en la próxima descarga.',
+      ].filter(Boolean);
+      notify(notes.length ? 'warning' : 'success', 'PDF descargado', `Folio ${current} emitido.${notes.length ? ` ${notes.join(' ')}` : ''}`);
     } catch (err) {
       notify('error', 'No se pudo generar el PDF', err instanceof Error ? err.message : String(err));
     } finally {
+      setStep('');
       setBusyDownload(false);
     }
   };
@@ -256,7 +275,7 @@ export function useTravelRequest(initialCurrency: Currency, prefix: string, endp
   return {
     gateOpen, gateEmail, gateRemember, gateError, setGateField, setGateRemember: toggleRemember, enter,
     currency, setCurrency, confirmOpen,
-    f, req, files, errors, folio, reserving, issued, previewUrl, previewOpen, busyPreview, busyDownload, toast,
+    f, req, files, errors, folio, reserving, issued, step, previewUrl, previewOpen, busyPreview, busyDownload, toast,
     setField, setReqField, addFiles, removeFile,
     preview, requestDownload, confirmDownload, reset, closePreview, closeToast, closeConfirm,
   };
