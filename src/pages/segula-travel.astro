@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import TravelRequest from '../islands/TravelRequest';
+import '../islands/travel/travel.css';
+---
+
+<Base
+  title="SEGULA Travel"
+  description="Solicitud de viaje y autorización: llena los campos, adjunta tus comprobantes y descarga un solo PDF con folio único."
+>
+  <main>
+    <TravelRequest client:load currency="MXN" folioPrefix="STRA-VJ" folioEndpoint={import.meta.env.PUBLIC_TRAVEL_FOLIO_URL} />
+  </main>
+</Base>
