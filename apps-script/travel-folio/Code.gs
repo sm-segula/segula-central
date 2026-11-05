@@ -173,56 +173,60 @@ function otpVerify_(email, code, secret) {
 
 // Per-email failure count, in Script Properties because CacheService keeps data
 // at most 6 h and the lock lasts 24 h. Keyed by an HMAC of the email (never the
-// address). Entry: { n: failures, s: first failure ms, u: locked until ms }.
+// address). Entry: { t: [failure times in ms, at most 5], u: locked until ms }.
+// Sliding window: each failure counts for 24 h after it happened.
 // Callers hold the script lock.
 function failState_(id) {
   var props = PropertiesService.getScriptProperties();
   var key = 'fail-' + id;
+  var entry = cleanFail_(props.getProperty(key), Date.now());
+  if (!entry) props.deleteProperty(key);
+  return entry;
+}
+
+/** Parses a stored entry and drops expired parts; null when nothing is left or it is malformed. */
+function cleanFail_(raw, now) {
   var entry = null;
   try {
-    entry = JSON.parse(props.getProperty(key) || 'null');
+    entry = JSON.parse(raw || 'null');
   } catch (err) {
-    entry = null;
+    return null;
   }
-  if (entry && expiredFail_(entry, Date.now())) {
-    props.deleteProperty(key);
-    entry = null;
-  }
-  return entry;
+  if (!entry || typeof entry !== 'object' || !Array.isArray(entry.t)) return null;
+  var u = typeof entry.u === 'number' && isFinite(entry.u) ? entry.u : 0;
+  if (u && now < u) return { t: [], u: u };
+  var t = entry.t.filter(function (x) {
+    return typeof x === 'number' && isFinite(x) && now - x < OTP_LOCK_S * 1000;
+  });
+  return t.length ? { t: t } : null;
 }
 
 function isLocked_(entry) {
   return !!(entry && entry.u && Date.now() < entry.u);
 }
 
-function expiredFail_(entry, now) {
-  return entry.u ? now >= entry.u : now - entry.s >= OTP_LOCK_S * 1000;
-}
-
-/** Adds one failure and returns the new count; the 5th failure locks for 24 h. */
+/** Adds one failure and returns how many fall inside the last 24 h; the 5th locks for 24 h. */
 function recordFailure_(id) {
   var props = PropertiesService.getScriptProperties();
   var now = Date.now();
   var entry = failState_(id);
   if (!entry) {
     pruneFailures_(props, now);
-    entry = { n: 0, s: now };
+    entry = { t: [] };
   }
-  entry.n += 1;
-  if (entry.n >= OTP_MAX_ATTEMPTS) entry.u = now + OTP_LOCK_S * 1000;
+  entry.t.push(now);
+  entry.t = entry.t.slice(-OTP_MAX_ATTEMPTS);
+  var n = entry.t.length;
+  if (n >= OTP_MAX_ATTEMPTS) entry = { t: [], u: now + OTP_LOCK_S * 1000 };
   props.setProperty('fail-' + id, JSON.stringify(entry));
-  return entry.n;
+  return n;
 }
 
 function pruneFailures_(props, now) {
   var keys = props.getKeys();
   for (var i = 0; i < keys.length; i++) {
     if (keys[i].indexOf('fail-') !== 0) continue;
-    try {
-      if (expiredFail_(JSON.parse(props.getProperty(keys[i])), now)) props.deleteProperty(keys[i]);
-    } catch (err) {
-      props.deleteProperty(keys[i]);
-    }
+    if (!cleanFail_(props.getProperty(keys[i]), now)) props.deleteProperty(keys[i]);
   }
 }
 

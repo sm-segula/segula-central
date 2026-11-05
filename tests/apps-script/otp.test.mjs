@@ -228,3 +228,32 @@ test('codes are 6 digits with leading zeros preserved', () => {
   assert.equal(lastCode(h), '000000');
   assert.deepEqual(ver(h, '000000'), { ok: true });
 });
+
+// Verifier B1 (e87abd3): each failure expires 24 h after it happened (sliding
+// window), not all together when the first one turns 24 h old.
+test('failures expire one by one: 4 recent failures plus 1 more still lock', () => {
+  const h = load();
+  const DAY = 24 * 3600 * 1000;
+  const t0 = h.clock.now;
+  req(h);
+  const w = (c) => (c === '000000' ? '000001' : '000000');
+  assert.equal(ver(h, w(lastCode(h))).error, 'invalid_code'); // failure 1 at T0
+  h.clock.now = t0 + DAY - 90 * 1000;
+  req(h);
+  for (let i = 0; i < 3; i++) assert.equal(ver(h, w(lastCode(h))).error, 'invalid_code'); // failures 2-4
+  h.clock.now = t0 + DAY; // failure 1 is now 24 h old and drops out
+  assert.equal(ver(h, w(lastCode(h))).error, 'invalid_code'); // 4 within 24 h
+  assert.equal(ver(h, w(lastCode(h))).error, 'too_many_attempts'); // 5 within 24 h
+});
+
+test('a corrupted failure entry is treated as missing and counting still works', () => {
+  for (const bad of ['5', '"x"', '[]', 'true', '{"n":"a"}', '{bad']) {
+    const h = load();
+    req(h);
+    const id = [...h.state.cacheData.keys()].find((k) => k.startsWith('otp-')).slice(4);
+    h.state.props.set('fail-' + id, bad);
+    const wrong = lastCode(h) === '000000' ? '000001' : '000000';
+    for (let i = 0; i < 4; i++) assert.equal(ver(h, wrong).error, 'invalid_code', bad + ' #' + i);
+    assert.equal(ver(h, wrong).error, 'too_many_attempts', bad);
+  }
+});
