@@ -162,15 +162,6 @@ export function Segmented<T extends string>({ label, options, value, onChange }:
   );
 }
 
-export function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label class="tr-check">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.currentTarget.checked)} />
-      <span>{label}</span>
-    </label>
-  );
-}
-
 /* ---------- Data ---------- */
 
 export type Status = 'pending' | 'partial' | 'complete' | 'error' | 'info';

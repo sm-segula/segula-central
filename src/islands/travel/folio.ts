@@ -1,38 +1,105 @@
 /**
- * Access email and folio issuing for SEGULA Travel.
+ * Network side of SEGULA Travel: session ticket, folio reservation and PDF
+ * delivery by email.
  *
- * The email gate only checks the corporate domain: it is NOT authentication
- * (anyone can type a made-up address on the domain). The folio service in
- * `apps-script/travel-folio/Code.gs` repeats the same check server-side.
+ * The whole site sits behind the login (see src/lib/auth). The browser asks
+ * `/auth/ticket` for a short-lived signed ticket and presents it to the folio
+ * service in `apps-script/travel-folio/Code.gs`, which takes the requester's
+ * email ONLY from that verified ticket: no email is ever typed or sent here.
  */
-import { bumpSeq, peekFolio } from './model';
+import { bumpSeq, peekFolio } from './model.ts';
 
-const CORPORATE = /^[a-z0-9._%+-]+@segulagrp\.com$/;
-const EMAIL_KEY = 'segula.travel.email';
+/** Where the login lives; `next` brings the user back to the travel page. */
+export const LOGIN_URL = '/login?next=/segula-travel';
 
-export const normalizeEmail = (v: string): string => v.trim().toLowerCase();
-export const isCorporateEmail = (v: string): boolean => CORPORATE.test(normalizeEmail(v));
-
-/** Same wording for every rejection: the UI must not hint at the expected domain. */
-export const EMAIL_ERROR = 'Correo incorrecto.';
-
-export const readRememberedEmail = (): string => {
-  try {
-    return localStorage.getItem(EMAIL_KEY) ?? '';
-  } catch {
-    return '';
+export class FolioError extends Error {
+  readonly code: string;
+  constructor(message: string, code = 'error') {
+    super(message);
+    this.code = code;
   }
-};
-export const rememberEmail = (email: string, remember: boolean): void => {
-  try {
-    if (remember) localStorage.setItem(EMAIL_KEY, email);
-    else localStorage.removeItem(EMAIL_KEY);
-  } catch {
-    /* storage blocked: the email is simply not remembered */
-  }
-};
+}
 
-export class FolioError extends Error {}
+/** The login session is gone (or never existed): the user has to log in again. */
+export class SessionGoneError extends FolioError {
+  constructor() {
+    super('Tu sesión terminó. Inicia sesión de nuevo.', 'session_gone');
+  }
+}
+
+export interface Ticket {
+  ticket: string;
+  email: string;
+}
+
+export interface TicketSource {
+  /** The current ticket, fetching one when there is none or it is about to expire. */
+  get(): Promise<Ticket>;
+  /** Discards the current ticket and fetches a new one. */
+  refresh(): Promise<Ticket>;
+}
+
+type FetchFn = typeof fetch;
+
+/** GET /auth/ticket: 401 means the session is gone. */
+export async function fetchTicket(fetchFn: FetchFn = fetch): Promise<Ticket> {
+  let res: Response;
+  try {
+    res = await fetchFn('/auth/ticket', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+  } catch {
+    throw new FolioError('Sin conexión. Intenta de nuevo.', 'network');
+  }
+  if (res.status === 401) throw new SessionGoneError();
+  let data: { ok?: boolean; ticket?: unknown; email?: unknown } | null;
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
+  }
+  if (!res.ok || !data || data.ok !== true || typeof data.ticket !== 'string' || typeof data.email !== 'string') {
+    throw new FolioError('No se pudo validar tu sesión. Intenta de nuevo.', 'ticket');
+  }
+  return { ticket: data.ticket, email: data.email };
+}
+
+/** Expiry (unix seconds) read from the unsigned payload; 0 when unreadable. Only a cache hint: the server verifies. */
+function ticketExp(ticket: string): number {
+  try {
+    const b64 = (ticket.split('.')[0] ?? '').replace(/-/g, '+').replace(/_/g, '/');
+    const exp = JSON.parse(atob(b64)).exp;
+    return typeof exp === 'number' ? exp : 0;
+  } catch {
+    return 0;
+  }
+}
+
+const TICKET_MARGIN_S = 60;
+
+/** Keeps the ticket in memory (never persisted) and renews it when it is about to expire. */
+export function createTicketSource(fetchFn: FetchFn = fetch, nowMs: () => number = Date.now): TicketSource {
+  let current: Ticket | null = null;
+  let inflight: Promise<Ticket> | null = null;
+  const load = (): Promise<Ticket> => {
+    if (!inflight) {
+      inflight = fetchTicket(fetchFn)
+        .then((t) => (current = t))
+        .finally(() => {
+          inflight = null;
+        });
+    }
+    return inflight;
+  };
+  return {
+    get() {
+      if (current && ticketExp(current.ticket) - TICKET_MARGIN_S > nowMs() / 1000) return Promise.resolve(current);
+      return load();
+    },
+    refresh() {
+      current = null;
+      return load();
+    },
+  };
+}
 
 export interface FolioReserver {
   /** The folio of the current request ('' while none is reserved). */
@@ -40,19 +107,19 @@ export interface FolioReserver {
   /** The in-flight reservation, if any. */
   readonly pending: Promise<string> | null;
   /** Returns the request's folio, reserving it once; concurrent callers share one request. */
-  ensure(email: string): Promise<string>;
+  ensure(): Promise<string>;
   /** Starts a new request: the next ensure() reserves a new folio. */
   clear(): void;
 }
 
 /**
  * Holds one folio per request. Once reserved it never changes until clear(),
- * and concurrent callers (gate, preview, download) share the same in-flight
+ * and concurrent callers (page load, preview, send) share the same in-flight
  * request, so the number shown on screen is the number printed in the PDF.
  * A reservation that resolves after clear() is ignored for the new request.
  */
 export function createFolioReserver(
-  issue: (email: string) => Promise<string>,
+  issue: () => Promise<string>,
   onChange: (folio: string, reserving: boolean) => void,
 ): FolioReserver {
   let folio = '';
@@ -65,12 +132,12 @@ export function createFolioReserver(
     get pending() {
       return pending;
     },
-    ensure(email) {
+    ensure() {
       if (folio) return Promise.resolve(folio);
       if (pending) return pending;
       const gen = generation;
       onChange('', true);
-      const p = issue(email).then(
+      const p = issue().then(
         (v) => {
           if (gen !== generation) return v; // stale: belongs to a cleared request
           folio = v;
@@ -105,14 +172,14 @@ type Reply = { ok?: boolean; folio?: string; error?: string };
  * (Apps Script cannot answer a CORS preflight) and the timeout keeps a hung
  * request from leaving the loader spinning forever.
  */
-async function post(endpoint: string, payload: Record<string, string>, timeoutMs: number): Promise<Reply> {
+async function post(endpoint: string, payload: Record<string, string>, timeoutMs: number, fetchFn: FetchFn): Promise<Reply> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   let data: Reply | null;
   try {
     let res: Response;
     try {
-      res = await fetch(endpoint, {
+      res = await fetchFn(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload),
@@ -122,8 +189,9 @@ async function post(endpoint: string, payload: Record<string, string>, timeoutMs
     } catch {
       throw new FolioError(
         ctrl.signal.aborted
-          ? 'El servicio de folios tardó demasiado. Intenta de nuevo.'
-          : 'Sin conexión con el servicio de folios. Intenta de nuevo.',
+          ? 'El servicio tardó demasiado. Intenta de nuevo.'
+          : 'Sin conexión con el servicio. Intenta de nuevo.',
+        'network',
       );
     }
     try {
@@ -134,91 +202,30 @@ async function post(endpoint: string, payload: Record<string, string>, timeoutMs
   } finally {
     clearTimeout(timer);
   }
-  if (!data || typeof data !== 'object') throw new FolioError('El servicio de folios respondió algo inesperado.');
+  if (!data || typeof data !== 'object') throw new FolioError('El servicio respondió algo inesperado.', 'bad_reply');
   return data;
 }
 
-type MarkStatus = 'ok' | 'retry' | 'rejected';
-
-async function mark(endpoint: string, email: string, folio: string, timeoutMs: number): Promise<MarkStatus> {
-  let data: Reply;
-  try {
-    data = await post(endpoint, { action: 'downloaded', email: normalizeEmail(email), folio }, timeoutMs);
-  } catch {
-    return 'retry'; // network, timeout or garbled reply: worth trying again
-  }
-  // A reply carrying a folio comes from an older Code.gs that treated the call
-  // as a reservation: retrying would burn more numbers, so give up.
-  if (data.ok === true && !data.folio) return 'ok';
-  if (data.folio || data.error === 'not_found' || data.error === 'bad_request' || data.error === 'invalid_email') return 'rejected';
-  return 'retry';
-}
-
 /**
- * Records in the folio sheet that the PDF of `folio` was downloaded. Never
- * throws: a failure only leaves the row unmarked (the download already happened).
+ * Calls a ticketed action. When the service answers `unauthorized` (expired
+ * ticket) it fetches a new ticket and retries exactly once.
  */
-export async function markDownloaded(endpoint: string | undefined, email: string, folio: string, timeoutMs = 20000): Promise<boolean> {
-  if (!endpoint) return true;
-  return (await mark(endpoint, email, folio, timeoutMs)) === 'ok';
+async function postTicketed(
+  endpoint: string, auth: TicketSource, payload: Record<string, string>, timeoutMs: number, fetchFn: FetchFn,
+): Promise<Reply> {
+  let t = await auth.get();
+  let data = await post(endpoint, { ...payload, ticket: t.ticket }, timeoutMs, fetchFn);
+  if (data.error === 'unauthorized') {
+    t = await auth.refresh();
+    data = await post(endpoint, { ...payload, ticket: t.ticket }, timeoutMs, fetchFn);
+  }
+  return data;
 }
 
-// Downloads whose registration failed, kept in the browser so a later download
-// or a later visit retries them, even after "Nueva solicitud" or a reload.
-const UNMARKED_KEY = 'segula.travel.unmarked';
-type Unmarked = { folio: string; email: string };
-const sameEntry = (a: Unmarked, b: Unmarked): boolean => a.folio === b.folio && a.email === b.email;
+/** Largest PDF the folio service accepts (Apps Script documents no doPost limit). */
+export const MAX_PDF_BYTES = 20 * 1024 * 1024;
 
-export const readUnmarked = (): Unmarked[] => {
-  try {
-    const v: unknown = JSON.parse(localStorage.getItem(UNMARKED_KEY) ?? '[]');
-    return Array.isArray(v)
-      ? v.filter((x): x is Unmarked => !!x && typeof x.folio === 'string' && typeof x.email === 'string')
-      : [];
-  } catch {
-    return [];
-  }
-};
-const writeUnmarked = (list: Unmarked[]): void => {
-  try {
-    if (list.length) localStorage.setItem(UNMARKED_KEY, JSON.stringify(list));
-    else localStorage.removeItem(UNMARKED_KEY);
-  } catch {
-    /* storage blocked: the retry only lives in this page */
-  }
-};
-
-/**
- * Records the download of `folio`. On a retryable failure it is queued so
- * retryUnmarked() sends it again later. Resolves to whether it is registered.
- */
-export async function registerDownload(endpoint: string | undefined, email: string, folio: string, timeoutMs = 20000): Promise<boolean> {
-  if (!endpoint) return true;
-  const entry = { folio, email: normalizeEmail(email) };
-  const status = await mark(endpoint, email, folio, timeoutMs);
-  const rest = readUnmarked().filter((x) => !sameEntry(x, entry));
-  writeUnmarked(status === 'retry' ? [...rest, entry] : rest);
-  return status === 'ok';
-}
-
-/**
- * Sends again the queued registrations of this email (other emails' entries
- * are kept: the sheet only accepts the email that reserved the folio).
- * Registered or rejected entries leave the queue; entries added meanwhile stay.
- */
-export async function retryUnmarked(endpoint: string | undefined, email: string, skipFolio = '', timeoutMs = 20000): Promise<void> {
-  if (!endpoint) return;
-  const me = normalizeEmail(email);
-  const done: Unmarked[] = [];
-  for (const it of readUnmarked()) {
-    if (it.email !== me || it.folio === skipFolio) continue;
-    if ((await mark(endpoint, it.email, it.folio, timeoutMs)) !== 'retry') done.push(it);
-  }
-  if (done.length) writeUnmarked(readUnmarked().filter((x) => !done.some((d) => sameEntry(d, x))));
-}
-
-/** Largest PDF sent for the internal copy (Apps Script documents no doPost limit). */
-export const MAX_ARCHIVE_BYTES = 20 * 1024 * 1024;
+const TOO_LARGE = 'El PDF supera 20 MB y no se puede enviar por correo. Quita o reduce algún adjunto.';
 
 const toBase64 = (bytes: Uint8Array): string => {
   let bin = '';
@@ -228,20 +235,27 @@ const toBase64 = (bytes: Uint8Array): string => {
 };
 
 /**
- * Sends the downloaded PDF to the folio service, which keeps an internal copy
- * in Drive linked from the folio sheet. Internal control only: it never throws,
- * is never retried and its outcome is never shown to the requester. Resolves to
- * whether the copy was stored.
+ * Asks the folio service to email the PDF to the logged-in user. Resolves once
+ * the email was sent; any failure throws a FolioError with a user-facing
+ * message, and the same folio can be delivered again.
  */
-export async function archivePdf(
-  endpoint: string | undefined, email: string, folio: string, bytes: Uint8Array, timeoutMs = 45000,
-): Promise<boolean> {
-  if (!endpoint || !bytes.length || bytes.length > MAX_ARCHIVE_BYTES) return false;
-  try {
-    const data = await post(endpoint, { action: 'archive', email: normalizeEmail(email), folio, pdf: toBase64(bytes) }, timeoutMs);
-    return data.ok === true && !data.folio;
-  } catch {
-    return false;
+export async function deliverPdf(
+  endpoint: string | undefined, auth: TicketSource, folio: string, bytes: Uint8Array,
+  timeoutMs = 90000, fetchFn: FetchFn = fetch,
+): Promise<void> {
+  if (!endpoint) throw new FolioError('El envío por correo no está configurado.', 'not_configured');
+  if (bytes.length > MAX_PDF_BYTES) throw new FolioError(TOO_LARGE, 'too_large');
+  const data = await postTicketed(endpoint, auth, { action: 'deliver', folio, pdf: toBase64(bytes) }, timeoutMs, fetchFn);
+  if (data.ok === true) return;
+  switch (data.error) {
+    case 'too_large':
+      throw new FolioError(TOO_LARGE, 'too_large');
+    case 'busy':
+      throw new FolioError('El servicio está ocupado. Intenta de nuevo.', 'busy');
+    case 'unauthorized':
+      throw new FolioError('No se pudo validar tu sesión. Intenta de nuevo.', 'unauthorized');
+    default:
+      throw new FolioError('No se pudo enviar el correo. Intenta de nuevo.', data.error ?? 'error');
   }
 }
 
@@ -250,15 +264,17 @@ export async function archivePdf(
  * atomically (shared across users). Without one (local dev), the old per-browser
  * counter is used.
  */
-export async function issueFolio(endpoint: string | undefined, email: string, prefix: string, timeoutMs = 20000): Promise<string> {
+export async function issueFolio(
+  endpoint: string | undefined, auth: TicketSource, prefix: string, timeoutMs = 20000, fetchFn: FetchFn = fetch,
+): Promise<string> {
   if (!endpoint) {
     const folio = peekFolio(prefix);
     bumpSeq();
     return folio;
   }
-  const data = await post(endpoint, { action: 'reserve', email: normalizeEmail(email) }, timeoutMs);
+  const data = await postTicketed(endpoint, auth, { action: 'reserve' }, timeoutMs, fetchFn);
   if (data.ok && typeof data.folio === 'string' && data.folio.startsWith(`${prefix}-`)) return data.folio;
-  if (data.error === 'invalid_email') throw new FolioError(EMAIL_ERROR);
-  if (data.error === 'busy') throw new FolioError('El servicio de folios está ocupado. Intenta de nuevo.');
-  throw new FolioError('El servicio de folios no pudo asignar el folio.');
+  if (data.error === 'busy') throw new FolioError('El servicio de folios está ocupado. Intenta de nuevo.', 'busy');
+  if (data.error === 'unauthorized') throw new FolioError('No se pudo validar tu sesión. Intenta de nuevo.', 'unauthorized');
+  throw new FolioError('El servicio de folios no pudo asignar el folio.', data.error ?? 'error');
 }
