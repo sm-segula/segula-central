@@ -47,6 +47,7 @@ Si el servicio ya corría con otra cuenta (por ejemplo software.manager), el scr
 5. **Autorizar.** Ejecuta `checkSetup` y autoriza Drive y el envío de correo con segula-central@segula.mx.
 6. **Nueva implementación.** **Implementar → Nueva implementación → Aplicación web**, *Ejecutar como:* **Yo (segula-central@segula.mx)**, *Quién tiene acceso:* **Cualquier usuario**.
 7. **URL.** Pon la nueva URL `/exec` en Vercel como `PUBLIC_TRAVEL_FOLIO_URL` y vuelve a desplegar.
+8. **Archivar la implementación vieja.** Cuando el sitio nuevo ya esté publicado en producción, entra en **Implementar → Administrar implementaciones** y **archiva** la implementación anterior (la de la otra cuenta). Hasta que la archives, su URL `/exec` sigue respondiendo con el código viejo, que reserva folios con cualquier correo tipeado y sin ticket. No la archives antes de publicar el sitio nuevo, porque el sitio actual la sigue usando.
 
 Notas:
 
