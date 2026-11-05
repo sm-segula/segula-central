@@ -1,16 +1,30 @@
 /**
- * SEGULA Travel folio service (Google Apps Script web app).
+ * SEGULA Central service (Google Apps Script web app). Runs as the shared
+ * sender account segula-central@segula.mx: every email goes out from it.
  *
- * Two actions, both POST with a JSON body:
- * - "reserve" (default): issues folios STRA-VJ-<year>-<6-digit sequence> one at
- *   a time under a script lock, so two people never get the same number. The
- *   counter lives in Script Properties (one key per year) and every folio is
- *   logged as a row in the "Folios" sheet (Folio, Reservado, Correo, Descargado).
- * - "downloaded": stamps the "Descargado" column of that folio's row with the
- *   first download time. Rows left empty are reservations nobody downloaded.
- * - "archive": internal copy. Saves the downloaded PDF (base64) as <folio>.pdf in
- *   the Drive folder of Script Property DRIVE_FOLDER_ID and writes its link in
- *   the "Archivo" column. The requester is never told about this copy.
+ * Every action is a POST with a JSON body and needs Script Property
+ * AUTH_SHARED_SECRET (the same value the site middleware holds). Without it
+ * every action answers "not_configured" (fail closed).
+ *
+ * Login (called by the site middleware, authenticated with `key` = the secret):
+ * - "otp_request": emails a 6-digit code to a @segulagrp.com address. Only a hash
+ *   of the code is kept, in CacheService, for 10 minutes. 60 s cooldown per email.
+ * - "otp_verify": checks the code (max 5 wrong attempts per code, then a new one
+ *   is required). A correct code is consumed.
+ *
+ * SEGULA Travel (called by the browser with a `ticket` signed by the middleware;
+ * the email is taken ONLY from the verified ticket, never from the body):
+ * - "reserve": issues folios STRA-VJ-<year>-<6-digit sequence> one at a time under
+ *   a script lock, so two people never get the same number. The counter lives in
+ *   Script Properties (one key per year) and every folio is logged as a row in
+ *   the "Folios" sheet (Folio, Reservado, Correo, Descargado, Archivo).
+ * - "deliver": emails the PDF (base64) to the ticket email, stamps "Descargado"
+ *   with the first send time and stores an internal copy in the Drive folder of
+ *   Script Property DRIVE_FOLDER_ID, linked in "Archivo" (best effort, never shown).
+ *
+ * Ticket / token format: base64url(JSON {email, exp}) + "." +
+ * base64url(HMAC-SHA256(secret, first part)), both WITHOUT "=" padding; exp is in
+ * unix seconds.
  *
  * Setup: see README.md in this folder.
  */
@@ -21,11 +35,21 @@ var SHEET_NAME = 'Folios';
 var HEADERS = ['Folio', 'Reservado', 'Correo', 'Descargado', 'Archivo'];
 var LOCK_WAIT_MS = 10000;
 var DRIVE_FOLDER_KEY = 'DRIVE_FOLDER_ID';
+var SECRET_KEY = 'AUTH_SHARED_SECRET';
+var SENDER_NAME = 'SEGULA Central';
+var OTP_TTL_S = 600; // a code lives 10 minutes
+var OTP_COOLDOWN_S = 60; // one code per email per minute
+var OTP_MAX_ATTEMPTS = 5;
 // Apps Script documents no doPost payload limit; 20 MB of PDF (~27 MB of base64)
-// is a conservative cap chosen for the internal copy.
+// is a conservative cap chosen for the email and the internal copy.
 var MAX_PDF_BYTES = 20 * 1024 * 1024;
 
 function doPost(e) {
+  var secret = secret_();
+  if (!secret) {
+    console.error('Missing Script Property ' + SECRET_KEY + ': refusing every action.');
+    return json_({ ok: false, error: 'not_configured' });
+  }
   var body;
   try {
     body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
@@ -33,14 +57,162 @@ function doPost(e) {
     return json_({ ok: false, error: 'bad_request' });
   }
   if (!body || typeof body !== 'object') return json_({ ok: false, error: 'bad_request' });
-  var email = String(body.email || '').trim().toLowerCase();
-  if (!CORPORATE.test(email)) return json_({ ok: false, error: 'invalid_email' });
-  var action = body.action || 'reserve';
-  if (action === 'reserve') return reserve_(email);
-  if (action === 'downloaded') return downloaded_(email, String(body.folio || ''));
-  if (action === 'archive') return archive_(email, String(body.folio || ''), body.pdf);
+  var action = body.action;
+  if (action === 'otp_request' || action === 'otp_verify') {
+    if (typeof body.key !== 'string' || !safeEqual_(body.key, secret)) return json_({ ok: false, error: 'unauthorized' });
+    var mail = String(body.email || '').trim().toLowerCase();
+    if (!CORPORATE.test(mail)) return json_({ ok: false, error: 'invalid_email' });
+    return action === 'otp_request' ? otpRequest_(mail, secret) : otpVerify_(mail, String(body.code || ''), secret);
+  }
+  if (action === 'reserve' || action === 'deliver') {
+    var email = ticketEmail_(body.ticket, secret);
+    if (!email) return json_({ ok: false, error: 'unauthorized' });
+    if (action === 'reserve') return reserve_(email);
+    return deliver_(email, String(body.folio || ''), body.pdf);
+  }
+  // Unknown or retired action ("downloaded", "archive", none): never falls through to reserve.
   return json_({ ok: false, error: 'bad_request' });
 }
+
+// ---- Login (OTP) ----
+
+function otpRequest_(email, secret) {
+  var cache = CacheService.getScriptCache();
+  var id = hmacHex_('id:' + email, secret);
+  var otpKey = 'otp-' + id;
+  var coolKey = 'cd-' + id;
+  var code = newCode_();
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(LOCK_WAIT_MS)) return json_({ ok: false, error: 'busy' });
+  try {
+    if (cache.get(coolKey)) return json_({ ok: false, error: 'cooldown' });
+    // Only a hash of the code is stored, never the code or the address.
+    cache.put(otpKey, JSON.stringify({ h: hmacHex_('code:' + email + ':' + code, secret), a: 0, e: Date.now() + OTP_TTL_S * 1000 }), OTP_TTL_S);
+    cache.put(coolKey, '1', OTP_COOLDOWN_S);
+  } finally {
+    lock.releaseLock();
+  }
+  try {
+    MailApp.sendEmail({
+      to: email,
+      subject: 'Tu código de acceso a SEGULA Central',
+      body:
+        'Tu código de acceso a SEGULA Central es: ' + code + '\n\n' +
+        'El código vence en 10 minutos. Si no lo solicitaste, ignora este correo.',
+      htmlBody:
+        '<p>Tu código de acceso a SEGULA Central es:</p>' +
+        '<p style="font-size:28px;letter-spacing:6px;font-weight:bold">' + code + '</p>' +
+        '<p>El código vence en 10 minutos. Si no lo solicitaste, ignora este correo.</p>',
+      name: SENDER_NAME
+    });
+  } catch (err) {
+    console.error('otp_request: mail failed: ' + (err && err.message ? err.message : err));
+    cache.remove(otpKey);
+    cache.remove(coolKey); // the person got nothing: let them ask again right away
+    return json_({ ok: false, error: 'server_error' });
+  }
+  return json_({ ok: true });
+}
+
+function otpVerify_(email, code, secret) {
+  var cache = CacheService.getScriptCache();
+  var otpKey = 'otp-' + hmacHex_('id:' + email, secret);
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(LOCK_WAIT_MS)) return json_({ ok: false, error: 'busy' });
+  try {
+    var raw = cache.get(otpKey);
+    var entry = null;
+    try {
+      entry = raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      entry = null;
+    }
+    if (!entry || typeof entry.h !== 'string') {
+      cache.remove(otpKey);
+      return json_({ ok: false, error: 'expired' });
+    }
+    if (entry.a >= OTP_MAX_ATTEMPTS) {
+      cache.remove(otpKey);
+      return json_({ ok: false, error: 'too_many_attempts' });
+    }
+    if (/^\d{6}$/.test(code) && safeEqual_(hmacHex_('code:' + email + ':' + code, secret), entry.h)) {
+      cache.remove(otpKey); // consumed: a code works once
+      return json_({ ok: true });
+    }
+    entry.a = (entry.a || 0) + 1;
+    if (entry.a >= OTP_MAX_ATTEMPTS) {
+      cache.remove(otpKey); // a new code is required
+      return json_({ ok: false, error: 'too_many_attempts' });
+    }
+    var left = Math.max(1, Math.ceil((entry.e - Date.now()) / 1000));
+    cache.put(otpKey, JSON.stringify(entry), left);
+    return json_({ ok: false, error: 'invalid_code' });
+  } catch (err) {
+    console.error('otp_verify: ' + (err && err.message ? err.message : err));
+    return json_({ ok: false, error: 'server_error' });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// 6 digits from the randomness of Utilities.getUuid() (never Math.random).
+function newCode_() {
+  var hex = Utilities.getUuid().replace(/-/g, '').slice(0, 12);
+  return ('000000' + (parseInt(hex, 16) % 1000000)).slice(-6);
+}
+
+// ---- Secret, tokens, comparison ----
+
+function secret_() {
+  return String(PropertiesService.getScriptProperties().getProperty(SECRET_KEY) || '').trim();
+}
+
+// Compare in time that depends only on the longer length, not on where they differ.
+function safeEqual_(a, b) {
+  a = String(a);
+  b = String(b);
+  var diff = a.length ^ b.length;
+  var n = Math.max(a.length, b.length);
+  for (var i = 0; i < n; i++) diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  return diff === 0;
+}
+
+function hex_(bytes) {
+  var out = '';
+  for (var i = 0; i < bytes.length; i++) out += ('0' + ((bytes[i] + 256) % 256).toString(16)).slice(-2);
+  return out;
+}
+
+function hmacHex_(value, secret) {
+  return hex_(Utilities.computeHmacSha256Signature(value, secret));
+}
+
+// base64url without "=" padding (Utilities.base64EncodeWebSafe pads).
+function b64url_(bytes) {
+  return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/, '');
+}
+
+// Email of a valid ticket `<p>.<s>`, or '' when it is missing, malformed, forged,
+// expired or not a corporate address.
+function ticketEmail_(ticket, secret) {
+  if (typeof ticket !== 'string') return '';
+  var parts = ticket.split('.');
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return '';
+  if (!safeEqual_(parts[1], b64url_(Utilities.computeHmacSha256Signature(parts[0], secret)))) return '';
+  var payload;
+  try {
+    var p = parts[0];
+    while (p.length % 4) p += '=';
+    payload = JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(p)).getDataAsString());
+  } catch (err) {
+    return '';
+  }
+  if (!payload || typeof payload.exp !== 'number' || !(payload.exp > Math.floor(Date.now() / 1000))) return '';
+  if (typeof payload.email !== 'string' || !CORPORATE.test(payload.email)) return '';
+  return payload.email;
+}
+
+// ---- SEGULA Travel ----
 
 function reserve_(email) {
   var lock = LockService.getScriptLock();
@@ -69,53 +241,71 @@ function reserve_(email) {
   }
 }
 
-// Only the email that reserved the folio can mark it; the first download time is kept.
-function downloaded_(email, folio) {
-  if (!FOLIO.test(folio)) return json_({ ok: false, error: 'bad_request' });
-  try {
-    var sh = sheet_();
-    var row = findRow_(sh, folio, email);
-    if (row < 0) return json_({ ok: false, error: 'not_found' });
-    var cell = sh.getRange(row, 4);
-    if (!cell.getValue()) cell.setValue(new Date());
-    return json_({ ok: true });
-  } catch (err) {
-    return json_({ ok: false, error: 'server_error' });
-  }
-}
-
-// Internal copy of the downloaded PDF in Drive, linked in "Archivo". Only the
-// email that reserved the folio can send it, and the first copy is kept. The
-// file inherits the folder's sharing: it is never shared by link.
-function archive_(email, folio, pdf) {
+// Emails the PDF to the ticket email. Only the email that reserved the folio can
+// deliver it. "Descargado" keeps the first send time; the internal Drive copy is
+// best effort and never changes the answer.
+function deliver_(email, folio, pdf) {
   if (!FOLIO.test(folio) || typeof pdf !== 'string' || !pdf) return json_({ ok: false, error: 'bad_request' });
   // base64 is 4/3 of the bytes: refuse oversized payloads before decoding them.
   if (pdf.length > Math.ceil(MAX_PDF_BYTES / 3) * 4) return json_({ ok: false, error: 'too_large' });
-  var file = null;
+  var sh, row, bytes;
   try {
-    var folderId = folderId_();
-    if (!folderId) {
-      console.error('archive ' + folio + ': missing Script Property ' + DRIVE_FOLDER_KEY);
-      return json_({ ok: false, error: 'not_configured' });
-    }
-    var sh = sheet_();
-    var row = findRow_(sh, folio, email);
+    sh = sheet_();
+    row = findRow_(sh, folio, email);
     if (row < 0) return json_({ ok: false, error: 'not_found' });
-    if (sh.getRange(row, 5).getValue()) return json_({ ok: true }); // already archived
-    var bytes;
     try {
       bytes = Utilities.base64Decode(pdf);
     } catch (err) {
       return json_({ ok: false, error: 'bad_request' });
     }
     if (bytes.length > MAX_PDF_BYTES || !isPdf_(bytes)) return json_({ ok: false, error: 'bad_request' });
+    MailApp.sendEmail({
+      to: email,
+      subject: 'Tu solicitud SEGULA Travel ' + folio,
+      body:
+        'Hola,\n\nAdjuntamos tu solicitud SEGULA Travel con el folio ' + folio + '.\n\n' +
+        'Si no la solicitaste, ignora este correo.',
+      htmlBody:
+        '<p>Hola,</p><p>Adjuntamos tu solicitud SEGULA Travel con el folio <strong>' + folio + '</strong>.</p>' +
+        '<p>Si no la solicitaste, ignora este correo.</p>',
+      name: SENDER_NAME,
+      attachments: [Utilities.newBlob(bytes, 'application/pdf', folio + '.pdf')]
+    });
+  } catch (err) {
+    console.error('deliver ' + folio + ': ' + (err && err.message ? err.message : err));
+    return json_({ ok: false, error: 'server_error' });
+  }
+  // The email is out: from here on nothing changes the answer.
+  try {
+    var cell = sh.getRange(row, 4);
+    if (!cell.getValue()) cell.setValue(new Date());
+  } catch (err) {
+    console.error('deliver ' + folio + ': could not stamp Descargado: ' + (err && err.message ? err.message : err));
+  }
+  archiveCopy_(sh, email, folio, bytes);
+  return json_({ ok: true });
+}
+
+// Internal copy of the delivered PDF in Drive, linked in "Archivo". The first copy
+// is kept. The file inherits the folder's sharing: it is never shared by link.
+// Failures are only logged; the requester is never told.
+function archiveCopy_(sh, email, folio, bytes) {
+  var file = null;
+  try {
+    var folderId = folderId_();
+    if (!folderId) {
+      console.error('archive ' + folio + ': missing Script Property ' + DRIVE_FOLDER_KEY);
+      return;
+    }
+    var row = findRow_(sh, folio, email);
+    if (row < 0 || sh.getRange(row, 5).getValue()) return; // already archived
     file = DriveApp.getFolderById(folderId).createFile(Utilities.newBlob(bytes, 'application/pdf', folio + '.pdf'));
-    // Claim the cell under the lock, so two uploads of one folio write one link;
-    // the upload that loses keeps no file behind.
+    // Claim the cell under the lock, so two sends of one folio write one link;
+    // the one that loses keeps no file behind.
     var lock = LockService.getScriptLock();
     if (!lock.tryLock(LOCK_WAIT_MS)) {
       discard_(file);
-      return json_({ ok: false, error: 'busy' });
+      return;
     }
     try {
       row = findRow_(sh, folio, email);
@@ -131,12 +321,9 @@ function archive_(email, folio, pdf) {
     } finally {
       lock.releaseLock();
     }
-    return json_({ ok: true });
   } catch (err) {
-    // The requester is never told; the Executions panel keeps the cause.
     console.error('archive ' + folio + ': ' + (err && err.message ? err.message : err));
     if (file) discard_(file);
-    return json_({ ok: false, error: 'server_error' });
   }
 }
 
@@ -146,10 +333,12 @@ function folderId_() {
 
 /**
  * Run once from the editor (select checkSetup, then Ejecutar): Google asks to
- * authorize Drive, and the log shows whether DRIVE_FOLDER_ID opens the folder.
- * Creates nothing.
+ * authorize Drive and sending mail, and the log shows whether AUTH_SHARED_SECRET
+ * is set, whether DRIVE_FOLDER_ID opens the folder and the remaining daily mail
+ * quota. Creates and sends nothing.
  */
 function checkSetup() {
+  if (!secret_()) throw new Error('Falta la propiedad del script ' + SECRET_KEY + '.');
   var id = folderId_();
   if (!id) throw new Error('Falta la propiedad del script ' + DRIVE_FOLDER_KEY + '.');
   var folder;
@@ -159,6 +348,8 @@ function checkSetup() {
     throw new Error('No se pudo abrir la carpeta ' + id + ': ' + (err && err.message ? err.message : err));
   }
   Logger.log('Carpeta OK: "' + folder.getName() + '" (' + id + '). Las copias se guardarán ahí.');
+  Logger.log(SECRET_KEY + ' OK.');
+  Logger.log('Cuota diaria de correo restante: ' + MailApp.getRemainingDailyQuota());
 }
 
 // Row number (1-based) of `folio` when `email` reserved it, otherwise -1.
