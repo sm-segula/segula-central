@@ -40,6 +40,8 @@ var SENDER_NAME = 'SEGULA Central';
 var OTP_TTL_S = 600; // a code lives 10 minutes
 var OTP_COOLDOWN_S = 60; // one code per email per minute
 var OTP_MAX_ATTEMPTS = 5;
+var OTP_CAP_CODES = 8; // codes per email per window
+var OTP_CAP_WINDOW_S = 21600; // 6 h, the longest CacheService TTL
 // Apps Script documents no doPost payload limit; 20 MB of PDF (~27 MB of base64)
 // is a conservative cap chosen for the email and the internal copy.
 var MAX_PDF_BYTES = 20 * 1024 * 1024;
@@ -86,6 +88,11 @@ function otpRequest_(email, secret) {
   if (!lock.tryLock(LOCK_WAIT_MS)) return json_({ ok: false, error: 'busy' });
   try {
     if (cache.get(coolKey)) return json_({ ok: false, error: 'cooldown' });
+    // Per-email cap across codes: 8 codes per 6 h (CacheService's longest TTL),
+    // so at most 40 guesses per window. Counted only after the mail is sent.
+    var capKey = 'cap-' + id;
+    var cap = JSON.parse(cache.get(capKey) || 'null');
+    if (cap && cap.n >= OTP_CAP_CODES && Date.now() < cap.e) return json_({ ok: false, error: 'cooldown' });
     // Only a hash of the code is stored, never the code or the address.
     cache.put(otpKey, JSON.stringify({ h: hmacHex_('code:' + email + ':' + code, secret), a: 0, e: Date.now() + OTP_TTL_S * 1000 }), OTP_TTL_S);
     cache.put(coolKey, '1', OTP_COOLDOWN_S);
@@ -111,6 +118,11 @@ function otpRequest_(email, secret) {
     cache.remove(coolKey); // the person got nothing: let them ask again right away
     return json_({ ok: false, error: 'server_error' });
   }
+  var now = Date.now();
+  var cur = JSON.parse(cache.get(capKey) || 'null');
+  if (!cur || now >= cur.e) cur = { n: 0, e: now + OTP_CAP_WINDOW_S * 1000 };
+  cur.n += 1;
+  cache.put(capKey, JSON.stringify(cur), Math.max(1, Math.ceil((cur.e - now) / 1000)));
   return json_({ ok: true });
 }
 

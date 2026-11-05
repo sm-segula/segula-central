@@ -113,7 +113,7 @@ Todo el sitio está protegido: sin sesión, cualquier página redirige a `/login
   - `SESSION_SECRET`: firma la cookie de sesión. Solo Vercel.
   - `AUTH_SHARED_SECRET`: autentica las llamadas del middleware al Apps Script y firma los tickets de SEGULA Travel. Debe ser el mismo valor en la propiedad de script `AUTH_SHARED_SECRET` del Apps Script.
   - `PUBLIC_TRAVEL_FOLIO_URL`: URL `/exec` del Apps Script (el middleware la lee de `process.env`).
-  - Generar cada secreto: `openssl rand -base64 48` o `node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"`. Si falta alguno el sitio falla cerrado: nada se abre y `/auth/*` responde `not_configured`.
+  - Generar cada secreto: `openssl rand -base64 48` o `node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"`. Si falta `SESSION_SECRET` el sitio falla cerrado: ninguna página se abre. Si falta `AUTH_SHARED_SECRET` o `PUBLIC_TRAVEL_FOLIO_URL`, nadie puede iniciar sesión (`/auth/*` responde `not_configured`), pero una sesión ya abierta sigue viendo las páginas hasta que vence.
 - **Local.** `astro dev` **no** ejecuta el middleware, así que en local el sitio está sin protección y `/login` no puede iniciar sesión. Para probar el flujo completo hay que usar un Preview de Vercel.
 - **Limitación (sin base de datos).** Una cookie robada no se puede revocar antes de que expire (7 días). La única forma de invalidar todas las sesiones es rotar `SESSION_SECRET`.
 

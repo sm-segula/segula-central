@@ -9,7 +9,7 @@ Sin la propiedad `AUTH_SHARED_SECRET` el script rechaza toda acción con `not_co
 
 ## Qué guarda
 
-- **Códigos de acceso:** solo un hash (HMAC) del código, en `CacheService` del script, 10 minutos; nunca el código ni el correo en claro. Máximo 5 intentos fallidos por código y 60 s entre códigos por correo. Un código correcto se consume.
+- **Códigos de acceso:** solo un hash (HMAC) del código, en `CacheService` del script, 10 minutos; nunca el código ni el correo en claro. Máximo 5 intentos fallidos por código, 60 s entre códigos por correo y como máximo 8 códigos por correo cada 6 horas. Un código correcto se consume.
 - **Consecutivo:** en las *Propiedades del script*, una clave por año (`seq-2026`, `seq-2027`…). Cada año arranca en `000001`.
 - **Registro:** una fila por folio en la hoja `Folios` con las columnas **Folio**, **Reservado** (hora en que se reservó al entrar a la página), **Correo** (el del ticket firmado, nunca uno escrito a mano), **Descargado** (hora del primer envío del PDF por correo; se conserva el nombre de la columna para no cambiar el formato de la hoja) y **Archivo** (link a la copia interna del PDF en Drive). La hoja se crea sola con su encabezado la primera vez.
 - **Copia interna en Drive:** al enviar el PDF, el script lo guarda como `<folio>.pdf` en la carpeta configurada en `DRIVE_FOLDER_ID` y pone el link en **Archivo**. Es solo para control interno: la página no le muestra nada de esto a quien hace la solicitud, ni si la copia falla (la causa queda en **Ejecuciones**). El archivo hereda los permisos de la carpeta y nunca se comparte por link. Se guarda una sola copia por folio, la primera.
@@ -69,7 +69,7 @@ Notas:
 ```
 
 - `{ "ok": true }`: se envió el código (vence en 10 minutos).
-- `{ "ok": false, "error": "unauthorized" | "invalid_email" | "cooldown" | "busy" | "server_error" }`. `cooldown`: ya se envió un código hace menos de 60 s. `server_error`: falló el envío; el código se descarta.
+- `{ "ok": false, "error": "unauthorized" | "invalid_email" | "cooldown" | "busy" | "server_error" }`. `cooldown`: ya se envió un código hace menos de 60 s, o ese correo ya pidió 8 códigos en las últimas 6 horas. `server_error`: falló el envío; el código se descarta.
 
 **Verificar código:**
 
