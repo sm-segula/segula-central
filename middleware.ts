@@ -4,6 +4,11 @@
 import { next } from '@vercel/functions';
 import { handle } from './src/lib/auth/handler.ts';
 
+// Node.js runtime, stated explicitly: the token code uses node:crypto, which the
+// Edge runtime does not provide (on Edge every request failed with
+// MIDDLEWARE_INVOCATION_FAILED before reaching this code).
+export const config = { runtime: 'nodejs' };
+
 export default async function middleware(request: Request): Promise<Response> {
   const answer = await handle(
     request,
