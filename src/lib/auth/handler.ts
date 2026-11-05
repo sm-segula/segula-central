@@ -1,6 +1,6 @@
-import { normalizeEmail } from './email.ts';
-import { SESSION_COOKIE, isPublicPath, safeNext } from './routes.ts';
-import { signToken, verifyToken } from './token.ts';
+import { normalizeEmail } from './email.js';
+import { SESSION_COOKIE, isPublicPath, safeNext } from './routes.js';
+import { signToken, verifyToken } from './token.js';
 
 export interface AuthEnv {
   SESSION_SECRET?: string | undefined;

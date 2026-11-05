@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test": "node --experimental-strip-types --test \"tests/**/*.test.ts\" \"tests/**/*.test.mjs\""
+    "test": "node --experimental-strip-types --import ./tests/support/resolve-ts.mjs --test \"tests/**/*.test.ts\" \"tests/**/*.test.mjs\""
   },
   "dependencies": {
     "@astrojs/preact": "^4.1.3",

@@ -2,11 +2,12 @@
 // prerendered pages and assets (Astro middleware cannot). Logic lives in
 // src/lib/auth/handler.ts; this file only wires env, fetch and next().
 import { next } from '@vercel/functions';
-import { handle } from './src/lib/auth/handler.ts';
+import { handle } from './src/lib/auth/handler.js';
 
-// Node.js runtime, stated explicitly: the token code uses node:crypto, which the
-// Edge runtime does not provide (on Edge every request failed with
-// MIDDLEWARE_INVOCATION_FAILED before reaching this code).
+// Node.js runtime, stated explicitly: the token code uses node:crypto.
+// Relative imports use `.js`: Vercel transpiles each .ts file to .js on its own
+// (no bundling), so a `.ts` specifier fails at runtime with ERR_MODULE_NOT_FOUND.
+// tests/auth/deploy-load.test.ts reproduces that shipping step.
 export const config = { runtime: 'nodejs' };
 
 export default async function middleware(request: Request): Promise<Response> {
