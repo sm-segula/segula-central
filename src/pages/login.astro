@@ -1,0 +1,58 @@
+---
+// Minimal layout on purpose: no Header, no menu, no footer, so the login page
+// does not reveal the structure of the intranet.
+import '../styles/global.css';
+import LoginForm from '../islands/LoginForm';
+---
+
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Iniciar sesión · SEGULA Central</title>
+    <meta name="robots" content="noindex" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0A1220" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+    />
+  </head>
+  <body>
+    <main class="login">
+      <img
+        class="login-logo"
+        src="/assets/segula-logo-powered-by-matra-white.png"
+        alt="SEGULA Technologies, Powered by MATRA"
+        width="727"
+        height="245"
+      />
+      <LoginForm client:load />
+    </main>
+  </body>
+</html>
+
+<style>
+  .login {
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 32px 24px;
+    background:
+      radial-gradient(60% 50% at 50% 0%, rgba(61, 154, 254, 0.14), transparent 70%),
+      var(--bg-base);
+  }
+  .login-logo {
+    display: block;
+    height: 48px;
+    width: auto;
+  }
+</style>

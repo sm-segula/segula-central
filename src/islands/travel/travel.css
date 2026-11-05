@@ -388,20 +388,7 @@ body:has(.tr-bar) { padding-bottom: 82px; }
 .tr-spinner--lg { width: 40px; height: 40px; border-width: 3px; }
 .tr-spinner--sm { width: 14px; height: 14px; color: var(--brand-lightblue); }
 
-/* ---------- Access gate ---------- */
-.tr-gate { display: flex; flex-direction: column; gap: 16px; }
-.tr-gate .tr-confirm-actions { margin-top: 12px; }
-.tr-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font: var(--font-body);
-  color: var(--text-muted);
-  cursor: pointer;
-  user-select: none;
-}
-.tr-check input { width: 18px; height: 18px; margin: 0; accent-color: var(--brand-lightblue); cursor: pointer; }
-/* Read-only field (email locked by the access gate). */
+/* Read-only field (email locked to the logged-in user). */
 .tr-field.is-readonly { border-style: dashed; }
 .tr-field.is-readonly .tr-input { color: var(--text-muted); cursor: default; }
 

@@ -2,6 +2,7 @@
 import Search from 'lucide-astro/Search';
 import Menu from 'lucide-astro/Menu';
 import X from 'lucide-astro/X';
+import LogOut from 'lucide-astro/LogOut';
 import ChevronDown from 'lucide-astro/ChevronDown';
 import { MENU, hrefFor } from '../data/nav';
 
@@ -52,6 +53,10 @@ const { menuTrigger = 'hover' } = Astro.props;
       <input type="search" placeholder="Buscar" aria-label="Buscar en SEGULA Central" />
     </label>
 
+    <button type="button" class="logout" data-logout aria-label="Cerrar sesión" title="Cerrar sesión">
+      <LogOut size={18} stroke-width={1.5} aria-hidden="true" />
+    </button>
+
     <button
       type="button"
       class="burger"
@@ -91,8 +96,25 @@ const { menuTrigger = 'hover' } = Astro.props;
         )}
       </div>
     ))}
+    <button type="button" class="acc-btn logout-mobile" data-logout>
+      Cerrar sesión
+      <LogOut size={18} stroke-width={1.5} aria-hidden="true" class="acc-chev" />
+    </button>
   </div>
 </div>
+
+<script>
+  // Clears the session cookie server-side, then goes to the login page.
+  document.addEventListener('click', async (event) => {
+    const target = event.target;
+    if (!(target instanceof Element) || !target.closest('[data-logout]')) return;
+    try {
+      await fetch('/auth/logout', { method: 'POST', credentials: 'same-origin' });
+    } finally {
+      location.assign('/login');
+    }
+  });
+</script>
 
 <style>
   .topbar {
@@ -245,6 +267,27 @@ const { menuTrigger = 'hover' } = Astro.props;
   .search input:focus-visible,
   .mobile-search input:focus-visible { box-shadow: none; }
 
+  .logout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: #FFFFFF;
+    cursor: pointer;
+    flex: none;
+    padding: 0;
+  }
+  .logout:hover { background: var(--surface-panel); }
+  .logout-mobile {
+    margin-top: 8px;
+    background: var(--surface-card);
+    border-radius: var(--radius-md);
+  }
+
   /* Burger */
   .burger {
     display: none;
@@ -349,6 +392,7 @@ const { menuTrigger = 'hover' } = Astro.props;
   @media (max-width: 1024px) {
     .nav { display: none; }
     .burger { display: inline-flex; }
+    .logout { display: none; }
   }
   @media (max-width: 640px) {
     .search { display: none; }

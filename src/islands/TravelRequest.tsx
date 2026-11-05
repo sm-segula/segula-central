@@ -1,7 +1,7 @@
 import { REQ, money, total, fmtSize, type Currency, type Field } from './travel/model';
 import { useTravelRequest } from './travel/useTravelRequest';
 import {
-  Button, Checkbox, Dropzone, IconButton, IconCircle, Input, Loader, Modal, Segmented, StatTile, StatusBadge, Textarea, Toast,
+  Button, Dropzone, IconButton, IconCircle, Input, Loader, Modal, Segmented, StatTile, StatusBadge, Textarea, Toast,
 } from './travel/ui';
 import Icon from './icons';
 
@@ -21,7 +21,7 @@ interface Props {
 
 /**
  * SEGULA Travel: travel request & authorization form. Fills the request,
- * attaches receipts and downloads one PDF with a unique folio. Port of the
+ * attaches receipts and emails one PDF with a unique folio to the logged-in user. Port of the
  * Claude Design prototype "Solicitud de Viajes". Styles: travel/travel.css.
  */
 export default function TravelRequest({ currency: initialCurrency = 'MXN', folioPrefix = 'STRA-VJ', folioEndpoint }: Props) {
@@ -57,7 +57,7 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
           </h1>
           <span class="tr-rule tr-rule--lg" aria-hidden="true" data-reveal data-reveal-delay="140" />
           <p class="tr-sub" data-reveal data-reveal-delay="210">
-            Llena los campos, adjunta tus comprobantes y descarga un solo PDF con folio único. Los campos con * son obligatorios.
+            Llena los campos, adjunta tus comprobantes y recibe un solo PDF con folio único en tu correo. Los campos con * son obligatorios.
           </p>
         </div>
         <div class="tr-folio" data-reveal data-reveal-delay="140">
@@ -159,9 +159,9 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
         <div class="tr-bar-inner">
           <span class="tr-bar-summary">{summary}</span>
           <div class="tr-bar-actions">
-            <Button variant="ghost" icon="rotate-ccw" disabled={s.busyDownload} onClick={s.reset}>Nueva solicitud</Button>
+            <Button variant="ghost" icon="rotate-ccw" disabled={s.busySend} onClick={s.reset}>Nueva solicitud</Button>
             <Button variant="secondary" icon="eye" loading={s.busyPreview} onClick={s.preview}>Vista previa</Button>
-            <Button variant="primary" icon="download" loading={s.busyDownload} onClick={s.requestDownload}>Descargar PDF</Button>
+            <Button variant="primary" loading={s.busySend} onClick={s.requestSend}>Enviar a mi correo</Button>
           </div>
         </div>
       </div>
@@ -177,28 +177,28 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
           <iframe title="Vista previa" src={s.previewUrl} class="tr-preview-frame" />
           <div class="tr-preview-actions">
             <Button variant="secondary" onClick={s.closePreview}>Seguir editando</Button>
-            <Button variant="primary" icon="download" loading={s.busyDownload} onClick={s.requestDownload}>Descargar PDF</Button>
+            <Button variant="primary" loading={s.busySend} onClick={s.requestSend}>Enviar a mi correo</Button>
           </div>
         </div>
       </Modal>
 
       <Modal open={s.confirmOpen} title="Confirma la moneda de tus gastos" width={560} onClose={s.closeConfirm}>
         <p class="tr-confirm-text">
-          Tus gastos se registrarán en <strong>{CURRENCY_NAME[currency]}</strong>. Verifica que todos los costos que capturaste estén en {currency} antes de generar el PDF.
+          Tus gastos se registrarán en <strong>{CURRENCY_NAME[currency]}</strong>. Verifica que todos los costos que capturaste estén en {currency} antes de generar y enviar el PDF.
         </p>
         <p class="tr-confirm-total">$ {totalFmt} {currency}</p>
         <div class="tr-confirm-actions">
           <Button variant="secondary" onClick={s.closeConfirm}>Cambiar moneda</Button>
-          <Button variant="primary" icon="download" onClick={s.confirmDownload}>Sí, están en {currency}</Button>
+          <Button variant="primary" onClick={s.confirmSend}>Sí, están en {currency}</Button>
         </div>
       </Modal>
 
-      {/* Download finished: every way of closing it (button, X, Esc, backdrop) goes to the site root. */}
-      <Modal open={!!s.done} title="PDF descargado" width={520} onClose={s.closeDone}>
+      {/* Delivery finished: every way of closing it (button, X, Esc, backdrop) goes to the site root. */}
+      <Modal open={!!s.done} title="Solicitud enviada" width={520} onClose={s.closeDone}>
         {s.done && (
           <div class="tr-done">
             <IconCircle name="circle-check" size={64} color="var(--brand-green)" />
-            <p class="tr-done-title">Archivo descargado exitosamente</p>
+            <p class="tr-done-title">Te enviamos la solicitud a <strong>{s.done.email}</strong></p>
             <span class="tr-folio-label">Folio emitido</span>
             <p class="tr-done-folio">{s.done.folio}</p>
             {s.done.notes.map((note) => (
@@ -217,27 +217,6 @@ export default function TravelRequest({ currency: initialCurrency = 'MXN', folio
 
       {s.step && <Loader message={s.step} />}
 
-      {/* Access gate: no onClose, so it cannot be dismissed. noValidate keeps the
-          browser from adding its own hints to the single "Correo incorrecto." */}
-      <Modal open={s.gateOpen} title="Acceso a SEGULA Travel" width={480}>
-        <form
-          class="tr-gate"
-          noValidate
-          onSubmit={(e) => {
-            e.preventDefault();
-            s.enter();
-          }}
-        >
-          <p class="tr-confirm-text">Ingresa tu correo corporativo para continuar.</p>
-          <Input label="Correo corporativo" inputMode="email" autoComplete="email" value={s.gateEmail} error={s.gateError} onInput={s.setGateField} />
-          <Checkbox label="Recordar correo" checked={s.gateRemember} onChange={s.setGateRemember} />
-          <div class="tr-confirm-actions">
-            <button type="submit" class="tr-btn tr-btn--primary tr-btn--md">
-              <span class="tr-btn-label">Continuar</span>
-            </button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 }
