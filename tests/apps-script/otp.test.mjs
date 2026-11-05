@@ -101,43 +101,74 @@ test('a wrong code returns invalid_code and the right one still works afterwards
   assert.deepEqual(ver(h, code), { ok: true });
 });
 
-test('5 wrong attempts remove the code, even the right one then fails', () => {
+test('5 wrong attempts per email (across codes) lock the email for 24 h', () => {
   const h = load();
   req(h);
-  const code = lastCode(h);
-  const wrong = code === '000000' ? '000001' : '000000';
-  for (let i = 0; i < 4; i++) assert.equal(ver(h, wrong).error, 'invalid_code', 'attempt ' + i);
-  assert.equal(ver(h, wrong).error, 'too_many_attempts', 'attempt 4');
-  assert.equal(ver(h, code).error, 'expired');
+  const wrong1 = lastCode(h) === '000000' ? '000001' : '000000';
+  for (let i = 0; i < 3; i++) assert.equal(ver(h, wrong1).error, 'invalid_code', 'attempt ' + i);
   h.clock.now += 61 * 1000;
-  req(h);
+  assert.equal(req(h).ok, true); // a new code does not reset the count
+  const code = lastCode(h);
+  const wrong2 = code === '000000' ? '000001' : '000000';
+  assert.equal(ver(h, wrong2).error, 'invalid_code', 'attempt 3');
+  assert.equal(ver(h, wrong2).error, 'too_many_attempts', 'attempt 4');
+  // Locked: even the right code fails, and no new code is mailed.
+  assert.equal(ver(h, code).error, 'too_many_attempts');
+  const mails = h.state.mails.length;
+  h.clock.now += 61 * 1000;
+  assert.equal(req(h).error, 'too_many_attempts');
+  assert.equal(h.state.mails.length, mails);
+  // Still locked just before 24 h, free after.
+  h.clock.now += 24 * 3600 * 1000 - 2 * 61 * 1000;
+  assert.equal(req(h).error, 'too_many_attempts');
+  h.clock.now += 2 * 61 * 1000;
+  assert.equal(req(h).ok, true);
   assert.deepEqual(ver(h, lastCode(h)), { ok: true });
 });
 
-test('an entry already at 5 attempts answers too_many_attempts and is removed', () => {
+test('the lock is per email: other emails keep working', () => {
   const h = load();
   req(h);
-  const code = lastCode(h);
-  for (const [k, e] of h.state.cacheData) {
-    if (!k.startsWith('otp-')) continue;
-    const o = JSON.parse(e.value);
-    {
-      o.a = 5;
-      e.value = JSON.stringify(o);
-    }
-  }
-  assert.equal(ver(h, code).error, 'too_many_attempts');
-  assert.equal(ver(h, code).error, 'expired');
+  const wrong = lastCode(h) === '000000' ? '000001' : '000000';
+  for (let i = 0; i < 5; i++) ver(h, wrong);
+  assert.equal(req(h, { email: 'otro@segulagrp.com' }).ok, true);
+  assert.deepEqual(ver(h, lastCode(h), { email: 'otro@segulagrp.com' }), { ok: true });
 });
 
-test('attempts persist across calls (race-free read-modify-write under the lock)', () => {
+test('a successful login resets the failure count', () => {
   const h = load();
   req(h);
-  const code = lastCode(h);
-  const wrong = code === '000000' ? '000001' : '000000';
+  const wrong = lastCode(h) === '000000' ? '000001' : '000000';
   for (let i = 0; i < 4; i++) ver(h, wrong);
-  assert.equal(ver(h, wrong).error, 'too_many_attempts'); // 5th wrong: locked out, entry removed
-  assert.equal(ver(h, code).error, 'expired');
+  assert.deepEqual(ver(h, lastCode(h)), { ok: true });
+  h.clock.now += 61 * 1000;
+  req(h);
+  const wrong2 = lastCode(h) === '000000' ? '000001' : '000000';
+  for (let i = 0; i < 4; i++) assert.equal(ver(h, wrong2).error, 'invalid_code', 'after reset ' + i);
+});
+
+test('verifying without a pending code never counts and never stores anything', () => {
+  const h = load();
+  for (let i = 0; i < 10; i++) assert.equal(ver(h, '123456').error, 'expired');
+  assert.equal(h.state.propKeys().filter((k) => k.startsWith('fail-')).length, 0);
+  assert.equal(req(h).ok, true);
+});
+
+test('the lock stores no plain email and expired locks are pruned', () => {
+  const h = load();
+  const lock = (email) => {
+    req(h, { email });
+    const wrong = lastCode(h) === '000000' ? '000001' : '000000';
+    for (let i = 0; i < 5; i++) ver(h, wrong, { email });
+  };
+  lock(EMAIL);
+  const keys = h.state.propKeys().filter((k) => k.startsWith('fail-'));
+  assert.equal(keys.length, 1);
+  assert.ok(!JSON.stringify(h.state.propDump()).includes('ana'));
+  h.clock.now += 25 * 3600 * 1000;
+  lock('otro@segulagrp.com');
+  assert.deepEqual(h.state.propKeys().filter((k) => k.startsWith('fail-')).length, 1);
+  assert.notEqual(h.state.propKeys().find((k) => k.startsWith('fail-')), keys[0]);
 });
 
 test('60 s cooldown per email, other emails unaffected', () => {

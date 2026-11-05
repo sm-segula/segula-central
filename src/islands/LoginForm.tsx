@@ -11,7 +11,7 @@ const MESSAGES: Record<string, string> = {
   invalid_email: 'Correo incorrecto.',
   invalid_code: 'Código incorrecto o vencido.',
   expired: 'Código incorrecto o vencido.',
-  too_many_attempts: 'Demasiados intentos. Pide un código nuevo.',
+  too_many_attempts: 'Demasiados intentos. Este correo quedó bloqueado por 24 horas.',
   cooldown: 'Espera un momento antes de pedir otro código.',
   busy: 'El servicio está ocupado. Intenta de nuevo en unos segundos.',
   not_configured: 'El inicio de sesión no está disponible por ahora.',

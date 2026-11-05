@@ -107,6 +107,8 @@ export function load(opts = {}) {
   const state = {
     clock,
     props,
+    propKeys: () => [...props.keys()],
+    propDump: () => Object.fromEntries(props),
     cacheData,
     mails: [],
     mailFail: false,
@@ -172,6 +174,8 @@ export function load(opts = {}) {
       getScriptProperties: () => ({
         getProperty: (k) => (props.has(k) ? props.get(k) : null),
         setProperty: (k, v) => props.set(k, String(v)),
+        deleteProperty: (k) => props.delete(k),
+        getKeys: () => [...props.keys()],
       }),
     },
     CacheService: { getScriptCache: () => cache },

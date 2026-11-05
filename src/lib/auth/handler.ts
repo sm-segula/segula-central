@@ -105,6 +105,7 @@ async function callScript(
 const REQUEST_ERRORS: Record<string, [number, string]> = {
   invalid_email: [400, 'invalid_email'],
   cooldown: [429, 'cooldown'],
+  too_many_attempts: [429, 'too_many_attempts'],
   busy: [503, 'busy'],
 };
 const VERIFY_ERRORS: Record<string, [number, string]> = {

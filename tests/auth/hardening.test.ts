@@ -39,6 +39,21 @@ test('the login page assets stay public', () => {
   }
 });
 
+test('a locked email asking for a code gets 429 too_many_attempts', async () => {
+  const { deps } = stubDeps({ ok: false, error: 'too_many_attempts' });
+  const res = (await handle(
+    new Request('https://central.test/auth/request', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'https://central.test' },
+      body: JSON.stringify({ email: 'ana@segulagrp.com' }),
+    }),
+    env,
+    deps,
+  )) as Response;
+  assert.equal(res.status, 429);
+  assert.deepEqual(await res.json(), { ok: false, error: 'too_many_attempts' });
+});
+
 test('protected paths without a session are still gated after the hardening', async () => {
   const { deps } = stubDeps();
   const res = (await handle(get('/_astro/x.webp%3F.js'), env, deps)) as Response;

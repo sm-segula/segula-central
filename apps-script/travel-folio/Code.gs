@@ -39,7 +39,8 @@ var SECRET_KEY = 'AUTH_SHARED_SECRET';
 var SENDER_NAME = 'SEGULA Central';
 var OTP_TTL_S = 600; // a code lives 10 minutes
 var OTP_COOLDOWN_S = 60; // one code per email per minute
-var OTP_MAX_ATTEMPTS = 5;
+var OTP_MAX_ATTEMPTS = 5; // wrong codes per email (across codes) before the lock
+var OTP_LOCK_S = 86400; // the lock, and the window failures are counted in: 24 h
 var OTP_CAP_CODES = 8; // codes per email per window
 var OTP_CAP_WINDOW_S = 21600; // 6 h, the longest CacheService TTL
 // Apps Script documents no doPost payload limit; 20 MB of PDF (~27 MB of base64)
@@ -87,6 +88,7 @@ function otpRequest_(email, secret) {
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(LOCK_WAIT_MS)) return json_({ ok: false, error: 'busy' });
   try {
+    if (isLocked_(failState_(id))) return json_({ ok: false, error: 'too_many_attempts' });
     if (cache.get(coolKey)) return json_({ ok: false, error: 'cooldown' });
     // Per-email cap across codes: 8 codes per 6 h (CacheService's longest TTL),
     // so at most 40 guesses per window. Counted only after the mail is sent.
@@ -94,7 +96,7 @@ function otpRequest_(email, secret) {
     var cap = JSON.parse(cache.get(capKey) || 'null');
     if (cap && cap.n >= OTP_CAP_CODES && Date.now() < cap.e) return json_({ ok: false, error: 'cooldown' });
     // Only a hash of the code is stored, never the code or the address.
-    cache.put(otpKey, JSON.stringify({ h: hmacHex_('code:' + email + ':' + code, secret), a: 0, e: Date.now() + OTP_TTL_S * 1000 }), OTP_TTL_S);
+    cache.put(otpKey, JSON.stringify({ h: hmacHex_('code:' + email + ':' + code, secret), e: Date.now() + OTP_TTL_S * 1000 }), OTP_TTL_S);
     cache.put(coolKey, '1', OTP_COOLDOWN_S);
   } finally {
     lock.releaseLock();
@@ -128,10 +130,16 @@ function otpRequest_(email, secret) {
 
 function otpVerify_(email, code, secret) {
   var cache = CacheService.getScriptCache();
-  var otpKey = 'otp-' + hmacHex_('id:' + email, secret);
+  var id = hmacHex_('id:' + email, secret);
+  var otpKey = 'otp-' + id;
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(LOCK_WAIT_MS)) return json_({ ok: false, error: 'busy' });
   try {
+    var fails = failState_(id);
+    if (isLocked_(fails)) {
+      cache.remove(otpKey);
+      return json_({ ok: false, error: 'too_many_attempts' });
+    }
     var raw = cache.get(otpKey);
     var entry = null;
     try {
@@ -143,27 +151,78 @@ function otpVerify_(email, code, secret) {
       cache.remove(otpKey);
       return json_({ ok: false, error: 'expired' });
     }
-    if (entry.a >= OTP_MAX_ATTEMPTS) {
+    if (/^\d{6}$/.test(code) && safeEqual_(hmacHex_('code:' + email + ':' + code, secret), entry.h)) {
+      cache.remove(otpKey); // consumed: a code works once
+      PropertiesService.getScriptProperties().deleteProperty('fail-' + id); // success resets the count
+      return json_({ ok: true });
+    }
+    // A wrong code only counts while a code is pending, so the stored entries are
+    // bounded by the codes actually mailed (no flooding with made-up addresses).
+    if (recordFailure_(id) >= OTP_MAX_ATTEMPTS) {
       cache.remove(otpKey);
       return json_({ ok: false, error: 'too_many_attempts' });
     }
-    if (/^\d{6}$/.test(code) && safeEqual_(hmacHex_('code:' + email + ':' + code, secret), entry.h)) {
-      cache.remove(otpKey); // consumed: a code works once
-      return json_({ ok: true });
-    }
-    entry.a = (entry.a || 0) + 1;
-    if (entry.a >= OTP_MAX_ATTEMPTS) {
-      cache.remove(otpKey); // a new code is required
-      return json_({ ok: false, error: 'too_many_attempts' });
-    }
-    var left = Math.max(1, Math.ceil((entry.e - Date.now()) / 1000));
-    cache.put(otpKey, JSON.stringify(entry), left);
     return json_({ ok: false, error: 'invalid_code' });
   } catch (err) {
     console.error('otp_verify: ' + (err && err.message ? err.message : err));
     return json_({ ok: false, error: 'server_error' });
   } finally {
     lock.releaseLock();
+  }
+}
+
+// Per-email failure count, in Script Properties because CacheService keeps data
+// at most 6 h and the lock lasts 24 h. Keyed by an HMAC of the email (never the
+// address). Entry: { n: failures, s: first failure ms, u: locked until ms }.
+// Callers hold the script lock.
+function failState_(id) {
+  var props = PropertiesService.getScriptProperties();
+  var key = 'fail-' + id;
+  var entry = null;
+  try {
+    entry = JSON.parse(props.getProperty(key) || 'null');
+  } catch (err) {
+    entry = null;
+  }
+  if (entry && expiredFail_(entry, Date.now())) {
+    props.deleteProperty(key);
+    entry = null;
+  }
+  return entry;
+}
+
+function isLocked_(entry) {
+  return !!(entry && entry.u && Date.now() < entry.u);
+}
+
+function expiredFail_(entry, now) {
+  return entry.u ? now >= entry.u : now - entry.s >= OTP_LOCK_S * 1000;
+}
+
+/** Adds one failure and returns the new count; the 5th failure locks for 24 h. */
+function recordFailure_(id) {
+  var props = PropertiesService.getScriptProperties();
+  var now = Date.now();
+  var entry = failState_(id);
+  if (!entry) {
+    pruneFailures_(props, now);
+    entry = { n: 0, s: now };
+  }
+  entry.n += 1;
+  if (entry.n >= OTP_MAX_ATTEMPTS) entry.u = now + OTP_LOCK_S * 1000;
+  props.setProperty('fail-' + id, JSON.stringify(entry));
+  return entry.n;
+}
+
+function pruneFailures_(props, now) {
+  var keys = props.getKeys();
+  for (var i = 0; i < keys.length; i++) {
+    if (keys[i].indexOf('fail-') !== 0) continue;
+    try {
+      if (expiredFail_(JSON.parse(props.getProperty(keys[i])), now)) props.deleteProperty(keys[i]);
+    } catch (err) {
+      props.deleteProperty(keys[i]);
+    }
   }
 }
 
