@@ -1,4 +1,5 @@
-import type { ImageMetadata } from 'astro';
+import { fetchFlipbooks, mergeEditions } from '../lib/gazzette/editions';
+import type { Edition } from '../lib/gazzette/editions';
 import c202607 from '../assets/gazzette/2026-07.webp';
 import c202606 from '../assets/gazzette/2026-06.webp';
 import c202605 from '../assets/gazzette/2026-05.webp';
@@ -8,27 +9,13 @@ import c202602 from '../assets/gazzette/2026-02.webp';
 import c202601 from '../assets/gazzette/2026-01.webp';
 import c202512 from '../assets/gazzette/2025-12.webp';
 
-export interface Edition {
-  year: number;
-  /** Edition number within the year, as printed ("07"). */
-  no: string;
-  month: string;
-  /** Heyzine flipbook id: https://heyzine.com/flip-book/<id>.html */
-  id: string;
-  cover?: ImageMetadata;
-  /**
-   * false when the flipbook no longer exists on Heyzine ("Page not found",
-   * checked 2026-11-10). Hidden from the page until it is uploaded again.
-   */
-  available: boolean;
-}
-
 /**
- * Newest first. To publish a new edition: add it at the top with its Heyzine id
- * and its cover in src/assets/gazzette/<year>-<month>.webp. The first available
- * one is shown embedded on the page and featured on the home page.
+ * Known editions, newest first, with optimized covers. New editions do not need
+ * to be added here: name the flipbook "Gazzette <Mes> <Año>" on Heyzine and the
+ * next build adds it (see loadEditions). Add one here only to give it a local
+ * cover or to mark it unavailable.
  */
-export const EDITIONS: Edition[] = [
+const STATIC_EDITIONS: Edition[] = [
   { year: 2026, no: '07', month: 'Julio', id: '5f7969b4ab', cover: c202607, available: true },
   { year: 2026, no: '06', month: 'Junio', id: '0165baa695', cover: c202606, available: true },
   { year: 2026, no: '05', month: 'Mayo', id: 'ce0090495a', cover: c202605, available: true },
@@ -49,6 +36,26 @@ export const EDITIONS: Edition[] = [
 
 export const flipbookUrl = (e: Edition): string => `https://heyzine.com/flip-book/${e.id}.html`;
 export const editionTitle = (e: Edition): string => `Gazzette ${e.month} ${e.year}`;
+
+/**
+ * Build time: adds the Gazzettes published on Heyzine (titled "Gazzette <Mes> <Año>")
+ * when HEYZINE_API_KEY is set. Any failure falls back to the static list, so a
+ * Heyzine outage never breaks the deploy. A daily rebuild picks up new editions
+ * (.github/workflows/gazzette-rebuild.yml).
+ */
+async function loadEditions(): Promise<Edition[]> {
+  const apiKey = import.meta.env.HEYZINE_API_KEY;
+  if (!apiKey) return STATIC_EDITIONS;
+  try {
+    return mergeEditions(STATIC_EDITIONS, await fetchFlipbooks(apiKey));
+  } catch (err) {
+    console.warn(`[gazzette] Heyzine API unavailable, using the static list: ${err instanceof Error ? err.message : err}`);
+    return STATIC_EDITIONS;
+  }
+}
+
+export type { Edition };
+export const EDITIONS: Edition[] = await loadEditions();
 
 const live = EDITIONS.filter((e) => e.available);
 export const LATEST: Edition = live[0]!;
