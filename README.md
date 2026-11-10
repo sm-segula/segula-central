@@ -120,7 +120,7 @@ Todo el sitio está protegido: sin sesión, cualquier página redirige a `/login
 ## Gazzette
 
 - La página `/recursos-humanos/gazzette` muestra embebida la edición más reciente (Heyzine) y un archivo con las anteriores. La home enlaza a la última.
-- **Ediciones nuevas, sin tocar código:** en Heyzine, nombra el flipbook **`Gazzette <Mes> <Año>`** (por ejemplo `Gazzette Agosto 2026`). En cada build el sitio consulta la API de Heyzine (`flipbook-list`) y suma las que tengan ese título; la más reciente pasa a ser la destacada.
+- **Ediciones nuevas, sin tocar código:** en Heyzine, nombra el flipbook **`Gazzette <Mes> <Año>`** (por ejemplo `Gazzette Agosto 2026`). Si falta el año (`Gazzette Noviembre`), se toma de la fecha de publicación. En cada build el sitio consulta la API de Heyzine (`flipbook-list`) y suma las que tengan ese título; la más reciente pasa a ser la destacada.
 - **Variables:** `HEYZINE_API_KEY` en Vercel (Production y Preview), sacada de Heyzine → Account → API. Sin ella, o si Heyzine falla, el build usa la lista fija de `src/data/gazzette.ts` y no se rompe.
 - **Reconstrucción diaria:** `.github/workflows/gazzette-rebuild.yml` llama todos los días a las 07:00 (hora de CDMX) al Deploy Hook de Vercel guardado en el secreto del repositorio `VERCEL_DEPLOY_HOOK`. Para publicar en el momento: GitHub → Actions → *Gazzette daily rebuild* → **Run workflow**.
 - **Lista fija:** `src/data/gazzette.ts` guarda las ediciones conocidas con su portada optimizada. Una edición con `available: false` (borrada de Heyzine) no se muestra; si se vuelve a subir con el mismo título, la API la repone.

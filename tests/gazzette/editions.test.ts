@@ -85,3 +85,55 @@ test('fetchFlipbooks throws on HTTP errors and non-array bodies (caller falls ba
   await assert.rejects(fetchFlipbooks('K', async () => new Response('nope', { status: 401 })), /401/);
   await assert.rejects(fetchFlipbooks('K', async () => new Response('{"success":false}', { status: 200 })), /array/);
 });
+
+// Real flipbook-list shape (observed 2026-11-10 with `npm run gazzette:check`):
+// `id` is the PDF hash + ".pdf"; the flipbook id is in links.base (and is the
+// first 10 characters of that hash).
+const real = (hash: string, title: string, date: string, base = true): Flipbook => ({
+  id: `${hash}.pdf`,
+  date,
+  title,
+  links: {
+    ...(base ? { base: `https://heyzine.com/flip-book/${hash.slice(0, 10)}.html` } : {}),
+    thumbnail: `https://cdnm.heyzine.com/files/uploaded/v3/${hash}.pdf-thumb.jpg`,
+  },
+});
+
+test('real API items: the flipbook id comes from links.base, not from the PDF hash', () => {
+  const out = mergeEditions([], [real('ea70ddd7741ae27ed83d1498446b179db2bb5722', 'Gazzette Agosto 2026', '2026-08-03T16:39:04Z')]);
+  assert.equal(out.length, 1);
+  assert.equal(out[0]!.id, 'ea70ddd774');
+  assert.equal(out[0]!.cover, 'https://cdnm.heyzine.com/files/uploaded/v3/ea70ddd7741ae27ed83d1498446b179db2bb5722.pdf-thumb.jpg');
+});
+
+test('without links.base the id falls back to the first 10 characters of the hash', () => {
+  const out = mergeEditions([], [real('168fa5946861d31914e7de75da9eb9589e3f358f', 'Gazzette Octubre 2026', '2026-09-30T22:57:23Z', false)]);
+  assert.equal(out[0]!.id, '168fa59468');
+});
+
+test('a real item for a static edition is not duplicated (same flipbook id)', () => {
+  const out = mergeEditions(STATIC, [real('5f7969b4ab9e5b2a49867ab3ecc45a722ae55178', 'Gazzette Julio 2026', '2026-06-29T20:56:15Z')]);
+  assert.deepEqual(out, STATIC);
+});
+
+test('a title without year takes it from the publication date', () => {
+  const out = mergeEditions([], [real('683f2f7823dd8b60bbd26832fb23eaaefb9c8de7', 'Gazzette Noviembre', '2026-10-30T19:39:12Z')]);
+  assert.deepEqual([out[0]!.month, out[0]!.no, out[0]!.year], ['Noviembre', '11', 2026]);
+  const jan = mergeEditions([], [real('aaaaaaaaaa1111111111', 'Gazzette Enero', '2026-12-29T10:00:00Z')]);
+  assert.deepEqual([jan[0]!.month, jan[0]!.year], ['Enero', 2027]);
+  const none = mergeEditions([], [real('bbbbbbbbbb2222222222', 'Gazzette Enero', 'not a date')]);
+  assert.deepEqual(none, []);
+});
+
+test('the observed account list puts Noviembre 2026 first', () => {
+  const list = [
+    real('683f2f7823dd8b60bbd26832fb23eaaefb9c8de7', 'Gazzette Noviembre', '2026-10-30T19:39:12Z'),
+    real('168fa5946861d31914e7de75da9eb9589e3f358f', 'Gazzette Octubre 2026', '2026-09-30T22:57:23Z'),
+    real('d7c908a75ad4b8af6b58ac32ab81726a8cd14b88', 'Gazzette Septiembre 2026', '2026-08-27T22:41:57Z'),
+    real('ea70ddd7741ae27ed83d1498446b179db2bb5722', 'Gazzette Agosto 2026', '2026-08-03T16:39:04Z'),
+    real('5f7969b4ab9e5b2a49867ab3ecc45a722ae55178', 'Gazzette Julio 2026', '2026-06-29T20:56:15Z'),
+  ];
+  const out = mergeEditions(STATIC, list);
+  assert.deepEqual(out.map((e) => `${e.month} ${e.year}`), ['Noviembre 2026', 'Octubre 2026', 'Septiembre 2026', 'Agosto 2026', 'Julio 2026', 'Junio 2026', 'Noviembre 2025']);
+  assert.equal(out[0]!.id, '683f2f7823');
+});
