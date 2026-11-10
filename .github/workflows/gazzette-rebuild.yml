@@ -1,0 +1,27 @@
+# Rebuilds the site every morning so a new Gazzette published on Heyzine
+# (titled "Gazzette <Mes> <Año>") appears without a code change. The build reads
+# the Heyzine API (HEYZINE_API_KEY in Vercel). "Run workflow" publishes it now.
+name: Gazzette daily rebuild
+
+on:
+  schedule:
+    - cron: "0 13 * * *" # 07:00 America/Mexico_City
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger the Vercel production deploy hook
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::error::Missing repository secret VERCEL_DEPLOY_HOOK"
+            exit 1
+          fi
+          curl --fail --silent --show-error -X POST "$HOOK" > /dev/null
+          echo "Deploy requested."
