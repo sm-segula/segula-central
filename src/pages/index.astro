@@ -11,6 +11,7 @@ import viajes from '../assets/home/vacaciones-e-incidencias.webp';
 import politicas from '../assets/home/politicas-y-documentos.webp';
 import ayuda from '../assets/home/centro-de-ayuda.webp';
 import kindle from '../assets/home/gazzette.webp';
+import { LATEST, editionTitle } from '../data/gazzette';
 import it from '../assets/home/comunicados.webp';
 import salud from '../assets/home/campanas-de-salud.webp';
 ---
@@ -99,14 +100,14 @@ import salud from '../assets/home/campanas-de-salud.webp';
 
     <div class="news-list">
       <NewsBlock
-        title="Gazzette Septiembre 2026"
-        text="La edición de septiembre ya está disponible para consulta y descarga."
+        title={editionTitle(LATEST)}
+        text={`La edición de ${LATEST.month.toLowerCase()} ya está disponible para leer desde el sitio.`}
         imageSide="left"
         imageHeight={440}
         src={kindle}
-        alt="Gazzette Septiembre 2026"
+        alt={editionTitle(LATEST)}
       >
-        <Button variant="ghost" href="#">Leer la Gazzette</Button>
+        <Button variant="ghost" href="/recursos-humanos/gazzette">Leer la Gazzette</Button>
       </NewsBlock>
 
       <NewsBlock
