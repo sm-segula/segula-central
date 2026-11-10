@@ -1,0 +1,152 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import Card from '../../components/Card.astro';
+import Button from '../../components/Button.astro';
+import { ARCHIVE, LATEST, editionTitle, flipbookUrl } from '../../data/gazzette';
+
+const latestTitle = editionTitle(LATEST);
+const latestUrl = flipbookUrl(LATEST);
+---
+
+<Base title="Gazzette">
+  <PageHero
+    tag="Recursos Humanos"
+    before=""
+    kw="Gazzette"
+    after=""
+    subtitle="¡Bienvenidos a la memoria viva de nuestra comunidad!"
+    bottom="md"
+  />
+
+  <section class="gz-intro" aria-label="Sobre la Gazzette">
+    <p data-reveal>
+      La Gazzette es mucho más que un boletín informativo; es el espacio donde celebramos nuestros hitos, compartimos las
+      historias de quienes dan vida a nuestros proyectos y exploramos las tendencias que marcan el futuro de nuestra industria.
+      A través de este medio, buscamos inspirarte, mantenerte conectado con nuestra visión global y dar voz a lo que define a
+      SEGULA Technologies. Te invitamos a hojear nuestras páginas digitales, redescubrir nuestros logros colectivos y proyectar
+      juntos el camino que estamos construyendo.
+    </p>
+  </section>
+
+  <section class="gz-latest" aria-labelledby="gz-latest-title">
+    <SectionHead tag={`Edición más reciente · No. ${LATEST.no}`} rule id="gz-latest-title">
+      {LATEST.month} <span class="sc-kw">{LATEST.year}</span>
+    </SectionHead>
+    <div class="gz-reader" data-reveal>
+      <iframe
+        src={latestUrl}
+        title={`${latestTitle}: revista digital`}
+        allow="fullscreen"
+        allowfullscreen
+        referrerpolicy="strict-origin-when-cross-origin"
+      ></iframe>
+    </div>
+    <div class="gz-actions" data-reveal>
+      <p>Pasa las páginas con las flechas o deslizando. Para leerla a todo el ancho, ábrela en pantalla completa.</p>
+      <Button variant="ghost" href={latestUrl}>Abrir en pantalla completa</Button>
+    </div>
+  </section>
+
+  {ARCHIVE.length > 0 && (
+    <section class="gz-archive" aria-labelledby="gz-archive-title">
+      <SectionHead tag="Archivo" rule id="gz-archive-title">
+        Ediciones <span class="sc-kw">anteriores</span>
+      </SectionHead>
+      {ARCHIVE.map((group) => (
+        <div class="gz-year">
+          <h3 class="gz-year-title" data-reveal>{group.year}</h3>
+          <div class="gz-grid">
+            {group.editions.map((e, i) => (
+              <Card
+                class="gz-card"
+                title={`${e.month} · No. ${e.no}`}
+                href={flipbookUrl(e)}
+                cta="Leer edición"
+                src={e.cover}
+                alt={`Portada de la ${editionTitle(e)}`}
+                placeholder={editionTitle(e)}
+                aspect="3/4"
+                titleSize="sm"
+                revealDelay={(i % 4) * 70}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
+  )}
+</Base>
+
+<style>
+  .gz-intro,
+  .gz-latest,
+  .gz-archive {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding-left: clamp(24px, 4.4vw, 64px);
+    padding-right: clamp(24px, 4.4vw, 64px);
+  }
+  .gz-intro p {
+    max-width: 860px;
+    margin: 0 0 clamp(56px, 6vw, 88px);
+    font: 300 clamp(16px, 1.25vw, 18px) / 1.7 var(--font-sans);
+    color: var(--text-muted);
+  }
+
+  .gz-reader {
+    position: relative;
+    width: 100%;
+    height: clamp(420px, 78vh, 860px);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--surface-panel);
+    box-shadow: var(--shadow-dark);
+  }
+  .gz-reader iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .gz-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 24px;
+    margin-top: 20px;
+  }
+  .gz-actions p {
+    margin: 0;
+    font: 300 15px / 1.5 var(--font-sans);
+    color: var(--text-muted);
+  }
+
+  .gz-archive {
+    padding-top: clamp(88px, 10vw, 144px);
+    padding-bottom: clamp(112px, 12vw, 176px);
+  }
+  .gz-year + .gz-year { margin-top: clamp(48px, 5vw, 72px); }
+  .gz-year-title {
+    margin: 0 0 20px;
+    font: 400 clamp(22px, 2vw, 28px) / 1.2 var(--font-sans);
+    color: #ffffff;
+  }
+  .gz-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .gz-card { grid-column: span 3; }
+
+  @media (max-width: 1024px) {
+    .gz-card { grid-column: span 4; }
+  }
+  @media (max-width: 760px) {
+    .gz-card { grid-column: span 6; }
+    .gz-reader { height: clamp(380px, 70vh, 640px); }
+  }
+</style>
