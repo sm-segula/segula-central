@@ -1,7 +1,8 @@
-# Rebuilds the site every morning so a new Gazzette published on Heyzine
-# (titled "Gazzette <Mes> <Año>") appears without a code change. The build reads
-# the Heyzine API (HEYZINE_API_KEY in Vercel). "Run workflow" publishes it now.
-name: Gazzette daily rebuild
+# Rebuilds the site every morning so new content appears without a code change:
+# a Gazzette published on Heyzine (titled "Gazzette <Mes> <Año>", read with
+# HEYZINE_API_KEY) and a new "¿Sabías qué?" image in its Drive folder (listed by
+# the Apps Script action sabias_list). "Run workflow" publishes it now.
+name: Daily content rebuild
 
 on:
   schedule:
