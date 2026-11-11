@@ -106,6 +106,16 @@ Notas:
 - `{ "ok": false, "error": "too_large" }`: el PDF pasa de 20 MB.
 - `{ "ok": false, "error": "unauthorized" | "busy" | "server_error" }`. `server_error`: falló el envío; **Descargado** no se llena y la persona puede reintentar.
 
+### ¿Sabías qué? (lo llama el build del sitio con `key`)
+
+```json
+{ "action": "sabias_list", "key": "<AUTH_SHARED_SECRET>" }
+```
+
+- `{ "ok": true, "files": [{ "id", "name", "mime", "created" }] }`: imágenes y PDF de la carpeta configurada en la propiedad `SABIAS_FOLDER_ID` (la carpeta de "¿Sabías qué?", compartida con la cuenta del script).
+- `{ "ok": false, "error": "unauthorized" | "not_configured" | "server_error" }`. `not_configured`: falta `SABIAS_FOLDER_ID`.
+- Solo lee: no toca la hoja, el consecutivo ni el correo. El sitio baja cada imagen directo de Drive, porque cada archivo está compartido por enlace.
+
 ## Límites
 
 - **Autenticación:** el correo ya no se acepta "a ciegas": el acceso exige el código enviado a la dirección y los folios exigen un ticket firmado por el middleware. Quien tenga la URL `/exec` pero no `AUTH_SHARED_SECRET` no puede pedir códigos, reservar ni enviar. Rotar `AUTH_SHARED_SECRET` (aquí y en Vercel) invalida todos los tickets.

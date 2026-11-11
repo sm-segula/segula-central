@@ -115,6 +115,8 @@ export function load(opts = {}) {
     lockBusy: false,
     files: [],
     createFileFails: false,
+    folderFiles: opts.folderFiles ?? {},
+    listFails: false,
     errors: [],
     sheet: opts.sheet ?? makeSheet([HEADERS]),
     sheets: new Map(),
@@ -191,6 +193,17 @@ export function load(opts = {}) {
         if (opts.folderMissing) throw new Error('not found ' + id);
         return {
           getName: () => 'Viajes',
+          getFiles: () => {
+            if (state.listFails) throw new Error('drive down');
+            const list = (state.folderFiles[id] || []).map((f) => ({
+              getId: () => f.id,
+              getName: () => f.name,
+              getMimeType: () => f.mime,
+              getDateCreated: () => new Date(f.created),
+            }));
+            let i = 0;
+            return { hasNext: () => i < list.length, next: () => list[i++] };
+          },
           createFile: (blob) => {
             if (state.createFileFails) throw new Error('drive down');
             const f = { blob, trashed: false, getUrl: () => 'https://drive.example/' + blob.getName(), setTrashed: (v) => (f.trashed = v) };

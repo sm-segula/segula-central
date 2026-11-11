@@ -73,8 +73,43 @@ function doPost(e) {
     if (action === 'reserve') return reserve_(email);
     return deliver_(email, String(body.folio || ''), body.pdf);
   }
+  if (action === 'sabias_list') {
+    if (typeof body.key !== 'string' || !safeEqual_(body.key, secret)) return json_({ ok: false, error: 'unauthorized' });
+    return sabiasList_();
+  }
   // Unknown or retired action ("downloaded", "archive", none): never falls through to reserve.
   return json_({ ok: false, error: 'bad_request' });
+}
+
+// ---- ¿Sabías qué? (read by the site build) ----
+
+var SABIAS_FOLDER_KEY = 'SABIAS_FOLDER_ID';
+
+/**
+ * Lists the images (and PDFs) of the "¿Sabías qué?" Drive folder. The folder is
+ * not public, so the site build asks here; each file is shared by link, so the
+ * site downloads the image itself. Read-only: touches no sheet, sequence or mail.
+ */
+function sabiasList_() {
+  var id = String(PropertiesService.getScriptProperties().getProperty(SABIAS_FOLDER_KEY) || '').trim();
+  if (!id) {
+    console.error('sabias_list: missing Script Property ' + SABIAS_FOLDER_KEY + '.');
+    return json_({ ok: false, error: 'not_configured' });
+  }
+  try {
+    var it = DriveApp.getFolderById(id).getFiles();
+    var files = [];
+    while (it.hasNext()) {
+      var f = it.next();
+      var mime = f.getMimeType();
+      if (mime.indexOf('image/') !== 0 && mime !== 'application/pdf') continue;
+      files.push({ id: f.getId(), name: f.getName(), mime: mime, created: f.getDateCreated().toISOString() });
+    }
+    return json_({ ok: true, files: files });
+  } catch (err) {
+    console.error('sabias_list: ' + (err && err.message ? err.message : err));
+    return json_({ ok: false, error: 'server_error' });
+  }
 }
 
 // ---- Login (OTP) ----
