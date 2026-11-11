@@ -122,9 +122,16 @@ Todo el sitio está protegido: sin sesión, cualquier página redirige a `/login
 - La página `/recursos-humanos/gazzette` muestra embebida la edición más reciente (Heyzine) y un archivo con las anteriores. La home enlaza a la última.
 - **Ediciones nuevas, sin tocar código:** en Heyzine, nombra el flipbook **`Gazzette <Mes> <Año>`** (por ejemplo `Gazzette Agosto 2026`). Si falta el año (`Gazzette Noviembre`), se toma de la fecha de publicación. En cada build el sitio consulta la API de Heyzine (`flipbook-list`) y suma las que tengan ese título; la más reciente pasa a ser la destacada.
 - **Variables:** `HEYZINE_API_KEY` en Vercel (Production y Preview), sacada de Heyzine → Account → API. Sin ella, o si Heyzine falla, el build usa la lista fija de `src/data/gazzette.ts` y no se rompe.
-- **Reconstrucción diaria:** `.github/workflows/gazzette-rebuild.yml` llama todos los días a las 07:00 (hora de CDMX) al Deploy Hook de Vercel guardado en el secreto del repositorio `VERCEL_DEPLOY_HOOK`. Para publicar en el momento: GitHub → Actions → *Gazzette daily rebuild* → **Run workflow**.
+- **Reconstrucción diaria:** `.github/workflows/gazzette-rebuild.yml` llama todos los días a las 07:00 (hora de CDMX) al Deploy Hook de Vercel guardado en el secreto del repositorio `VERCEL_DEPLOY_HOOK`. Para publicar en el momento: GitHub → Actions → *Daily content rebuild* → **Run workflow**.
 - **Lista fija:** `src/data/gazzette.ts` guarda las ediciones conocidas con su portada optimizada. Una edición con `available: false` (borrada de Heyzine) no se muestra; si se vuelve a subir con el mismo título, la API la repone.
 - Ojo: el plan gratuito de Heyzine borra las publicaciones más viejas al pasar de 5 flipbooks.
+
+## ¿Sabías qué?
+
+- La página `/recursos-humanos/sabias-que` muestra la edición más reciente como imagen (optimizada a WebP en el build) y el archivo con las anteriores.
+- **Ediciones nuevas, sin tocar código:** sube la imagen a la carpeta de Drive de "¿Sabías qué?" con el nombre **`<número> Sabías Qué - <tema>.png`** (por ejemplo `81 Sabías Qué - Nuevo tema.png`). La de número más alto es la destacada. Las copias `(1)`, `(2)` del mismo tema cuentan una vez.
+- **Cómo llega al sitio:** en el build, `src/data/sabias-que.ts` pide la lista al Apps Script (acción `sabias_list`, con `PUBLIC_TRAVEL_FOLIO_URL` y `AUTH_SHARED_SECRET`, que ya están en Vercel). Si falla, usa `src/data/sabias-que.json` y el build no se rompe. La reconstrucción diaria de las 07:00 también la actualiza.
+- **Requisitos:** propiedad `SABIAS_FOLDER_ID` en el Apps Script, la carpeta compartida con segula-central@segula.mx y cada imagen compartida como "cualquier persona con el enlace".
 
 ## Convenciones
 

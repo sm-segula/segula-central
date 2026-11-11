@@ -6,6 +6,10 @@ import preact from '@astrojs/preact';
 export default defineConfig({
   output: 'static',
   integrations: [preact()],
+  image: {
+    // ¿Sabías qué? images come from Drive (public by link), optimized at build.
+    remotePatterns: [{ protocol: 'https', hostname: 'lh3.googleusercontent.com' }],
+  },
   vite: {
     optimizeDeps: {
       // pdf-lib is only reached through a dynamic import (SEGULA Travel), so the

@@ -4,15 +4,12 @@ import PageHero from '../../components/PageHero.astro';
 import Panel from '../../components/Panel.astro';
 import Button from '../../components/Button.astro';
 import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
-import editions from '../../data/sabias-que.json';
+import { Image } from 'astro:assets';
+import { EDITIONS } from '../../data/sabias-que';
+import type { Edition } from '../../data/sabias-que';
 
-interface Edition {
-  n: string;
-  t: string;
-  h: string;
-}
-
-const eds: Edition[] = editions;
+// Newest first, from the Drive folder at build time (see src/data/sabias-que.ts).
+const eds: Edition[] = EDITIONS;
 // The first entry is the latest edition (pinned); the rest is the archive.
 const latest: Edition = eds[0] ?? { n: '', t: '', h: '#' };
 const archive = eds.slice(1);
@@ -31,9 +28,23 @@ const count = eds.length ? String(eds.length) : '';
   />
 
   <section class="latest-section" aria-label="Última edición">
-    <Panel class="latest" surface="card" padding="20px" hover>
+    <Panel class:list={["latest", { "latest--image": !!latest.img }]} surface="card" padding="20px" hover>
       <div class="latest-media">
-        <ImagePlaceholder placeholder={`Imagen · Edición ${latest.n}`} radius={12} />
+        {latest.img ? (
+          <a href={latest.h} target="_blank" rel="noopener" class="latest-img-link" aria-label={`Abrir la edición ${latest.n} en tamaño completo`}>
+            <Image
+              src={latest.img}
+              alt={`¿Sabías qué? ${latest.n}: ${latest.t}`}
+              inferSize
+              widths={[640, 960, 1280]}
+              sizes="(max-width: 1024px) 100vw, 720px"
+              class="latest-img"
+              loading="eager"
+            />
+          </a>
+        ) : (
+          <ImagePlaceholder placeholder={`Imagen · Edición ${latest.n}`} radius={12} />
+        )}
       </div>
       <div class="latest-body">
         <div class="latest-text">
@@ -42,7 +53,7 @@ const count = eds.length ? String(eds.length) : '';
           <h2 class="latest-title">{latest.t}</h2>
         </div>
         <div class="latest-action">
-          <Button variant="primary" href={latest.h}>Ver edición</Button>
+          <Button variant="primary" href={latest.h}>{latest.img ? "Ver en tamaño completo" : "Ver edición"}</Button>
         </div>
       </div>
     </Panel>
@@ -119,6 +130,17 @@ const count = eds.length ? String(eds.length) : '';
     text-wrap: balance;
   }
   .latest-action { display: flex; }
+
+  /* Latest edition shown as its image: a tall infographic in a reading column,
+     with the title and action kept in view while it scrolls. */
+  .latest--image { align-items: start; }
+  .latest--image .latest-media { height: auto; }
+  .latest--image .latest-body { position: sticky; top: 96px; justify-content: flex-start; }
+  .latest-img-link { display: block; border-radius: 12px; overflow: hidden; }
+  .latest-img { display: block; width: 100%; height: auto; }
+  @media (max-width: 1024px) {
+    .latest--image .latest-body { position: static; order: -1; }
+  }
 
   .archive-section,
   .opinion-section {
