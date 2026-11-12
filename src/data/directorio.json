@@ -116,15 +116,6 @@
     "slot": "dir-ingrid-callejas",
     "initials": "IC",
     "photo": "/assets/directorio/dir-ingrid-callejas.webp"
-   },
-   {
-    "name": "Giovanna González",
-    "role": "JR PM and Data Management",
-    "phone": "55 8550 8623",
-    "tel": "+525585508623",
-    "email": "giovanna.gonzalez@segulagrp.com",
-    "slot": "dir-giovanna-gonzalez",
-    "initials": "GG"
    }
   ]
  },
@@ -160,15 +151,6 @@
     "slot": "dir-alberto-nieto",
     "initials": "AN",
     "photo": "/assets/directorio/dir-alberto-nieto.webp"
-   },
-   {
-    "name": "Jesús Montiel",
-    "role": "IT Auxiliar",
-    "phone": "55 5459 0532",
-    "tel": "+525554590532",
-    "email": "jesus.montiel@segulagrp.com",
-    "slot": "dir-jesus-montiel",
-    "initials": "JM"
    }
   ]
  }
