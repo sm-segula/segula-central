@@ -1,12 +1,9 @@
 // "¿Sabías qué?" editions read from the Drive folder at build time (through the
 // Apps Script action sabias_list). Pure functions, tested in tests/sabias-que.
+import { fetchDriveList } from './drive-list.js';
+import type { DriveFile } from './drive-list.js';
 
-export interface DriveFile {
-  id: string;
-  name: string;
-  mime?: string;
-  created?: string;
-}
+export type { DriveFile };
 
 export interface Edition {
   /** Number as written in the file name ("80", "25.1", "00"). */
@@ -75,22 +72,6 @@ export async function imageReachable(url: string, fetchImpl: typeof fetch = fetc
 }
 
 /** POST sabias_list to the Apps Script web app. Throws on any failure so the caller can fall back. */
-export async function fetchSabiasList(url: string, key: string, fetchImpl: typeof fetch = fetch, timeoutMs = 20000): Promise<DriveFile[]> {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const res = await fetchImpl(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'sabias_list', key }),
-      redirect: 'follow',
-      signal: ctrl.signal,
-    });
-    if (!res.ok) throw new Error(`sabias_list: HTTP ${res.status}`);
-    const body = (await res.json().catch(() => null)) as { ok?: boolean; error?: string; files?: unknown } | null;
-    if (!body || body.ok !== true || !Array.isArray(body.files)) throw new Error(`sabias_list: ${body?.error ?? 'unexpected response'}`);
-    return body.files as DriveFile[];
-  } finally {
-    clearTimeout(timer);
-  }
+export function fetchSabiasList(url: string, key: string, fetchImpl: typeof fetch = fetch, timeoutMs = 20000): Promise<DriveFile[]> {
+  return fetchDriveList(url, key, 'sabias_list', fetchImpl, timeoutMs);
 }

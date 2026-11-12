@@ -133,6 +133,13 @@ Todo el sitio está protegido: sin sesión, cualquier página redirige a `/login
 - **Cómo llega al sitio:** en el build, `src/data/sabias-que.ts` pide la lista al Apps Script (acción `sabias_list`, con `PUBLIC_TRAVEL_FOLIO_URL` y `AUTH_SHARED_SECRET`, que ya están en Vercel). Si falla, usa `src/data/sabias-que.json` y el build no se rompe. La reconstrucción diaria de las 07:00 también la actualiza.
 - **Requisitos:** propiedad `SABIAS_FOLDER_ID` en el Apps Script, la carpeta compartida con segula-central@segula.mx y cada imagen compartida como "cualquier persona con el enlace".
 
+## Comunicados
+
+- La página `/recursos-humanos/comunicados` lista los comunicados por año, del más reciente al más antiguo, con buscador.
+- **Comunicados nuevos, sin tocar código:** sube el PDF o la imagen a la carpeta de Drive "Comunicados". El nombre del archivo es el título que se muestra (sin la extensión ni las copias `(1)`). El año sale de la fecha de subida; para fecharlo a mano, empieza el nombre con la fecha: **`2026-11-10 - Cierre de incidencias · Noviembre.pdf`** (también vale `2026-11 ...`).
+- **Cómo llega al sitio:** en el build, `src/data/comunicados.ts` pide la lista al Apps Script (acción `comunicados_list`) y la junta con `src/data/comunicados.json`, el histórico anterior a la carpeta. Un comunicado que está en los dos (mismo año y título) aparece una vez. Si falla, se usa solo el JSON y el build no se rompe. La reconstrucción diaria de las 07:00 también lo actualiza.
+- **Requisitos:** propiedad `COMUNICADOS_FOLDER_ID` en el Apps Script, la carpeta compartida con segula-central@segula.mx y cada archivo compartido como "cualquier persona con el enlace" (si no, el enlace del sitio pide acceso).
+
 ## Convenciones
 
 - **Nada de Tailwind.** Estilos con `<style>` scoped de Astro y siempre `var(--token)`.
