@@ -116,6 +116,16 @@ Notas:
 - `{ "ok": false, "error": "unauthorized" | "not_configured" | "server_error" }`. `not_configured`: falta `SABIAS_FOLDER_ID`.
 - Solo lee: no toca la hoja, el consecutivo ni el correo. El sitio baja cada imagen directo de Drive, porque cada archivo está compartido por enlace.
 
+### Comunicados (lo llama el build del sitio con `key`)
+
+```json
+{ "action": "comunicados_list", "key": "<AUTH_SHARED_SECRET>" }
+```
+
+- Misma respuesta que `sabias_list`, para la carpeta configurada en la propiedad `COMUNICADOS_FOLDER_ID` (la carpeta "Comunicados", compartida con la cuenta del script). `not_configured`: falta `COMUNICADOS_FOLDER_ID`.
+- Cada acción lee solo su propia propiedad: quien llama no puede pedir otra carpeta.
+- Solo lee. El sitio enlaza cada archivo en Drive, así que cada uno debe estar compartido por enlace.
+
 ## Límites
 
 - **Autenticación:** el correo ya no se acepta "a ciegas": el acceso exige el código enviado a la dirección y los folios exigen un ticket firmado por el middleware. Quien tenga la URL `/exec` pero no `AUTH_SHARED_SECRET` no puede pedir códigos, reservar ni enviar. Rotar `AUTH_SHARED_SECRET` (aquí y en Vercel) invalida todos los tickets.

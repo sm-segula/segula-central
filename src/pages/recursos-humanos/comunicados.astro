@@ -2,9 +2,9 @@
 import Base from '../../layouts/Base.astro';
 import PageHero from '../../components/PageHero.astro';
 import SearchList, { type Comunicado } from '../../islands/SearchList';
-import comunicados from '../../data/comunicados.json';
+import { COMUNICADOS } from '../../data/comunicados';
 
-const items: Comunicado[] = comunicados;
+const items: Comunicado[] = COMUNICADOS;
 ---
 
 <Base title="Comunicados">
