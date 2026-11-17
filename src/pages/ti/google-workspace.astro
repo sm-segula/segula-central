@@ -3,6 +3,12 @@ import ArrowUpRight from 'lucide-astro/ArrowUpRight';
 import Base from '../../layouts/Base.astro';
 import PageHero from '../../components/PageHero.astro';
 import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
+import type { ImageMetadata } from 'astro';
+import cover from '../../assets/ti/google-workspace.webp';
+import gmail from '../../assets/ti/gmail.webp';
+import chat from '../../assets/ti/google-chat.webp';
+import calendar from '../../assets/ti/google-calendar.webp';
+import meet from '../../assets/ti/google-meet.webp';
 
 interface Guide {
   title: string;
@@ -12,6 +18,7 @@ interface App {
   id: string;
   name: string;
   meta: string;
+  icon: ImageMetadata;
   guides: Guide[];
   soon?: string;
 }
@@ -20,6 +27,7 @@ const apps: App[] = [
   {
     id: 'gmail',
     name: 'Gmail',
+    icon: gmail,
     meta: '8 guías',
     guides: [
       { title: 'Guía básica', href: 'https://drive.google.com/file/d/1m-AXbpFCxkVofH2mpLOvg2epvwKFlNGm/view' },
@@ -35,6 +43,7 @@ const apps: App[] = [
   {
     id: 'chat',
     name: 'Chat',
+    icon: chat,
     meta: '6 guías',
     guides: [
       { title: 'Guía básica', href: 'https://drive.google.com/file/d/1eRwIBwthstiH-9GJOcuYxZpKc7diWVYh/view' },
@@ -45,8 +54,8 @@ const apps: App[] = [
       { title: 'Estatus', href: 'https://drive.google.com/file/d/1BCg1TqhjiwDAbLha5Hkd6Qpjev9M83vM/view' },
     ],
   },
-  { id: 'calendar', name: 'Calendar', meta: 'Próximamente', guides: [], soon: 'Las guías de Calendar estarán disponibles próximamente.' },
-  { id: 'meet', name: 'Meet', meta: 'Próximamente', guides: [], soon: 'Las guías de Meet estarán disponibles próximamente.' },
+  { id: 'calendar', name: 'Calendar', icon: calendar, meta: 'Próximamente', guides: [], soon: 'Las guías de Calendar estarán disponibles próximamente.' },
+  { id: 'meet', name: 'Meet', icon: meet, meta: 'Próximamente', guides: [], soon: 'Las guías de Meet estarán disponibles próximamente.' },
 ];
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -57,7 +66,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
   <section class="cover" aria-label="Portada">
     <div class="cover-media" data-reveal>
-      <ImagePlaceholder placeholder="Imagen · Google Workspace" alt="Google Workspace" radius={20} width={2400} loading="eager" />
+      <ImagePlaceholder src={cover} placeholder="Imagen · Google Workspace" alt="Google Workspace" radius={20} width={2400} loading="eager" />
     </div>
   </section>
 
@@ -66,7 +75,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
       <div class="year">
         <div class="aside" data-reveal>
           <div class="icon">
-            <ImagePlaceholder placeholder={`Ícono · ${app.name}`} alt={app.name} radius={12} width={144} height={144} />
+            <ImagePlaceholder src={app.icon} placeholder={`Ícono · ${app.name}`} alt={app.name} radius={0} width={144} style="object-fit:contain" />
           </div>
           <h2 id={`gw-${app.id}`} class="app-title">{app.name}</h2>
           <span class="sc-tag">{app.meta}</span>
