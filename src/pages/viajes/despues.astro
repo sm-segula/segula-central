@@ -6,36 +6,82 @@ import RuleCard from '../../components/RuleCard.astro';
 import Card from '../../components/Card.astro';
 import Panel from '../../components/Panel.astro';
 import Button from '../../components/Button.astro';
-import { ROUTES } from '../../data/nav';
+import type { ImageMetadata } from 'astro';
+import guiaImg from '../../assets/viajes/guia-de-comprobacion-de-gastos.webp';
+import casosImg from '../../assets/viajes/casos-excepcionales.webp';
+import plazoImg from '../../assets/viajes/el-plazo-de-los-7-dias-habiles-y-3-dias-de-correccion.webp';
+import cfdiImg from '../../assets/viajes/comprobacion-obligatoria-con-cfdi-4-0-valido.webp';
+import nominaImg from '../../assets/viajes/prevencion-de-descuento-via-nomina-y-bloqueo-de-viajes.webp';
 
 const MENDEL = 'https://mx.app.mendel.com/login';
 
-const resources = [
-  { title: 'Guía del llenado del reporte', href: '#', cta: 'Ver', placeholder: 'Documento · Guía del llenado del reporte', delay: 0 },
-  { title: 'Calendario de reembolsos', href: '#', cta: 'Ver', placeholder: 'Documento · Calendario de reembolsos', delay: 70 },
-  { title: 'Casos excepcionales', href: ROUTES['Centro de ayuda'], cta: 'FAQs', placeholder: 'Documento · Casos excepcionales', delay: 140 },
+interface Resource {
+  title: string;
+  text: string;
+  items?: string[];
+  href: string;
+  cta: string;
+  src?: ImageMetadata;
+  placeholder: string;
+  delay: number;
+}
+
+const resources: Resource[] = [
+  {
+    title: 'Guía de comprobación de gastos',
+    text: 'Video paso a paso para asociar comprobantes fiscales XML y PDF en Mendel, dar seguimiento al estatus de tus transacciones y resolver tareas pendientes en la aplicación.',
+    href: '#',
+    cta: 'Ver video',
+    src: guiaImg,
+    placeholder: 'Video · Guía de comprobación de gastos',
+    delay: 0,
+  },
+  {
+    title: 'Calendario de reembolsos',
+    text: 'Consulta las fechas de pago vía nómina para gastos extraordinarios pagados con recursos propios autorizados:',
+    items: [
+      'Aprobación del día 1 al 15 del mes: pago a más tardar el día 30 del mismo mes.',
+      'Aprobación del día 16 al fin del mes: pago a más tardar el día 30 del mes siguiente.',
+    ],
+    href: '#',
+    cta: 'Ver calendario',
+    placeholder: 'Documento · Calendario de reembolsos',
+    delay: 70,
+  },
+  {
+    title: 'Casos excepcionales',
+    text: 'Recuerda que en gastos al extranjero Finanzas revisará directamente el registro de comprobación para gastos (vouchers/recibos), viáticos en zonas remotas sin facturación electrónica y justificaciones por falta de CFDI con aprobación de Finanzas.',
+    href: '#',
+    cta: 'Ver documento',
+    src: casosImg,
+    placeholder: 'Documento · Casos excepcionales',
+    delay: 140,
+  },
 ];
 
 const rules = [
   {
     number: '01',
-    title: 'El plazo de los 7 días hábiles',
-    text: 'Es imperativo enviar el reporte detallado de gastos en AceProject dentro de 7 días hábiles posteriores al viaje. Incumplir este periodo es la causa principal de sanciones administrativas.',
-    placeholder: 'Imagen · El plazo de los 7 días hábiles',
+    title: 'El plazo de los 7 días hábiles y 3 días de corrección',
+    text: 'Es necesario vincular todos tus CFDI 4.0 y dejar tus gastos en estatus «Comprobado» dentro de los 7 días hábiles posteriores al fin de tu viaje. Si Finanzas detecta faltantes o inconsistencias, te notificará y contarás con 3 días hábiles adicionales para corregir e integrar la documentación en la plataforma.',
+    src: plazoImg,
+    placeholder: 'Imagen · El plazo de los 7 días hábiles y 3 días de corrección',
     delay: 0,
   },
   {
     number: '02',
-    title: 'Comprobación con CFDI 4.0 válido',
-    text: 'Todo gasto reportado debe estar respaldado por una factura electrónica CFDI 4.0 timbrada con los datos fiscales de Segula Servicios Empresariales (RFC: SSE180726756). Tickets simples, recibos o facturas con conceptos no permitidos (como alcohol o gastos personales) se rechazarán automáticamente.',
-    placeholder: 'Imagen · Comprobación con CFDI 4.0 válido',
+    title: 'Comprobación obligatoria con CFDI 4.0 válido',
+    text: 'Todo gasto realizado debe estar amparado por una factura electrónica CFDI 4.0 timbrada acorde a la información fiscal proporcionada por Finanzas para su comisión en específico. Subir la foto del ticket no es suficiente; los comprobantes no validados, extemporáneos o con conceptos no permitidos (como bebidas alcohólicas o gastos personales) se rechazarán automáticamente.',
+    src: cfdiImg,
+    placeholder: 'Imagen · Comprobación obligatoria con CFDI 4.0 válido',
     delay: 70,
   },
   {
     number: '03',
-    title: 'Prevención de descuento vía nómina',
-    text: 'La falta de comprobación o una comprobación incompleta resultará en el descuento total o parcial del anticipo en la nómina del colaborador. El sobrante del anticipo en efectivo debe devolverse por transferencia con el concepto "Devolución de viáticos" para evitarlo.',
-    placeholder: 'Imagen · Prevención de descuento vía nómina',
+    title: 'Prevención de descuento vía nómina y bloqueo de viajes',
+    text: 'La falta de comprobación en tiempo o el no corregir inconsistencias derivará en el descuento total o parcial vía nómina sobre los saldos no justificados, con aviso previo y con fundamento en el Art. 110, fracción I de la Ley Federal del Trabajo.',
+    src: nominaImg,
+    placeholder: 'Imagen · Prevención de descuento vía nómina y bloqueo de viajes',
     delay: 140,
   },
 ];
@@ -48,7 +94,8 @@ const rules = [
     </div>
   </PageHero>
 
-  <section class="section" aria-label="Recursos">
+  <section class="section" aria-labelledby="recursos-title">
+    <SectionHead tag="Documentos y guías" id="recursos-title">Recursos y políticas de cierre</SectionHead>
     <div class="grid">
       {resources.map((r) => (
         <Card
@@ -56,12 +103,23 @@ const rules = [
           title={r.title}
           href={r.href}
           cta={r.cta}
+          src={r.src}
+          alt={r.title}
           placeholder={r.placeholder}
           imageHeight={260}
           titleFlex="1 1 180px"
           hover={false}
           revealDelay={r.delay}
-        />
+        >
+          <div class="doc-copy">
+            <p class="doc-text">{r.text}</p>
+            {r.items && (
+              <ul class="doc-list">
+                {r.items.map((it) => <li>{it}</li>)}
+              </ul>
+            )}
+          </div>
+        </Card>
       ))}
     </div>
   </section>
@@ -70,7 +128,7 @@ const rules = [
     <SectionHead tag="Reglas de oro" id="reglas-title">Tres reglas después del viaje</SectionHead>
     <div class="grid">
       {rules.map((r) => (
-        <RuleCard class="doc" number={r.number} title={r.title} text={r.text} placeholder={r.placeholder} revealDelay={r.delay} />
+        <RuleCard class="doc" number={r.number} title={r.title} text={r.text} src={r.src} alt={r.title} placeholder={r.placeholder} revealDelay={r.delay} />
       ))}
     </div>
   </section>
@@ -82,7 +140,7 @@ const rules = [
         <span class="sc-tag">Días hábiles</span>
       </div>
       <div class="plazo-copy">
-        <h2 id="plazo-title" class="plazo-title">Envía tu reporte de gastos en AceProject dentro de los 7 días hábiles posteriores al viaje.</h2>
+        <h2 id="plazo-title" class="plazo-title">Deja tus gastos en estatus «Comprobado» en Mendel dentro de los 7 días hábiles posteriores al fin de tu viaje.</h2>
         <Button variant="primary" href={MENDEL}>Haz tu comprobación de viáticos</Button>
       </div>
     </Panel>
@@ -107,6 +165,27 @@ const rules = [
   .doc { grid-column: span 4; }
   /* Prototype: the "Ver" / "FAQs" link is flex:none */
   .doc :global(.btn) { flex: none; }
+  .doc-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 8px 8px;
+  }
+  .doc-text {
+    margin: 0;
+    font: 300 16px / 1.5 var(--font-sans);
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+  .doc-list {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font: 300 15px / 1.5 var(--font-sans);
+    color: var(--text-muted);
+  }
 
   /* "7 días hábiles" panel */
   .plazo {

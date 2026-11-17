@@ -8,42 +8,50 @@ import Panel from '../../components/Panel.astro';
 import Button from '../../components/Button.astro';
 import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
 import { ROUTES } from '../../data/nav';
+import straImg from '../../assets/viajes/solicitud-de-viaje-stra.webp';
+import reservasImg from '../../assets/viajes/gestiona-tus-reservaciones.webp';
+import tiemposImg from '../../assets/viajes/tiempos-de-anticipacion-obligatorios.webp';
+import mendelImg from '../../assets/viajes/stra-en-segula-central-y-aprobacion-en-mendel.webp';
+import fondeoImg from '../../assets/viajes/fondeo-en-tarjeta-mendel-y-reserva-con-gate18.webp';
+import suaImg from '../../assets/viajes/sua.webp';
 
 const cc = [
   { name: 'Mariana Fonseca', email: 'mariana.fonseca@segulagrp.com' },
-  { name: 'Karina Hernández', email: 'karina.hernandez@segulagrp.com' },
   { name: 'Evelyn Abarca', email: 'evelyn.abarca@segulagrp.com' },
-  { name: 'Jessica Trejo', email: 'jessica.trejo@segulagrp.com' },
+  { name: 'Karina Hernández', email: 'karina.hernandez@segulagrp.com' },
 ];
 
 const rules = [
   {
     number: '01',
-    title: 'Generación del STRA',
-    text: 'Debes completar la solicitud de autorización (STRA) en DocuSign usando la plantilla oficial y asegurar las firmas de PMO y Administración de RRHH.',
-    placeholder: 'Imagen · Generación del STRA',
+    title: 'Tiempos de anticipación obligatorios',
+    text: 'Registra tu solicitud con al menos 5 días hábiles de anticipación para viajes nacionales y 10 días hábiles para viajes internacionales. El incumplimiento sin justificación del cliente se registra en expediente y afecta la evaluación de desempeño anual.',
+    src: tiemposImg,
+    placeholder: 'Imagen · Tiempos de anticipación obligatorios',
     delay: 0,
   },
   {
     number: '02',
-    title: 'Validación por proyecto',
-    text: 'Pueden existir requisitos previos al STRA dependiendo del proyecto asignado, consulta con tu PMO sobre tu situación particular y anticipa tus solicitudes.',
-    placeholder: 'Imagen · Validación por proyecto',
+    title: 'STRA en SEGULA Central y aprobación en Mendel',
+    text: 'Completa y firma tu formato STRA en SEGULA Central y sube la solicitud a la plataforma Mendel. El STRA lo firma únicamente el colaborador; las aprobaciones de Operaciones (PMO) y Finanzas se realizan directamente en la plataforma de viáticos.',
+    src: mendelImg,
+    placeholder: 'Imagen · STRA en SEGULA Central y aprobación en Mendel',
     delay: 70,
   },
   {
     number: '03',
-    title: 'Gestión de reservas',
-    text: 'Las reservaciones de transporte, hotel y renta de auto deben hacerse mediante la agencia autorizada (Gate18), copiando obligatoriamente a los responsables designados.',
-    placeholder: 'Imagen · Gestión de reservas',
+    title: 'Fondeo en tarjeta Mendel y reserva con Gate18',
+    text: 'Asegúrate de tener tu tarjeta corporativa Mendel vinculada en la app. Con el presupuesto aprobado y liberado en tu tarjeta, realiza todas las reservaciones dentro del tabulador vigente a través de Gate18, copiando a los responsables designados.',
+    src: fondeoImg,
+    placeholder: 'Imagen · Fondeo en tarjeta Mendel y reserva con Gate18',
     delay: 140,
   },
 ];
 
 const suaSteps = [
   { n: '1', title: 'Solicítalo con anticipación', text: 'Es responsabilidad del colaborador tener este documento a la mano antes de iniciar el viaje.' },
-  { n: '2', title: 'Contacto', text: 'Debes enviar correo a Roberto Pérez para solicitar tu comprobante de alta.' },
-  { n: '3', title: 'Portabilidad', text: 'Te recomendamos llevarlo de forma digital o impresa junto con tus otros documentos de viaje (como VISA o pasaporte) para cualquier eventualidad.' },
+  { n: '2', title: 'Contacto', text: 'Envía un correo a Recursos Humanos (Roberto Pérez) para solicitar tu comprobante de alta.' },
+  { n: '3', title: 'Portabilidad', text: 'Llévalo de forma digital o impresa junto con tus otros documentos de viaje (como VISA o pasaporte) para cualquier eventualidad.' },
 ];
 ---
 
@@ -53,15 +61,14 @@ const suaSteps = [
   <section class="section" aria-labelledby="stra-title">
     <article class="news">
       <div class="news-media news-media--stra" data-reveal>
-        <ImagePlaceholder placeholder="Guía · Solicitud de viajes (portada)" radius={20} />
+        <ImagePlaceholder src={straImg} alt="Solicitud de Viaje y Viáticos (STRA)" placeholder="Guía · Solicitud de viajes (portada)" radius={20} />
       </div>
       <div class="news-body news-body--stra" data-reveal data-reveal-delay="90">
         <span class="sc-tag">¿Cómo solicitar un viaje?</span>
-        <h2 id="stra-title" class="h2">Solicitud de Viaje y Viáticos (STRA)</h2>
-        <p class="lead">Genera tu solicitud a través de DocuSign utilizando la plantilla oficial. Este paso es el requisito indispensable para que la empresa pueda gestionar tus reservaciones de transporte, hospedaje y el fondeo de tu tarjeta corporativa.</p>
+        <h2 id="stra-title" class="h2">Solicitud de Viaje y Viáticos (STRA y Plataforma Mendel)</h2>
+        <p class="lead">Genera y firma tu solicitud STRA (Segula Travel Request Authorization) a través de SEGULA Central utilizando la plantilla oficial. Una vez firmado por ti, debes registrar la solicitud de presupuesto en la plataforma Mendel (app o web) adjuntando el STRA firmado. Este paso es el requisito indispensable para la doble aprobación (Operaciones y Finanzas) y para que la empresa libere los fondos en tu tarjeta corporativa Mendel.</p>
         <div class="actions">
-          <Button variant="primary" href="https://account.docusign.com/">Haz tu solicitud de viaje</Button>
-          <Button variant="ghost" href="#">Ver la guía</Button>
+          <Button variant="primary" href={ROUTES['SEGULA Travel']}>Haz tu solicitud de viaje</Button>
         </div>
       </div>
     </article>
@@ -72,7 +79,8 @@ const suaSteps = [
       <div class="news-body news-body--agencia" data-reveal>
         <span class="sc-tag">Gestión de la agencia de viajes</span>
         <h2 id="agencia-title" class="h2">Gestiona tus reservaciones</h2>
-        <p class="lead">Después de que tu solicitud haya sido aceptada, favor de contactar con <a class="inline-link" href="mailto:segula@gate18.mx">segula@gate18.mx</a> para poder comenzar con la gestión de las reservas. Con cada correo que mandes, copia a:</p>
+        <p class="lead">Una vez que tu presupuesto sea aprobado en la plataforma Mendel y cuentes con los fondos en tu tarjeta corporativa, contacta a la agencia autorizada Gate18 (<a class="inline-link" href="mailto:segula@gate18.mx">segula@gate18.mx</a>) para gestionar tus vuelos, hospedaje y renta de auto.</p>
+        <p class="lead">En cada correo enviado a la agencia, especifica los montos autorizados por concepto y copia obligatoriamente a:</p>
         <ul class="cc">
           {cc.map((p) => (
             <li class="cc-item">
@@ -85,9 +93,10 @@ const suaSteps = [
             <a class="cc-link" href={ROUTES['Directorio']}>Consulta el directorio</a>
           </li>
         </ul>
+        <p class="note">Nota: para concretar la compra dentro del tabulador permitido, deberás compartir con la agencia los datos de tu tarjeta Mendel: 16 dígitos, fecha de vencimiento y CVV.</p>
       </div>
       <div class="news-media news-media--agencia" data-reveal data-reveal-delay="90">
-        <ImagePlaceholder placeholder="Imagen · Agencia de viajes" radius={20} />
+        <ImagePlaceholder src={reservasImg} alt="Gestiona tus reservaciones" placeholder="Imagen · Agencia de viajes" radius={20} />
       </div>
     </article>
   </section>
@@ -96,7 +105,7 @@ const suaSteps = [
     <SectionHead tag="Reglas de oro" id="reglas-title">Tres reglas antes de viajar</SectionHead>
     <div class="grid">
       {rules.map((r) => (
-        <RuleCard class="rule" number={r.number} title={r.title} text={r.text} placeholder={r.placeholder} revealDelay={r.delay} />
+        <RuleCard class="rule" number={r.number} title={r.title} text={r.text} src={r.src} alt={r.title} placeholder={r.placeholder} revealDelay={r.delay} />
       ))}
     </div>
   </section>
@@ -105,10 +114,10 @@ const suaSteps = [
     <Panel as="div" class="sua">
       <div class="sua-intro">
         <span class="sc-tag">Requisito de seguridad</span>
-        <h2 id="sua-title" class="h2">SUA</h2>
-        <p class="lead">El SUA (Sistema Único de Autodeterminación) es un documento fundamental para tus viajes de negocios, ya que funciona como el comprobante oficial de que estás dado de alta ante el IMSS que garantiza que tienes cobertura médica vigente en caso de cualquier accidente o emergencia de salud durante tu trayecto o estancia laboral.</p>
+        <h2 id="sua-title" class="h2">SUA (Comprobante IMSS)</h2>
+        <p class="lead">El SUA (Sistema Único de Autodeterminación) es un documento fundamental para tus viajes de negocios, ya que funciona como el comprobante oficial de que estás dado de alta ante el IMSS, garantizando que tienes cobertura médica vigente en caso de cualquier accidente o emergencia de salud durante tu trayecto o estancia laboral.</p>
         <div class="sua-media">
-          <ImagePlaceholder placeholder="Imagen · SUA" radius={12} />
+          <ImagePlaceholder src={suaImg} alt="SUA (Comprobante IMSS)" placeholder="Imagen · SUA" radius={12} />
         </div>
       </div>
       <div class="sua-steps">
@@ -173,6 +182,12 @@ const suaSteps = [
     text-decoration: none;
   }
   .inline-link:hover { color: #FFFFFF; }
+  .note {
+    margin: 0;
+    font: 300 15px / 1.5 var(--font-sans);
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
 
   /* News blocks (12-col grid) */
   .news {

@@ -1,0 +1,147 @@
+---
+import ArrowUpRight from 'lucide-astro/ArrowUpRight';
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+
+interface Link {
+  title: string;
+  text: string;
+  href: string;
+  delay: number;
+}
+
+const links: Link[] = [
+  {
+    title: 'ODESSA',
+    text: 'Plataforma digital de tu Fondo de Ahorro donde puedes consultar tu saldo acumulado, rendimientos y aportaciones en tiempo real.',
+    href: 'https://www.ods.com.mx/extranet2/index.php',
+    delay: 0,
+  },
+  {
+    title: 'AceProject',
+    text: 'Portal operativo diseñado para registrar y llevar el control diario de tus horas de trabajo.',
+    href: 'https://segulamexico.aceproject.com/',
+    delay: 70,
+  },
+  {
+    title: 'RH Contigo',
+    text: 'Canal directo de Recursos Humanos para gestionar dudas de nómina, prestaciones, constancias, capacitación (LinkedIn Learning y GoodHabitz) y acceso a portales (ODESSA, GN3, MySegula).',
+    href: 'https://forms.monday.com/forms/3ef7fdb8bac23525f6d8a8103341557f?r=use1',
+    delay: 0,
+  },
+  {
+    title: 'Mesa de IT',
+    text: 'Portal de soporte técnico para reportar fallas en equipos, solicitar licencias (Office, VPN, CITRIX) y restablecer accesos o bloqueos de correo (@segulagrp.com).',
+    href: 'https://forms.monday.com/forms/d4839e029c2646d2d19e7cfdb5a070ed?r=use1',
+    delay: 70,
+  },
+];
+---
+
+<Base title="Enlaces de interés">
+  <PageHero tag="Más recursos" before="Enlaces de " kw="interés" kwColor="blue" subtitle="Accesos directos a las plataformas que usas en tu día a día." />
+
+  <section class="section" aria-label="Enlaces">
+    <ul class="links">
+      {links.map((l) => (
+        <li class="item" data-reveal data-reveal-delay={l.delay}>
+          <a class="link" href={l.href} target="_blank" rel="noopener">
+            <div class="link-head">
+              <h2 class="link-title">{l.title}</h2>
+              <ArrowUpRight size={28} stroke-width={1.5} aria-hidden="true" class="link-icon" />
+            </div>
+            <p class="link-text">{l.text}</p>
+            <span class="link-cta">Abrir portal<span class="sr-only"> (se abre en una pestaña nueva)</span></span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .section {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .item {
+    min-width: 0;
+    display: flex;
+  }
+  .link {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: clamp(24px, 2.4vw, 32px);
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    color: #FFFFFF;
+    text-decoration: none;
+    transition:
+      box-shadow var(--duration-base) var(--ease-card),
+      background-color var(--duration-base) var(--ease-card);
+  }
+  .link:hover {
+    box-shadow: var(--shadow-dark);
+    background: var(--surface-panel);
+  }
+  .link:focus-visible {
+    outline: 2px solid var(--brand-lightblue);
+    outline-offset: 4px;
+  }
+  .link-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .link-title {
+    margin: 0;
+    font: 400 clamp(26px, 2.4vw, 34px) / 1.15 var(--font-sans);
+    color: var(--text-card-title);
+  }
+  .link-icon {
+    flex: none;
+    color: var(--brand-lightblue);
+    transition: transform var(--duration-base) var(--ease-card);
+  }
+  .link:hover .link-icon { transform: translate(3px, -3px); }
+  .link-text {
+    margin: 0;
+    font: 300 17px / 1.55 var(--font-sans);
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+  .link-cta {
+    margin-top: auto;
+    padding-top: 8px;
+    font: 400 15px / 1.3 var(--font-sans);
+    color: var(--brand-lightblue);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 760px) {
+    .links { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

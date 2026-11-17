@@ -389,7 +389,8 @@ const { menuTrigger = 'hover' } = Astro.props;
   @media (prefers-reduced-motion: reduce) {
     .navlink > span { transition: none; }
   }
-  @media (max-width: 1024px) {
+  /* 8 top-level items no longer fit beside the search and logout below ~1200px. */
+  @media (max-width: 1200px) {
     .nav { display: none; }
     .burger { display: inline-flex; }
     .logout { display: none; }

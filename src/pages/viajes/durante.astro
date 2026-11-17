@@ -9,27 +9,43 @@ import Panel from '../../components/Panel.astro';
 import Button from '../../components/Button.astro';
 import ImagePlaceholder from '../../components/ImagePlaceholder.astro';
 import { ROUTES } from '../../data/nav';
+import agenciaImg from '../../assets/viajes/tu-acompanante-24-7.webp';
+import pagoImg from '../../assets/viajes/pago-y-registro-diario-en-la-app-mendel.webp';
+import exclusionImg from '../../assets/viajes/exclusion-estricta-de-gastos-no-permitidos.webp';
+import protocoloImg from '../../assets/viajes/protocolo-ante-emergencias-y-extensiones-de-viaje.webp';
+import tabuladorImg from '../../assets/viajes/tabulador-de-limites-y-criterios-de-validacion.webp';
+import tipsImg from '../../assets/viajes/tips-de-uso-de-la-app-y-tarjeta-mendel.webp';
+
+const EMERGENCY_MAIL = 'mailto:aazar@gueit18.com.mx,operaciones@gueit18.com.mx?cc=segula@gate18.mx';
+
+const phones = [
+  { label: '55 19 65 63 30', tel: '+525519656330' },
+  { label: '55 10 53 32 40', tel: '+525510533240' },
+];
 
 const rules = [
   {
     number: '01',
-    title: 'Uso correcto de la tarjeta Pluxee',
-    text: 'Los pagos deben realizarse siempre insertando el chip en la terminal; queda estrictamente prohibido el uso del método contactless (sin contacto) para evitar cargos duplicados.',
-    placeholder: 'Imagen · Uso correcto de la tarjeta Pluxee',
+    title: 'Pago y registro diario en la app Mendel',
+    text: 'Paga todos tus gastos con la tarjeta corporativa Mendel (física o virtual). Captura cada gasto y sube la fotografía del ticket el mismo día en que realizas la compra desde la aplicación móvil. Solicita siempre la factura electrónica CFDI 4.0 emitida con los datos fiscales de la empresa.',
+    src: pagoImg,
+    placeholder: 'Imagen · Pago y registro diario en la app Mendel',
     delay: 0,
   },
   {
     number: '02',
-    title: 'Exclusión de gastos no permitidos',
-    text: 'No se aceptarán facturas por gastos personales (ropa, aseo, medicamentos) ni comprobantes de alimentos que incluyan el consumo de alcohol.',
-    placeholder: 'Imagen · Exclusión de gastos no permitidos',
+    title: 'Exclusión estricta de gastos no permitidos',
+    text: 'Queda estrictamente prohibida la compra de bebidas alcohólicas de cualquier tipo en consumos de alimento. No se aceptan facturas por gastos personales (ropa, medicamentos, artículos de higiene, recargas telefónicas o multas) ni el uso de transporte en categorías premium (Uber Black, Uber XL).',
+    src: exclusionImg,
+    placeholder: 'Imagen · Exclusión estricta de gastos no permitidos',
     delay: 70,
   },
   {
     number: '03',
-    title: 'Prioridad de atención en emergencias',
-    text: 'Ante cualquier eventualidad con vuelos, hoteles o transporte durante el viaje, el primer punto de contacto debe ser la oficina de emergencia 24/7 de la agencia de viajes.',
-    placeholder: 'Imagen · Prioridad de atención en emergencias',
+    title: 'Protocolo ante emergencias y extensiones de viaje',
+    text: 'Si requieres extender o modificar la duración de tu estancia, notifícalo a tu PMO: toda modificación se gestiona obligatoriamente como un viaje nuevo (requiere nuevo STRA y nuevo presupuesto en Mendel). En caso de falla, bloqueo o extravío de tu tarjeta física, bloquéala en la app, solicita a RH la activación de tu tarjeta virtual o contáctate de inmediato con Finanzas antes de efectuar pagos con recursos propios.',
+    src: protocoloImg,
+    placeholder: 'Imagen · Protocolo ante emergencias y extensiones de viaje',
     delay: 140,
   },
 ];
@@ -43,11 +59,31 @@ const rules = [
       <div class="duo-copy">
         <span class="sc-tag">Agencia de viajes</span>
         <h2 id="agencia-title" class="h2">Tu acompañante <span class="sc-kw--blue">24/7</span></h2>
-        <p class="lead">Recuerda que para cualquier emergencia durante tu viaje, la agencia cuenta con un servicio de apoyo continuo por medio de los siguientes contactos:</p>
-        <Button variant="primary" href="mailto:segula@gate18.mx">Correo de emergencia</Button>
+        <p class="lead">Recuerda que para cualquier emergencia, cambio o imprevisto con vuelos, hospedaje o transporte durante tu viaje, la agencia Gate18 cuenta con un servicio de atención y apoyo continuo las 24 horas a través de los siguientes medios:</p>
+        <ul class="contacts">
+          <li class="contact">
+            <span class="contact-label">Teléfonos de emergencia 24/7</span>
+            <span class="contact-value">
+              {phones.map((p, i) => (
+                <>{i > 0 && ' | '}<a class="inline-link" href={`tel:${p.tel}`}>{p.label}</a></>
+              ))}
+            </span>
+          </li>
+          <li class="contact">
+            <span class="contact-label">Correos de atención</span>
+            <span class="contact-value">
+              <a class="inline-link" href="mailto:aazar@gueit18.com.mx">aazar@gueit18.com.mx</a> y <a class="inline-link" href="mailto:operaciones@gueit18.com.mx">operaciones@gueit18.com.mx</a> (con copia obligatoria a <a class="inline-link" href="mailto:segula@gate18.mx">segula@gate18.mx</a>)
+            </span>
+          </li>
+          <li class="contact">
+            <span class="contact-label">Contactos de seguimiento interno</span>
+            <span class="contact-value">Mariana Fonseca, Evelyn Abarca y Karina Hernández</span>
+          </li>
+        </ul>
+        <Button variant="primary" href={EMERGENCY_MAIL}>Correo de emergencia</Button>
       </div>
       <div class="duo-media">
-        <ImagePlaceholder placeholder="Tarjeta de contacto · Agencia 24/7" radius={12} />
+        <ImagePlaceholder src={agenciaImg} alt="Tu acompañante 24/7: tarjeta de contacto de la agencia Gate18" placeholder="Tarjeta de contacto · Agencia 24/7" radius={12} />
       </div>
     </Panel>
   </section>
@@ -56,42 +92,33 @@ const rules = [
     <SectionHead tag="Reglas de oro" id="reglas-title">Tres reglas durante el viaje</SectionHead>
     <div class="grid">
       {rules.map((r) => (
-        <RuleCard class="rule" number={r.number} title={r.title} text={r.text} placeholder={r.placeholder} revealDelay={r.delay} />
+        <RuleCard class="rule" number={r.number} title={r.title} text={r.text} src={r.src} alt={r.title} placeholder={r.placeholder} revealDelay={r.delay} />
       ))}
     </div>
   </section>
 
-  <section class="section" aria-label="Gastos y facturación">
+  <section class="section" aria-label="Recursos y documentos adicionales">
+    <span class="sc-tag recursos-tag">Recursos y documentos adicionales</span>
     <div class="grid">
       <article class="tile tile--half" data-reveal>
         <div class="tile-media">
-          <ImagePlaceholder placeholder="Documento · Datos fiscales" radius={12} />
+          <ImagePlaceholder src={tabuladorImg} alt="Infografía: tabulador de límites y criterios de validación" placeholder="Infografía · Tabulador de límites" radius={12} />
         </div>
         <div class="tile-row">
           <div class="tile-copy">
-            <h3 class="tile-title">Datos de facturación</h3>
-            <p class="tile-text">Datos fiscales de Segula Servicios Empresariales.</p>
-          </div>
-          <Button variant="ghost" size="sm" href="#" class="tile-btn">Descargar</Button>
-        </div>
-      </article>
-      <article class="tile tile--half" data-reveal>
-        <div class="tile-media">
-          <ImagePlaceholder placeholder="Infografía · Gastos personales y de la empresa" radius={12} />
-        </div>
-        <div class="tile-row">
-          <div class="tile-copy">
-            <h3 class="tile-title">Gastos personales y de la empresa</h3>
+            <h3 class="tile-title">Tabulador de límites y criterios de validación</h3>
+            <p class="tile-text">Revisa los límites diarios autorizados por concepto (alimentos, hospedaje, transporte, peajes) y la diferenciación entre gastos personales y de la empresa.</p>
           </div>
         </div>
       </article>
-      <article class="tile tile--full" data-reveal>
+      <article class="tile tile--half" data-reveal data-reveal-delay="70">
         <div class="tile-media">
-          <ImagePlaceholder placeholder="Imagen · Tips de uso de la tarjeta" radius={12} />
+          <ImagePlaceholder src={tipsImg} alt="Tips de uso de la app y tarjeta Mendel" placeholder="Imagen · Tips de uso de la app y tarjeta Mendel" radius={12} />
         </div>
         <div class="tile-row">
           <div class="tile-copy">
-            <h3 class="tile-title">Tips de uso de la tarjeta</h3>
+            <h3 class="tile-title">Tips de uso de la app y tarjeta Mendel</h3>
+            <p class="tile-text">Revisa tus transacciones en tiempo real, consulta tu NIP y da seguimiento al estado de tus facturas. <strong>Recuerda:</strong> el registro de los tickets dentro de la aplicación no es una comprobación válida, necesitas completar el registro con la factura correspondiente.</p>
           </div>
         </div>
       </article>
@@ -156,6 +183,42 @@ const rules = [
   .duo-media {
     width: 100%;
     aspect-ratio: 16 / 9;
+  }
+
+  /* 24/7 contacts */
+  .contacts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+  .contact {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .contact-label {
+    font: 400 14px / 1.3 var(--font-sans);
+    color: var(--text-muted);
+  }
+  .contact-value {
+    font: 400 16px / 1.5 var(--font-sans);
+    color: #FFFFFF;
+    overflow-wrap: anywhere;
+  }
+  .inline-link {
+    color: var(--brand-lightblue);
+    text-decoration: none;
+  }
+  .inline-link:hover { color: #FFFFFF; }
+
+  .recursos-tag {
+    display: inline-block;
+    margin-bottom: 24px;
   }
 
   .grid {
