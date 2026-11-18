@@ -1,0 +1,75 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import Button from '../../components/Button.astro';
+
+// Served from public/, behind the session middleware like every other page.
+const PDF = '/assets/docs/politica-de-calidad-2026.pdf';
+const FILE_NAME = 'Politica-de-Calidad-SEGULA-2026.pdf';
+---
+
+<Base title="Política de Calidad">
+  <PageHero
+    tag="Calidad"
+    before="Política de "
+    kw="Calidad"
+    subtitle="Consulta la Política de Calidad 2026 de SEGULA. Puedes leerla aquí mismo o descargarla en PDF."
+    subtitleSize="md"
+    bottom="md"
+  >
+    <div class="actions">
+      <Button href={PDF} download={FILE_NAME}>Descargar PDF</Button>
+      <Button href={PDF} variant="ghost" external>Abrir en otra pestaña</Button>
+    </div>
+  </PageHero>
+
+  <section class="section" aria-label="Documento">
+    <div class="viewer" data-reveal>
+      <object data={`${PDF}#view=FitH`} type="application/pdf" title="Política de Calidad 2026">
+        <div class="fallback">
+          <p>Tu navegador no puede mostrar el PDF aquí.</p>
+          <Button href={PDF} download={FILE_NAME}>Descargar PDF</Button>
+        </div>
+      </object>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 32px;
+  }
+  .section {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding: 0 clamp(24px, 4.4vw, 64px) clamp(112px, 12vw, 176px);
+  }
+  .viewer {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--surface-card);
+    box-shadow: inset 0 0 0 1px var(--border-subtle);
+  }
+  .viewer object {
+    display: block;
+    width: 100%;
+    height: min(90vh, 1100px);
+    border: 0;
+  }
+  .fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 40px 28px;
+    color: #FFFFFF;
+  }
+  .fallback p { margin: 0; }
+
+  @media (max-width: 640px) {
+    .viewer object { height: 75vh; }
+  }
+</style>
