@@ -7,7 +7,6 @@ export interface NavItem {
 }
 
 export const NAV: NavItem[] = [
-  { label: "Home", href: "/" },
   { label: "Recursos Humanos", children: ["Vacaciones e incidencias","Políticas y documentos","¿Sabías qué?","Gazzette","Campañas de salud","Comunicados","Videos de capacitación e informativos","Directorio"] },
   { label: "Operaciones", children: ["Política de horas","Manual Ace Project","Shutdown"], hidden: true },
   { label: "Viajes", children: ["Antes de tu viaje","Durante tu viaje","Después de tu viaje"] },
@@ -22,8 +21,8 @@ export const NAV: NavItem[] = [
 export const MENU: NavItem[] = NAV.filter((item) => !item.hidden);
 
 export const ROUTES: Record<string,string> = {
-  "Home":"/", "Vacaciones e incidencias":"/recursos-humanos/vacaciones-e-incidencias", "Políticas y documentos":"/recursos-humanos/politicas-y-documentos", "¿Sabías qué?":"/recursos-humanos/sabias-que", "Campañas de salud":"/recursos-humanos/campanas-de-salud", "Gazzette":"/recursos-humanos/gazzette", "Comunicados":"/recursos-humanos/comunicados", "Videos de capacitación e informativos":"/recursos-humanos/videos", "Directorio":"/recursos-humanos/directorio", "Política de horas":"/operaciones/politica-de-horas", "Manual Ace Project":"/operaciones/manual-ace-project", "Shutdown":"/operaciones/shutdown", "Antes de tu viaje":"/viajes/antes", "Durante tu viaje":"/viajes/durante", "Después de tu viaje":"/viajes/despues", "SEGULA Travel":"/segula-travel", "Campañas":"/ti/campanas", "Google Workspace":"/ti/google-workspace", "Centro de ayuda":"/centro-de-ayuda", "FAQ's":"/centro-de-ayuda/faqs", "Lessons learned":"/calidad/lessons-learned", "Enlaces de interés":"/enlaces-de-interes",
+  "Home":"/", "Vacaciones e incidencias":"/recursos-humanos/vacaciones-e-incidencias", "Políticas y documentos":"/recursos-humanos/politicas-y-documentos", "¿Sabías qué?":"/recursos-humanos/sabias-que", "Campañas de salud":"/recursos-humanos/campanas-de-salud", "Gazzette":"/recursos-humanos/gazzette", "Comunicados":"/recursos-humanos/comunicados", "Videos de capacitación e informativos":"/recursos-humanos/videos", "Directorio":"/recursos-humanos/directorio", "Política de horas":"/operaciones/politica-de-horas", "Manual Ace Project":"/operaciones/manual-ace-project", "Shutdown":"/operaciones/shutdown", "Antes de tu viaje":"/viajes/antes", "Durante tu viaje":"/viajes/durante", "Después de tu viaje":"/viajes/despues", "SEGULA Travel":"/segula-travel", "Campañas":"/ti/campanas", "Google Workspace":"/ti/google-workspace", "Centro de ayuda":"/centro-de-ayuda", "FAQ's":"/centro-de-ayuda/faqs", "Lessons learned":"/calidad/lessons-learned", "Política de Calidad":"/calidad/politica-de-calidad", "Enlaces de interés":"/enlaces-de-interes",
 };
 
-/** Route for a menu label. Labels without a page yet ("Política de Calidad") resolve to "#". */
+/** Route for a menu label. Labels without a page yet resolve to "#". */
 export const hrefFor = (label: string): string => ROUTES[label] ?? "#";
