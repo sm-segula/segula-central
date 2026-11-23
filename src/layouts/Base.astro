@@ -3,6 +3,7 @@ import '../styles/global.css';
 import 'lenis/dist/lenis.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Analytics from '@vercel/analytics/astro';
 
 interface Props {
   title: string;
@@ -36,6 +37,7 @@ const pageTitle = title === SITE ? SITE : `${title} · ${SITE}`;
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
     />
     <script is:inline>document.documentElement.classList.add('js');</script>
+    <Analytics />
   </head>
   <body>
     <slot name="splash" />
